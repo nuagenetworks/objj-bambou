@@ -105,18 +105,8 @@ NURESTConnectionUnauthorizedNotification = @"NURESTConnectionUnauthorizedNotific
 
     try
     {
-        // if (_usesAuthentication)
-        // {
-        //     var user = [[NURESTLoginController defaultController] user],
-        //         password = [[NURESTLoginController defaultController] password];
 
-        //     _HTTPRequest.open([_request HTTPMethod], [[_request URL] absoluteString], YES, user, password);
-        // }
-        // else
-            _HTTPRequest.open([_request HTTPMethod], [[_request URL] absoluteString], YES);
-
-
-        _HTTPRequest.setRequestHeader(key, [fields objectForKey:key]);
+        _HTTPRequest.open([_request HTTPMethod], [[_request URL] absoluteString], YES);
 
         _HTTPRequest.onreadystatechange = function() { [self _readyStateDidChange]; }
 
@@ -129,7 +119,6 @@ NURESTConnectionUnauthorizedNotification = @"NURESTConnectionUnauthorizedNotific
 
         if (_usesAuthentication)
             _HTTPRequest.setRequestHeader("Authorization", [[NURESTLoginController defaultController] authString]);
-
 
         _HTTPRequest.send([_request HTTPBody]);
     }

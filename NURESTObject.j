@@ -434,7 +434,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
     [URLRequest setHTTPMethod:@"PUT"];
     [URLRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
     [URLRequest setHTTPBody:body];
-    alert(body);
+
     CPLog.debug("Sending method PUT to URL %s: %s ", [URLRequest URL], body);
 
     [self sendRESTCall:URLRequest andPerformSelector:@selector(_didPerformStandardOperation:) ofObject:self userInfo:[anObject, aSelector]];

@@ -47,9 +47,8 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
     CPString        _localID            @accessors(property=localID);
     CPString        _parentID           @accessors(property=parentID);
     CPString        _parentType         @accessors(property=parentType);
-    CPURL           _baseURL            @accessors(property=baseURL);
 
-    CPDictionary    _restAttributes;
+    CPDictionary    _restAttributes     @accessors(property=RESTAttributes);
 }
 
 
@@ -63,7 +62,6 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
     if (self = [super init])
     {
         _restAttributes = [CPDictionary dictionary];
-        _baseURL = [[NURESTLoginController defaultController] URL];
 
         [self exposeLocalKeyPath:@"ID" toRESTKeyPath:@"id"];
         [self exposeLocalKeyPath:@"parentID" toRESTKeyPath:@"parentId"];
@@ -83,7 +81,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 */
 - (CPURL)RESTQueryURL
 {
-    return _baseURL;
+    return [[NURESTLoginController defaultController] URL];
 }
 
 /*! Exposes new attribute for REST managing
@@ -261,7 +259,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 
     if ([aConnection responseCode] !== 200)
     {
-        var title = "An error occured while sending REST to " + _baseURL,
+        var title = "An error occured while sending REST to " + [[NURESTLoginController defaultController] URL],
             informative = [aConnection errorMessage];
 
         CPLog.error("Data are error: " + title + " : " + informative);
@@ -484,7 +482,6 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 {
     if (self = [super init])
     {
-        _baseURL        = [aCoder decodeObjectForKey:@"_baseURL"];
         _restAttributes = [aCoder decodeObjectForKey:@"_restAttributes"];
         _ID             = [aCoder decodeObjectForKey:@"_ID"];
         _localID        = [aCoder decodeObjectForKey:@"_localID"];
@@ -499,7 +496,6 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 */
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    [aCoder encodeObject:_baseURL forKey:@"_baseURL"];
     [aCoder encodeObject:_restAttributes forKey:@"_restAttributes"];
     [aCoder encodeObject:_ID forKey:@"_ID"];
     [aCoder encodeObject:_localID forKey:@"_localID"];

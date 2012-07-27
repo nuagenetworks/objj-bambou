@@ -47,6 +47,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
     CPString        _localID            @accessors(property=localID);
     CPString        _parentID           @accessors(property=parentID);
     CPString        _parentType         @accessors(property=parentType);
+    CPString        _owner              @accessors(property=owner);
 
     CPDictionary    _restAttributes     @accessors(property=RESTAttributes);
 }
@@ -66,6 +67,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
         [self exposeLocalKeyPath:@"ID" toRESTKeyPath:@"id"];
         [self exposeLocalKeyPath:@"parentID" toRESTKeyPath:@"parentId"];
         [self exposeLocalKeyPath:@"parentType" toRESTKeyPath:@"parentType"];
+        [self exposeLocalKeyPath:@"owner" toRESTKeyPath:@"createdBy"];
     }
 
     return self;
@@ -102,7 +104,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
     will be the same than the local key path
     @param aKeyPath the local key path to expose
 */
-- (void)exposeLocalKeyPathToRest:(CPString)aKeyPath
+- (void)exposeLocalKeyPathToREST:(CPString)aKeyPath
 {
     [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath];
 }

@@ -121,7 +121,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
             restPath = [_restAttributes objectForKey:attribute];
 
         var restValue = obj[restPath];
-        [self setValue:(restValue != nil) ? restValue : @"Not Set" forKeyPath:attribute];
+        [self setValue:restValue forKeyPath:attribute];
     }
 }
 
@@ -489,6 +489,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
         _localID        = [aCoder decodeObjectForKey:@"_localID"];
         _parentID       = [aCoder decodeObjectForKey:@"_parentID"];
         _parentType     = [aCoder decodeObjectForKey:@"_parentType"];
+
     }
 
     return self;

@@ -43,11 +43,12 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 */
 @implementation NURESTObject : CPObject
 {
+    CPDate          _creationDate       @accessors(property=creationDate);
     CPString        _ID                 @accessors(property=ID);
     CPString        _localID            @accessors(property=localID);
+    CPString        _owner              @accessors(property=owner);
     CPString        _parentID           @accessors(property=parentID);
     CPString        _parentType         @accessors(property=parentType);
-    CPString        _owner              @accessors(property=owner);
 
     CPDictionary    _restAttributes     @accessors(property=RESTAttributes);
 }
@@ -68,6 +69,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
         [self exposeLocalKeyPath:@"parentID" toRESTKeyPath:@"parentId"];
         [self exposeLocalKeyPath:@"parentType" toRESTKeyPath:@"parentType"];
         [self exposeLocalKeyPath:@"owner" toRESTKeyPath:@"createdBy"];
+        [self exposeLocalKeyPath:@"creationDate" toRESTKeyPath:@"creationDate"];
     }
 
     return self;
@@ -118,9 +120,14 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
     for (var i = 0; i < [[_restAttributes allKeys] count]; i++)
     {
         var attribute = [[_restAttributes allKeys] objectAtIndex:i],
-            restPath = [_restAttributes objectForKey:attribute];
+            restPath = [_restAttributes objectForKey:attribute],
+            restValue;
 
-        var restValue = obj[restPath];
+        // @TODO: this info should come with the HTTP metadata
+        if (attribute == "creationDate")
+            restValue = [CPDate initWithTimeIntervalSince1970:obj[restPath]];
+        else
+            restValue = obj[restPath];
         [self setValue:restValue forKeyPath:attribute];
     }
 }
@@ -138,7 +145,11 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
             restPath = [_restAttributes objectForKey:attribute],
             value = [self valueForKeyPath:attribute];
 
-        json[restPath] = value;//(value == @"Not Set" || value == @"" )? nil : value;
+        // @TODO: this info should come with the HTTP metadata
+        if (attribute == "creationDate")
+            continue;
+
+        json[restPath] = value;
     }
 
     return JSON.stringify(json);

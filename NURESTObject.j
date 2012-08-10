@@ -125,7 +125,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 
         // @TODO: this info should come with the HTTP metadata
         if (attribute == "creationDate")
-            restValue = [CPDate initWithTimeIntervalSince1970:obj[restPath]];
+            restValue = [CPDate dateWithTimeIntervalSince1970:obj[restPath]];
         else
             restValue = obj[restPath];
         [self setValue:restValue forKeyPath:attribute];

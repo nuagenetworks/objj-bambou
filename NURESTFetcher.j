@@ -72,10 +72,10 @@
 
     [dest removeAllObjects];
 
-    for (var i = 0; i < [JSONObject.entities count]; i++)
+    for (var i = 0; i < [JSONObject count]; i++)
     {
         var newObject = [self newObject];
-        [newObject objectFromJSON:JSONObject.entities[i]];
+        [newObject objectFromJSON:JSONObject[i]];
         [dest addObject:newObject];
     }
 

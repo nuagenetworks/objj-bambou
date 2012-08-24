@@ -34,8 +34,13 @@
 
 @import <Foundation/CPURLConnection.j>
 
-NURESTConnectionUnauthorizedNotification = @"NURESTConnectionUnauthorizedNotification";
-
+NURESTConnectionResponseCodeSuccess = 200;
+NURESTConnectionResponseCodeEmpty = 204;
+NURESTConnectionResponseCodeNotFound = 404;
+NURESTConnectionResponseCodeInternalServerError = 500;
+NURESTConnectionResponseCodeUnauthorized = 401;
+NURESTConnectionResponseCodePermissionDenied = 403;
+NURESTConnectionResponseCodeMoved = 301;
 
 /*! Enhanced version of CPURLConnection
 */
@@ -153,23 +158,8 @@ NURESTConnectionUnauthorizedNotification = @"NURESTConnectionUnauthorizedNotific
 {
     if (_HTTPRequest.readyState() === CFHTTPRequest.CompleteState)
     {
-        _responseCode = _HTTPRequest.status()
-
-        switch (_responseCode)
-        {
-            case 200:
-                _responseData = [CPData dataWithRawString:_HTTPRequest.responseText()];
-                break;
-
-            case 401:
-                [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConnectionUnauthorizedNotification
-                                                                object:self
-                                                              userInfo:nil];
-                 break;
-
-            case 0:
-                CPLog.error("Error code 0 man! fix this!")
-        }
+        _responseCode = _HTTPRequest.status();
+        _responseData = [CPData dataWithRawString:_HTTPRequest.responseText()];
 
         if (_target && _selector)
             [_target performSelector:_selector withObject:self];

@@ -223,7 +223,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 {
     var JSONObject = [[aConnection responseData] JSONObject];
 
-    [self objectFromJSON:JSONObject.entities[0]];
+    [self objectFromJSON:JSONObject[0]];
 
     if ([aConnection userInfo])
         [[aConnection userInfo][0] performSelector:[aConnection userInfo][1] withObject:self withObject:[aConnection userInfo][2]];
@@ -268,47 +268,49 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 {
     [[NUDataTransferController defaultDataTransferController] hideDataTransfer];
 
-    CPLog.debug("<<<< Response for " + [[[aConnection request] URL] absoluteString] + " (" + [[aConnection request] HTTPMethod] + ")  :"  + [[aConnection responseData] rawString]);
+    var url = [[[aConnection request] URL] absoluteString],
+        HTTPMethod = [[aConnection request] HTTPMethod],
+        respondeObject = [[aConnection responseData] JSONObject],
+        rawString = [[aConnection responseData] rawString],
+        responseCode = [aConnection responseCode];
 
-    if ([aConnection responseCode] !== 200)
+    CPLog.debug("<<<< Response for %@ %@ (%@): %@", HTTPMethod, url, responseCode, rawString);
+
+    switch (responseCode)
     {
-        var title = "An error occured while sending REST to " + [[NURESTLoginController defaultController] URL],
-            informative = [aConnection errorMessage];
-
-        CPLog.error("Data are error: " + title + " : " + informative);
-        CPLog.error(aConnection);
-        [[aConnection internalUserInfo][0] performSelector:[aConnection internalUserInfo][1] withObject:aConnection];
-        return;
-    }
-
-    var statusType = [[aConnection responseData] JSONObject].status.statusType;
-    switch (statusType)
-    {
-        case NURESTObjectStatusTypeFailed:
-            var title = "REST API Error",
-                informative = [[aConnection responseData] JSONObject].status.statusMessage;
-            CPLog.error("Business logic:" + title + " : " + informative + " :" +[[aConnection responseData] JSONObject].status.detailedMessage);
-            [TNAlert showAlertWithMessage:title informative:informative style:CPCriticalAlertStyle];
-            break;
-
-        case NURESTObjectStatusTypeWarning:
-            var title = @"Confirmation needed",
-                informative = [[aConnection responseData] JSONObject].status.statusMessage,
-                alert = [TNAlert alertWithMessage:title
-                                      informative:informative
-                                           target:self
-                                          actions:[[@"Ok", @selector(_confirmWarning:)], [@"Cancel", nil]]];
-            [alert setUserInfo:aConnection];
-            [alert runModal];
-            break;
-
-        case NURESTObjectStatusTypeSuccess:
+        case NURESTConnectionResponseCodeEmpty:
+        case NURESTConnectionResponseCodeSuccess:
             [[aConnection internalUserInfo][0] performSelector:[aConnection internalUserInfo][1] withObject:aConnection];
             break;
 
+        case NURESTConnectionResponseCodeNotFound:
+            [TNAlert showAlertWithMessage:respondeObject.title
+                              informative:respondeObject.description
+                                    style:CPCriticalAlertStyle];
+            break;
+
+        case NURESTConnectionResponseCodeInternalServerError:
+            [TNAlert showAlertWithMessage:respondeObject.title
+                              informative:respondeObject.description
+                                    style:CPCriticalAlertStyle];
+            CPLog.error("Stack Trace (%@): %@", respondeObject.internalErrorCode, respondeObject.stackTrace);
+            break;
+
+
+        // case NURESTObjectStatusTypeWarning:
+        //     var title = @"Confirmation needed",
+        //         informative = [[aConnection responseData] JSONObject].status.statusMessage,
+        //         alert = [TNAlert alertWithMessage:title
+        //                               informative:informative
+        //                                    target:self
+        //                                   actions:[[@"Ok", @selector(_confirmWarning:)], [@"Cancel", nil]]];
+        //     [alert setUserInfo:aConnection];
+        //     [alert runModal];
+        //     break;
+
         default:
-            var title = @"Unknown Status Type",
-                informative = @"The server send an unknown status API:  " + statusType;
+            var title = @"Unknown response code",
+                informative = @"The server send an unknown response code:  " + responseCode;
             [TNAlert showAlertWithMessage:title informative:informative style:CPCriticalAlertStyle];
             CPLog.error(title + " : " + informative + " :" +[[aConnection responseData] JSONObject].status.detailedMessage);
     }
@@ -321,7 +323,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 {
     var request = [[CPURLRequest alloc] init];
 
-    [request setURL:[CPURL URLWithString:[[[aConnection request] URL] absoluteString] + "?validate=false"]];
+    [request setURL:[CPURL URLWithString:[[[aConnection request] URL] absoluteString] + "?validationChoice=false"]];
 
     [request setHTTPMethod:[[aConnection request] HTTPMethod]];
     [[NUDataTransferController defaultDataTransferController] showDataTransfer];
@@ -462,7 +464,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
     var JSONData = [[aConnection responseData] JSONObject];
     try
     {
-        [self objectFromJSON:JSONData.entities[0]];
+        [self objectFromJSON:JSONData[0]];
     }
     catch(e)
     {

@@ -270,7 +270,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 
     var url = [[[aConnection request] URL] absoluteString],
         HTTPMethod = [[aConnection request] HTTPMethod],
-        respondeObject = [[aConnection responseData] JSONObject],
+        responseObject = [[aConnection responseData] JSONObject],
         rawString = [[aConnection responseData] rawString],
         responseCode = [aConnection responseCode];
 
@@ -278,35 +278,54 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 
     switch (responseCode)
     {
+        // ok or empty
         case NURESTConnectionResponseCodeEmpty:
         case NURESTConnectionResponseCodeSuccess:
             [[aConnection internalUserInfo][0] performSelector:[aConnection internalUserInfo][1] withObject:aConnection];
             break;
 
+        // resource not found
         case NURESTConnectionResponseCodeNotFound:
-            [TNAlert showAlertWithMessage:respondeObject.title
-                              informative:respondeObject.description
+            [TNAlert showAlertWithMessage:responseObject.title
+                              informative:responseObject.description
                                     style:CPCriticalAlertStyle];
             break;
 
+        // internal server error
         case NURESTConnectionResponseCodeInternalServerError:
-            [TNAlert showAlertWithMessage:respondeObject.title
-                              informative:respondeObject.description
+            [TNAlert showAlertWithMessage:responseObject.title
+                              informative:responseObject.description
                                     style:CPCriticalAlertStyle];
-            CPLog.error("Stack Trace (%@): %@", respondeObject.internalErrorCode, respondeObject.stackTrace);
+            CPLog.error("Stack Trace (%@): %@", responseObject.internalErrorCode, responseObject.stackTrace);
             break;
 
+        // multiple choice
+        case NURESTConnectionResponseCodeMoved:
+            var choices = [];
 
-        // case NURESTObjectStatusTypeWarning:
-        //     var title = @"Confirmation needed",
-        //         informative = [[aConnection responseData] JSONObject].status.statusMessage,
-        //         alert = [TNAlert alertWithMessage:title
-        //                               informative:informative
-        //                                    target:self
-        //                                   actions:[[@"Ok", @selector(_confirmWarning:)], [@"Cancel", nil]]];
-        //     [alert setUserInfo:aConnection];
-        //     [alert runModal];
-        //     break;
+            for (var i = 0; i < [responseObject.choices count]; i++)
+                [choices addObject:[[responseObject.choices objectAtIndex:i], nil]];
+
+            var alert = [TNAlert alertWithMessage:responseObject.title
+                                      informative:responseObject.description
+                                           target:self
+                                          actions:choices];
+
+            [alert setUserInfo:{"connection": aConnection, "choices": choices}];
+            [alert setDelegate:self];
+            [alert runModal];
+            break;
+
+        // Not authorized
+        case NURESTConnectionResponseCodeUnauthorized:
+            // in that case we just forward the connection to let login manager deal with it
+            [[aConnection internalUserInfo][0] performSelector:[aConnection internalUserInfo][1] withObject:aConnection];
+            break;
+
+        // XMLHTTPREQUEST error
+        case NURESTConnectionResponseCodeZero:
+            // do nothing.
+            break;
 
         default:
             var title = @"Unknown response code",
@@ -319,17 +338,23 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 /*! @ignore
     Reprocess the URL to add ?validate=false if needed
 */
-- (void)_confirmWarning:(NURESTConnection)aConnection
+- (void)alertDidEnd:(CPAlert)theAlert returnCode:(int)returnCode
 {
-    var request = [[CPURLRequest alloc] init];
+    var connection = [theAlert userInfo].connection,
+        choices = [theAlert userInfo].choices,
+        request = [[CPURLRequest alloc] init],
+        selectedChoiceID = [choices objectAtIndex:returnCode].id;
 
-    [request setURL:[CPURL URLWithString:[[[aConnection request] URL] absoluteString] + "?validationChoice=false"]];
+    if (!selectedChoiceID)
+        return;
+
+    [request setURL:[CPURL URLWithString:[[[aConnection request] URL] absoluteString] + "?responseChoice=" + selectedChoiceID]];
 
     [request setHTTPMethod:[[aConnection request] HTTPMethod]];
     [[NUDataTransferController defaultDataTransferController] showDataTransfer];
-    [aConnection setRequest:request];
-    [aConnection reset];
-    [aConnection start];
+    [connection setRequest:request];
+    [connection reset];
+    [connection start];
 }
 
 

@@ -34,13 +34,15 @@
 
 @import <Foundation/CPURLConnection.j>
 
+NURESTConnectionResponseCodeZero = 0;
 NURESTConnectionResponseCodeSuccess = 200;
 NURESTConnectionResponseCodeEmpty = 204;
 NURESTConnectionResponseCodeNotFound = 404;
 NURESTConnectionResponseCodeInternalServerError = 500;
+NURESTConnectionResponseCodeServiceUnavailable = 503;
 NURESTConnectionResponseCodeUnauthorized = 401;
 NURESTConnectionResponseCodePermissionDenied = 403;
-NURESTConnectionResponseCodeMoved = 301;
+NURESTConnectionResponseCodeMoved = 300;
 
 /*! Enhanced version of CPURLConnection
 */

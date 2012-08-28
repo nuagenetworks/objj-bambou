@@ -42,7 +42,7 @@ NURESTConnectionResponseCodeInternalServerError = 500;
 NURESTConnectionResponseCodeServiceUnavailable = 503;
 NURESTConnectionResponseCodeUnauthorized = 401;
 NURESTConnectionResponseCodePermissionDenied = 403;
-NURESTConnectionResponseCodeMoved = 300;
+NURESTConnectionResponseCodeMultipleChoices = 300;
 
 /*! Enhanced version of CPURLConnection
 */
@@ -112,7 +112,6 @@ NURESTConnectionResponseCodeMoved = 300;
 
     try
     {
-
         _HTTPRequest.open([_request HTTPMethod], [[_request URL] absoluteString], YES);
 
         _HTTPRequest.onreadystatechange = function() { [self _readyStateDidChange]; }
@@ -125,7 +124,11 @@ NURESTConnectionResponseCodeMoved = 300;
             _HTTPRequest.setRequestHeader(key, [fields objectForKey:key]);
 
         if (_usesAuthentication)
-            _HTTPRequest.setRequestHeader("Authorization", [[NURESTLoginController defaultController] authString]);
+        {
+            _HTTPRequest.setRequestHeader("X-Nuage-Organization", [[NURESTLoginController defaultController] company]);
+            _HTTPRequest.setRequestHeader("Authorization", [[NURESTLoginController defaultController] RESTAuthString]);
+        }
+
 
         _HTTPRequest.send([_request HTTPBody]);
     }

@@ -256,7 +256,8 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
                                                      selector:@selector(_didReceiveRESTReply:)];
     [connection setInternalUserInfo:[anObject, aSelector]];
     [connection setUserInfo:someUserInfo];
-    [[NUDataTransferController defaultDataTransferController] showDataTransfer];
+    if (typeof(NUDataTransferController) != "undefined")
+        [[NUDataTransferController defaultDataTransferController] showDataTransfer];
 
     CPLog.debug(">>>> Sending " + [[aRequest URL] absoluteString] + " (" + [aRequest HTTPMethod] + ")");
     [connection start];
@@ -266,7 +267,8 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 */
 - (void)_didReceiveRESTReply:(NURESTConnection)aConnection
 {
-    [[NUDataTransferController defaultDataTransferController] hideDataTransfer];
+    if (typeof(NUDataTransferController) != "undefined")
+        [[NUDataTransferController defaultDataTransferController] hideDataTransfer];
 
     var url = [[[aConnection request] URL] absoluteString],
         HTTPMethod = [[aConnection request] HTTPMethod],
@@ -300,20 +302,20 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
             break;
 
         // multiple choice
-        case NURESTConnectionResponseCodeMoved:
-            var choices = [];
+        case NURESTConnectionResponseCodeMultipleChoices:
+            var availableChoices = [];
 
-            for (var i = 0; i < [responseObject.choices count]; i++)
-                [choices addObject:[[responseObject.choices objectAtIndex:i], nil]];
+            for (var i = 0; i < responseObject.choices.length; i++)
+                [availableChoices addObject:[responseObject.choices[i].label, nil]];
 
-            var alert = [TNAlert alertWithMessage:responseObject.title
+            var confirmAlert = [TNAlert alertWithMessage:responseObject.title
                                       informative:responseObject.description
                                            target:self
-                                          actions:choices];
+                                          actions:availableChoices];
 
-            [alert setUserInfo:{"connection": aConnection, "choices": choices}];
-            [alert setDelegate:self];
-            [alert runModal];
+            [confirmAlert setUserInfo:{"connection": aConnection, "choices": responseObject.choices}];
+            [confirmAlert setDelegate:self];
+            [confirmAlert runModal];
             break;
 
         // Not authorized
@@ -348,10 +350,11 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
     if (!selectedChoiceID)
         return;
 
-    [request setURL:[CPURL URLWithString:[[[aConnection request] URL] absoluteString] + "?responseChoice=" + selectedChoiceID]];
+    [request setURL:[CPURL URLWithString:[[[connection request] URL] absoluteString] + "?responseChoice=" + selectedChoiceID]];
 
-    [request setHTTPMethod:[[aConnection request] HTTPMethod]];
-    [[NUDataTransferController defaultDataTransferController] showDataTransfer];
+    [request setHTTPMethod:[[connection request] HTTPMethod]];
+    if (typeof(NUDataTransferController) != "undefined")
+        [[NUDataTransferController defaultDataTransferController] showDataTransfer];
     [connection setRequest:request];
     [connection reset];
     [connection start];

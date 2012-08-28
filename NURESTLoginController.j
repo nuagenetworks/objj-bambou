@@ -34,7 +34,7 @@
 
 
 @import <Foundation/CPURLConnection.j>
-
+@import "Resources/SHA1.js"
 
 var DefaultNURESTLoginController;
 
@@ -42,6 +42,7 @@ var DefaultNURESTLoginController;
 {
     CPString _user      @accessors(property=user);
     CPString _password  @accessors(property=password);
+    CPString _company   @accessors(property=company);
     CPString _URL       @accessors(property=URL);
 }
 
@@ -58,5 +59,11 @@ var DefaultNURESTLoginController;
     return token;
 }
 
+- (CPString)RESTAuthString
+{
+    var sha1pass = Sha1.hash(_password),
+        token = @"XREST " + btoa([CPString stringWithFormat:@"%s:%s", _user, sha1pass]);
+    return token;
+}
 
 @end

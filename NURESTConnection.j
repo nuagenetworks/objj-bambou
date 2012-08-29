@@ -36,6 +36,7 @@
 
 NURESTConnectionResponseCodeZero = 0;
 NURESTConnectionResponseCodeSuccess = 200;
+NURESTConnectionResponseCodeCreated = 201;
 NURESTConnectionResponseCodeEmpty = 204;
 NURESTConnectionResponseCodeNotFound = 404;
 NURESTConnectionResponseCodeInternalServerError = 500;

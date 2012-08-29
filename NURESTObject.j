@@ -283,6 +283,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
         // ok or empty
         case NURESTConnectionResponseCodeEmpty:
         case NURESTConnectionResponseCodeSuccess:
+        case NURESTConnectionResponseCodeCreated:
             [[aConnection internalUserInfo][0] performSelector:[aConnection internalUserInfo][1] withObject:aConnection];
             break;
 

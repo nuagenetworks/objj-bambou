@@ -267,6 +267,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 */
 - (void)_didReceiveRESTReply:(NURESTConnection)aConnection
 {
+    // @TODO, send a notification instead
     if (typeof(NUDataTransferController) != "undefined")
         [[NUDataTransferController defaultDataTransferController] hideDataTransfer];
 
@@ -289,8 +290,8 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 
         // resource not found
         case NURESTConnectionResponseCodeNotFound:
-            [TNAlert showAlertWithMessage:responseObject.title
-                              informative:responseObject.description
+            [TNAlert showAlertWithMessage:@"404 Error"
+                              informative:@"URL " + url + " not found."
                                     style:CPCriticalAlertStyle];
             break;
 

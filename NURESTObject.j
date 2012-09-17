@@ -335,7 +335,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
             var title = @"Unknown response code",
                 informative = @"The server send an unknown response code:  " + responseCode;
             [TNAlert showAlertWithMessage:title informative:informative style:CPCriticalAlertStyle];
-            CPLog.error(title + " : " + informative + " :" +[[aConnection responseData] JSONObject].status.detailedMessage);
+            CPLog.error(title + " : " + informative + " :" +[[aConnection responseData] rawString]);
     }
 }
 

@@ -296,6 +296,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
             break;
 
         // internal server error
+        case NURESTConnectionResponseCodeConflict:
         case NURESTConnectionResponseCodeInternalServerError:
             [TNAlert showAlertWithMessage:responseObject.title
                               informative:responseObject.description

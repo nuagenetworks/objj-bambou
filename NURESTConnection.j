@@ -39,6 +39,7 @@ NURESTConnectionResponseCodeSuccess = 200;
 NURESTConnectionResponseCodeCreated = 201;
 NURESTConnectionResponseCodeEmpty = 204;
 NURESTConnectionResponseCodeNotFound = 404;
+NURESTConnectionResponseCodeConflict = 409;
 NURESTConnectionResponseCodeInternalServerError = 500;
 NURESTConnectionResponseCodeServiceUnavailable = 503;
 NURESTConnectionResponseCodeUnauthorized = 401;

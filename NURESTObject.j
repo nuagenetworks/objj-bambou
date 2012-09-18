@@ -256,6 +256,8 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
                                                      selector:@selector(_didReceiveRESTReply:)];
     [connection setInternalUserInfo:[anObject, aSelector]];
     [connection setUserInfo:someUserInfo];
+
+    // @TODO: remove this and use a notification instead
     if (typeof(NUDataTransferController) != "undefined")
         [[NUDataTransferController defaultDataTransferController] showDataTransfer];
 
@@ -267,7 +269,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 */
 - (void)_didReceiveRESTReply:(NURESTConnection)aConnection
 {
-    // @TODO, send a notification instead
+    // @TODO: remove this and use a notification instead
     if (typeof(NUDataTransferController) != "undefined")
         [[NUDataTransferController defaultDataTransferController] hideDataTransfer];
 
@@ -356,8 +358,11 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
     [request setURL:[CPURL URLWithString:[[[connection request] URL] absoluteString] + "?responseChoice=" + selectedChoiceID]];
 
     [request setHTTPMethod:[[connection request] HTTPMethod]];
+
+    // @TODO: remove this and use a notification instead
     if (typeof(NUDataTransferController) != "undefined")
         [[NUDataTransferController defaultDataTransferController] showDataTransfer];
+
     [connection setRequest:request];
     [connection reset];
     [connection start];

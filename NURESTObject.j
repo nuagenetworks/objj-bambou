@@ -298,7 +298,6 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
             break;
 
         // internal server error
-        case NURESTConnectionResponseCodeConflict:
         case NURESTConnectionResponseCodeInternalServerError:
             [TNAlert showAlertWithMessage:responseObject.title
                               informative:responseObject.description
@@ -325,6 +324,12 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 
         // Not authorized
         case NURESTConnectionResponseCodeUnauthorized:
+            // in that case we just forward the connection to let login manager deal with it
+            [[aConnection internalUserInfo][0] performSelector:[aConnection internalUserInfo][1] withObject:aConnection];
+            break;
+
+        // Server Validation Error
+        case NURESTConnectionResponseCodeConflict:
             // in that case we just forward the connection to let login manager deal with it
             [[aConnection internalUserInfo][0] performSelector:[aConnection internalUserInfo][1] withObject:aConnection];
             break;
@@ -520,7 +525,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 - (void)_didPerformStandardOperation:(NURESTConnection)aConnection
 {
     if ([aConnection userInfo][0] && [aConnection userInfo][1]);
-        [[aConnection userInfo][0] performSelector:[aConnection userInfo][1] withObject:self];
+        [[aConnection userInfo][0] performSelector:[aConnection userInfo][1] withObject:self withObject:aConnection];
 }
 
 

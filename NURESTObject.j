@@ -65,11 +65,11 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
     {
         _restAttributes = [CPDictionary dictionary];
 
-        [self exposeLocalKeyPath:@"ID" toRESTKeyPath:@"id"];
-        [self exposeLocalKeyPath:@"parentID" toRESTKeyPath:@"parentId"];
-        [self exposeLocalKeyPath:@"parentType" toRESTKeyPath:@"parentType"];
-        [self exposeLocalKeyPath:@"owner" toRESTKeyPath:@"createdBy"];
-        [self exposeLocalKeyPath:@"creationDate" toRESTKeyPath:@"creationDate"];
+        [self exposeLocalKeyPathToREST:@"ID"];
+        [self exposeLocalKeyPathToREST:@"parentID"];
+        [self exposeLocalKeyPathToREST:@"parentType"];
+        [self exposeLocalKeyPathToREST:@"owner"];
+        [self exposeLocalKeyPathToREST:@"creationDate"];
     }
 
     return self;

@@ -1,24 +1,9 @@
 /*
-****************************************************************************
-*
 *   Filename:         NURESTConnection.j
-*
-*   Created:          Mon Apr  2 11:23:45 PST 2012
-*
-*   Description:      Cappuccino UI
-*
+*   Created:          Tue Oct  9 11:49:32 PDT 2012
+*   Author:           Antoine Mercadal <antoine.mercadal@alcatel-lucent.com>
+*   Description:      CNA Dashboard
 *   Project:          Cloud Network Automation - Nuage - Data Center Service Delivery - IPD
-*
-*
-***************************************************************************
-*
-*                 Source Control System Information
-*
-*   $Id: something $
-*
-*
-*
-****************************************************************************
 *
 * Copyright (c) 2011-2012 Alcatel, Alcatel-Lucent, Inc. All Rights Reserved.
 *
@@ -28,8 +13,6 @@
 *
 * Alcatel-Lucent is a trademark of Alcatel-Lucent, Inc.
 *
-*
-*****************************************************************************
 */
 
 @import <Foundation/CPURLConnection.j>

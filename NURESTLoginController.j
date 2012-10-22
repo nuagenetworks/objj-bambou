@@ -44,6 +44,7 @@ var DefaultNURESTLoginController;
 - (void)setPassword:(CPString)aPassword
 {
     _password = Sha1.hash(aPassword);
+    aPassword = nil;
 }
 
 @end

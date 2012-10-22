@@ -35,17 +35,15 @@ var DefaultNURESTLoginController;
     return DefaultNURESTLoginController;
 }
 
-- (CPString)authString
+- (CPString)RESTAuthString
 {
-    var token = @"Basic " + btoa([CPString stringWithFormat:@"%s:%s", _user, _password]);
+    var token = @"XREST " + btoa([CPString stringWithFormat:@"%s:%s", _user, _password]);
     return token;
 }
 
-- (CPString)RESTAuthString
+- (void)setPassword:(CPString)aPassword
 {
-    var sha1pass = Sha1.hash(_password),
-        token = @"XREST " + btoa([CPString stringWithFormat:@"%s:%s", _user, sha1pass]);
-    return token;
+    _password = Sha1.hash(aPassword);
 }
 
 @end

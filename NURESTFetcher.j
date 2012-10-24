@@ -33,15 +33,31 @@
 
 - (void)fetchObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self fetchObjectsAndCallSelector:aSelector ofObject:anObject userInfo:nil];
+    [self fetchObjectsMatchingFilter:nil andCallSelector:aSelector ofObject:anObject userInfo:nil];
 }
 
-- (void)fetchObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject userInfo:(id)someUserInfo
+- (void)fetchObjectsMatchingFilter:(id)aFilter andCallSelector:(SEL)aSelector ofObject:(id)anObject
+{
+    [self fetchObjectsMatchingFilter:aFilter andCallSelector:aSelector ofObject:anObject userInfo:nil];
+}
+
+- (void)fetchObjectsMatchingFilter:(id)aFilter andCallSelector:(SEL)aSelector ofObject:(id)anObject userInfo:(id)someUserInfo
 {
     var request = [CPURLRequest requestWithURL:[CPURL URLWithString:_restName relativeToURL:[_entity RESTQueryURL]]],
         someUserInfo = (aSelector && anObject) ? [anObject, aSelector, someUserInfo] : nil;
 
     [request setHTTPMethod:@"GET"];
+
+    if ([aFilter isKindOfClass:CPPredicate])
+    {
+        [request setValue:@"predicate" forHTTPHeaderField:@"X-Nuage-FilterType"];
+        [request setValue:[aFilter predicateFormat] forHTTPHeaderField:@"X-Nuage-Filter"];
+    }
+    else if ([aFilter isKindOfClass:CPString])
+    {
+        [request setValue:@"plain" forHTTPHeaderField:@"X-Nuage-FilterType"];
+        [request setValue:aFilter forHTTPHeaderField:@"X-Nuage-Filter"];
+    }
 
     [_entity sendRESTCall:request andPerformSelector:@selector(_didFetchObjects:) ofObject:self userInfo:someUserInfo];
 }

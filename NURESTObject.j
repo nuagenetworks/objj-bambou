@@ -280,6 +280,13 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
                                     style:CPCriticalAlertStyle];
             break;
 
+        case NURESTConnectionResponseCodePreconditionFailed:
+            [TNAlert showAlertWithMessage:@"412 Error"
+                              informative:@"Header precondition failed. Please report this error back."
+                                    style:CPCriticalAlertStyle];
+            [[aConnection internalUserInfo][0] performSelector:[aConnection internalUserInfo][1] withObject:aConnection];
+            break;
+
         // internal server error
         case NURESTConnectionResponseCodeInternalServerError:
             [TNAlert showAlertWithMessage:responseObject.title

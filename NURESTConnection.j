@@ -26,6 +26,7 @@ NURESTConnectionResponseCodeConflict = 409;
 NURESTConnectionResponseCodeInternalServerError = 500;
 NURESTConnectionResponseCodeServiceUnavailable = 503;
 NURESTConnectionResponseCodeUnauthorized = 401;
+NURESTConnectionResponseCodePreconditionFailed = 412;
 NURESTConnectionResponseCodePermissionDenied = 403;
 NURESTConnectionResponseCodeMultipleChoices = 300;
 
@@ -113,7 +114,6 @@ NURESTConnectionResponseCodeMultipleChoices = 300;
             _HTTPRequest.setRequestHeader("X-Nuage-Organization", [[NURESTLoginController defaultController] company]);
             _HTTPRequest.setRequestHeader("Authorization", [[NURESTLoginController defaultController] RESTAuthString]);
         }
-
 
         _HTTPRequest.send([_request HTTPBody]);
     }

@@ -34,18 +34,18 @@ NURESTConnectionResponseCodeMultipleChoices = 300;
 */
 @implementation NURESTConnection : CPObject
 {
+    BOOL            _usesAuthentication     @accessors(property=usesAuthentication);
     CPData          _responseData           @accessors(getter=responseData);
+    CPString        _errorMessage           @accessors(property=errorMessage);
     CPURLRequest    _request                @accessors(property=request);
+    HTTPRequest     _HTTPRequest            @accessors(getter=nativeRequest);
+    id              _internalUserInfo       @accessors(property=internalUserInfo);
     id              _target                 @accessors(property=target);
     id              _userInfo               @accessors(property=userInfo);
-    id              _internalUserInfo       @accessors(property=internalUserInfo);
     int             _responseCode           @accessors(getter=responseCode);
     SEL             _selector               @accessors(property=selector);
-    CPString        _errorMessage           @accessors(property=errorMessage);
-    BOOL            _usesAuthentication     @accessors(property=usesAuthentication);
 
     BOOL            _isCanceled;
-    HTTPRequest     _HTTPRequest;
 }
 
 

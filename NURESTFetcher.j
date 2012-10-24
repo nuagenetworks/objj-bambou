@@ -20,10 +20,16 @@
 
 @implementation NURESTFetcher : CPObject
 {
-    CPObject    _entity      @accessors(property=entity);
+    CPNumber    _totalCount             @accessors(property=totalCount);
+    CPObject    _entity                 @accessors(property=entity);
 
-    CPString    _destinationKeyPath;
     CPArray     _restName;
+    CPString    _destinationKeyPath;
+}
+
+- (void)flush
+{
+    [[_entity valueForKey:_destinationKeyPath] removeAllObjects];
 }
 
 - (void)newObject
@@ -33,31 +39,23 @@
 
 - (void)fetchObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self fetchObjectsMatchingFilter:nil andCallSelector:aSelector ofObject:anObject userInfo:nil];
+    [self fetchObjectsMatchingFilter:nil page:nil andCallSelector:aSelector ofObject:anObject];
 }
 
-- (void)fetchObjectsMatchingFilter:(id)aFilter andCallSelector:(SEL)aSelector ofObject:(id)anObject
-{
-    [self fetchObjectsMatchingFilter:aFilter andCallSelector:aSelector ofObject:anObject userInfo:nil];
-}
-
-- (void)fetchObjectsMatchingFilter:(id)aFilter andCallSelector:(SEL)aSelector ofObject:(id)anObject userInfo:(id)someUserInfo
+- (void)fetchObjectsMatchingFilter:(id)aFilter page:(CPNumber)aPage andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
     var request = [CPURLRequest requestWithURL:[CPURL URLWithString:_restName relativeToURL:[_entity RESTQueryURL]]],
-        someUserInfo = (aSelector && anObject) ? [anObject, aSelector, someUserInfo] : nil;
+        someUserInfo = (aSelector && anObject) ? [anObject, aSelector] : nil;
 
     [request setHTTPMethod:@"GET"];
 
     if ([aFilter isKindOfClass:CPPredicate])
-    {
-        [request setValue:@"predicate" forHTTPHeaderField:@"X-Nuage-FilterType"];
         [request setValue:[aFilter predicateFormat] forHTTPHeaderField:@"X-Nuage-Filter"];
-    }
     else if ([aFilter isKindOfClass:CPString])
-    {
-        [request setValue:@"plain" forHTTPHeaderField:@"X-Nuage-FilterType"];
         [request setValue:aFilter forHTTPHeaderField:@"X-Nuage-Filter"];
-    }
+
+    if (aPage !== nil)
+        [request setValue:aPage forHTTPHeaderField:@"X-Nuage-Page"];
 
     [_entity sendRESTCall:request andPerformSelector:@selector(_didFetchObjects:) ofObject:self userInfo:someUserInfo];
 }
@@ -69,7 +67,7 @@
     var JSONObject = [[aConnection responseData] JSONObject],
         dest = [_entity valueForKey:_destinationKeyPath];
 
-    [dest removeAllObjects];
+    _totalCount = [aConnection nativeRequest].getResponseHeader("X-Nuage-Count") || -1;
 
     for (var i = 0; i < [JSONObject count]; i++)
     {
@@ -79,7 +77,12 @@
     }
 
     if ([aConnection userInfo])
-        [[aConnection userInfo][0] performSelector:[aConnection userInfo][1] withObject:_entity withObject:[aConnection userInfo][2] ? [aConnection userInfo][2] : dest];
+    {
+        var target = [aConnection userInfo][0],
+            selector = [aConnection userInfo][1];
+
+        [target performSelector:selector withObjects:self, _entity, dest];
+    }
 }
 
 @end

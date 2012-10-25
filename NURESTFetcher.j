@@ -65,7 +65,8 @@
 - (void)_didFetchObjects:(CPURLConnection)aConnection
 {
     var JSONObject = [[aConnection responseData] JSONObject],
-        dest = [_entity valueForKey:_destinationKeyPath];
+        dest = [_entity valueForKey:_destinationKeyPath],
+        newlyFetchedObjects = [CPArray array];
 
     _totalCount = [aConnection nativeRequest].getResponseHeader("X-Nuage-Count") || -1;
 
@@ -74,6 +75,7 @@
         var newObject = [self newObject];
         [newObject objectFromJSON:JSONObject[i]];
         [dest addObject:newObject];
+        [newlyFetchedObjects addObject:newObject];
     }
 
     if ([aConnection userInfo])
@@ -81,7 +83,7 @@
         var target = [aConnection userInfo][0],
             selector = [aConnection userInfo][1];
 
-        [target performSelector:selector withObjects:self, _entity, dest];
+        [target performSelector:selector withObjects:self, _entity, newlyFetchedObjects];
     }
 }
 

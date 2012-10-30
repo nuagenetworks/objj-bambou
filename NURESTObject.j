@@ -289,8 +289,8 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 
         // internal server error
         case NURESTConnectionResponseCodeInternalServerError:
-            [TNAlert showAlertWithMessage:responseObject.title
-                              informative:responseObject.description
+            [TNAlert showAlertWithMessage:responseObject.errors[0].descriptions[0].title
+                              informative:responseObject.errors[0].descriptions[0].description
                                     style:CPCriticalAlertStyle];
             CPLog.error("Stack Trace (%@): %@", responseObject.internalErrorCode, responseObject.stackTrace);
             break;

@@ -68,7 +68,7 @@
         dest = [_entity valueForKey:_destinationKeyPath],
         newlyFetchedObjects = [CPArray array];
 
-    _totalCount = [aConnection nativeRequest].getResponseHeader("X-Nuage-Count") || -1;
+    _totalCount = parseInt([aConnection nativeRequest].getResponseHeader("X-Nuage-Count"));
 
     for (var i = 0; i < [JSONObject count]; i++)
     {

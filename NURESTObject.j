@@ -47,6 +47,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
     if (self = [super init])
     {
         _restAttributes = [CPDictionary dictionary];
+        _localID = [CPString UUID];
 
         [self exposeLocalKeyPathToREST:@"ID"];
         [self exposeLocalKeyPathToREST:@"parentID"];
@@ -154,6 +155,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 {
     return "<" + [self className] + "> " + [self ID];
 }
+
 
 #pragma mark -
 #pragma mark Key Value Coding

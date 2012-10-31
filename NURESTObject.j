@@ -277,9 +277,18 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 
         // resource not found
         case NURESTConnectionResponseCodeNotFound:
-            [TNAlert showAlertWithMessage:@"404 Error"
-                              informative:@"URL " + url + " not found."
-                                    style:CPCriticalAlertStyle];
+            if (responseObject.errors)
+            {
+                [TNAlert showAlertWithMessage:responseObject.errors[0].descriptions[0].title
+                                  informative:responseObject.errors[0].descriptions[0].description
+                                        style:CPCriticalAlertStyle];
+            }
+            else
+            {
+                [TNAlert showAlertWithMessage:@"404 Error"
+                                  informative:@"URL " + url + " not found."
+                                        style:CPCriticalAlertStyle];
+            }
             break;
 
         case NURESTConnectionResponseCodePreconditionFailed:

@@ -22,6 +22,7 @@
 {
     CPNumber    _totalCount             @accessors(property=totalCount);
     CPObject    _entity                 @accessors(property=entity);
+    CPString    _orderedBy;
 
     CPArray     _restName;
     CPString    _destinationKeyPath;
@@ -75,6 +76,7 @@
         newlyFetchedObjects = [CPArray array];
 
     _totalCount = parseInt([aConnection nativeRequest].getResponseHeader("X-Nuage-Count"));
+    _orderedBy = [aConnection nativeRequest].getResponseHeader("X-Nuage-OrderBy");
 
     for (var i = 0; i < [JSONObject count]; i++)
     {
@@ -98,4 +100,24 @@
     }
 
 }
+
+- (CPArray)latestSortDescriptors
+{
+    if (!_orderedBy)
+        return;
+
+    var descriptors = [CPArray array],
+        elements = _orderedBy.split(",");
+
+    for (var i = 0; i < [elements count]; i++)
+    {
+        var tokens = elements[i].split(" "),
+            descriptor = [CPSortDescriptor sortDescriptorWithKey:tokens[0]  ascending:(tokens[1] == "ASC")];
+
+        [descriptors addObject:descriptor];
+    }
+
+    return descriptors;
+}
+
 @end

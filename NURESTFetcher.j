@@ -64,6 +64,12 @@
 */
 - (void)_didFetchObjects:(CPURLConnection)aConnection
 {
+    if ([aConnection responseCode] != 200)
+    {
+        [self _sendContent:[] usingConnectionInfo:[aConnection userInfo]];
+        return;
+    }
+
     var JSONObject = [[aConnection responseData] JSONObject],
         dest = [_entity valueForKey:_destinationKeyPath],
         newlyFetchedObjects = [CPArray array];
@@ -78,13 +84,18 @@
         [newlyFetchedObjects addObject:newObject];
     }
 
-    if ([aConnection userInfo])
-    {
-        var target = [aConnection userInfo][0],
-            selector = [aConnection userInfo][1];
-
-        [target performSelector:selector withObjects:self, _entity, newlyFetchedObjects];
-    }
+    [self _sendContent:newlyFetchedObjects usingConnectionInfo:[aConnection userInfo]];
 }
 
+- (void)_sendContent:(CPArray)someContent usingConnectionInfo:(id)someInfo
+{
+    if (someInfo)
+    {
+        var target = someInfo[0],
+            selector = someInfo[1];
+
+        [target performSelector:selector withObjects:self, _entity, someContent];
+    }
+
+}
 @end

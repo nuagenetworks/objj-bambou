@@ -277,17 +277,18 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 
         // resource not found
         case NURESTConnectionResponseCodeNotFound:
-            if (responseObject.errors)
+            if (responseObject && responseObject.errors)
             {
                 [TNAlert showAlertWithMessage:responseObject.errors[0].descriptions[0].title
-                                  informative:responseObject.errors[0].descriptions[0].description
-                                        style:CPCriticalAlertStyle];
+                                                  informative:responseObject.errors[0].descriptions[0].description
+                                                        style:CPCriticalAlertStyle];
             }
             else
             {
-                [TNAlert showAlertWithMessage:@"404 Error"
-                                  informative:@"URL " + url + " not found."
-                                        style:CPCriticalAlertStyle];
+                // [TNAlert showAlertWithMessage:@"404 Error"
+                //                   informative:@"URL " + url + " not found."
+                //                         style:CPCriticalAlertStyle];
+                [[aConnection internalUserInfo][0] performSelector:[aConnection internalUserInfo][1] withObject:aConnection];
             }
             break;
 
@@ -313,8 +314,8 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
             for (var i = 0; i < responseObject.choices.length; i++)
                 [availableChoices addObject:[responseObject.choices[i].label, nil]];
 
-            var confirmAlert = [TNAlert alertWithMessage:responseObject.title
-                                      informative:responseObject.description
+            var confirmAlert = [TNAlert alertWithMessage:responseObject.errors[0].descriptions[0].title
+                                      informative:responseObject.errors[0].descriptions[0].description
                                            target:self
                                           actions:availableChoices];
 
@@ -325,7 +326,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 
         // Not authorized
         case NURESTConnectionResponseCodeUnauthorized:
-            // in that case we just forward the connection to let login manager deal with it
+            // in that case we just forward the connection to let traget deal with it
             [[aConnection internalUserInfo][0] performSelector:[aConnection internalUserInfo][1] withObject:aConnection];
             break;
 

@@ -20,9 +20,10 @@
 
 @implementation NURESTFetcher : CPObject
 {
+    CPNumber    _latestLoadedPage       @accessors(property=latestLoadedPage);
+    CPNumber    _pageSize               @accessors(property=pageSize);
     CPNumber    _totalCount             @accessors(property=totalCount);
     CPObject    _entity                 @accessors(property=entity);
-    CPNumber    _pageSize               @accessors(property=pageSize);
 
     CPString    _orderedBy;
     CPArray     _restName;
@@ -77,8 +78,9 @@
         newlyFetchedObjects = [CPArray array];
 
     _totalCount = parseInt([aConnection nativeRequest].getResponseHeader("X-Nuage-Count"));
-    _orderedBy = [aConnection nativeRequest].getResponseHeader("X-Nuage-OrderBy");
     _pageSize = parseInt([aConnection nativeRequest].getResponseHeader("X-Nuage-PageSize"));
+    _latestLoadedPage = parseInt([aConnection nativeRequest].getResponseHeader("X-Nuage-Page"));
+    _orderedBy = [aConnection nativeRequest].getResponseHeader("X-Nuage-OrderBy");
 
     for (var i = 0; i < [JSONObject count]; i++)
     {

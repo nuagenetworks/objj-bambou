@@ -22,8 +22,9 @@
 {
     CPNumber    _totalCount             @accessors(property=totalCount);
     CPObject    _entity                 @accessors(property=entity);
-    CPString    _orderedBy;
+    CPNumber    _pageSize               @accessors(property=pageSize);
 
+    CPString    _orderedBy;
     CPArray     _restName;
     CPString    _destinationKeyPath;
 }
@@ -67,7 +68,7 @@
 {
     if ([aConnection responseCode] != 200)
     {
-        [self _sendContent:[] usingConnectionInfo:[aConnection userInfo]];
+        //[self _sendContent:[] usingConnectionInfo:[aConnection userInfo]];
         return;
     }
 
@@ -77,6 +78,7 @@
 
     _totalCount = parseInt([aConnection nativeRequest].getResponseHeader("X-Nuage-Count"));
     _orderedBy = [aConnection nativeRequest].getResponseHeader("X-Nuage-OrderBy");
+    _pageSize = parseInt([aConnection nativeRequest].getResponseHeader("X-Nuage-PageSize"));
 
     for (var i = 0; i < [JSONObject count]; i++)
     {

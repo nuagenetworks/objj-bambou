@@ -32,8 +32,10 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
     CPString        _owner              @accessors(property=owner);
     CPString        _parentID           @accessors(property=parentID);
     CPString        _parentType         @accessors(property=parentType);
+    // BOOL            _modified           @accessors(getter=isModified, setter=setModified:);
 
     CPDictionary    _restAttributes     @accessors(property=RESTAttributes);
+    CPArray         _bindableAttributes @accessors(property=bindableAttributes);
 }
 
 
@@ -47,6 +49,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
     if (self = [super init])
     {
         _restAttributes = [CPDictionary dictionary];
+        _bindableAttributes = [CPArray array];
         _localID = [CPString UUID];
 
         [self exposeLocalKeyPathToREST:@"ID"];
@@ -83,6 +86,8 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 */
 - (void)exposeLocalKeyPath:(CPString)aKeyPath toRESTKeyPath:(CPString)aRestKeyPath
 {
+    // [self addObserver:self forKeyPath:aKeyPath options:nil context:nil];
+
     [_restAttributes setObject:aRestKeyPath forKey:aKeyPath];
 }
 
@@ -93,6 +98,16 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 - (void)exposeLocalKeyPathToREST:(CPString)aKeyPath
 {
     [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath];
+}
+
+- (void)exposeBindableAttribute:(CPString)aKeyPath
+{
+    [_bindableAttributes addObject:aKeyPath];
+}
+
+- (void)bindableAttributes
+{
+    return [[_restAttributes allKeys] arrayByAddingObjectsFromArray:_bindableAttributes];
 }
 
 /*! Build current object with given JSONObject
@@ -159,6 +174,14 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 
 #pragma mark -
 #pragma mark Key Value Coding
+
+// - (void)observeValueForKeyPath:(CPString)keyPath ofObject:(id)object change:(CPDictionary)change context:(id)aContext
+// {
+//     if (object !== self)
+//         return;
+//
+//     [self setModified:YES];
+// }
 
 - (id)valueForUndefinedKey:(CPString)aKey
 {
@@ -540,11 +563,12 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 {
     if (self = [super init])
     {
-        _restAttributes = [aCoder decodeObjectForKey:@"_restAttributes"];
-        _ID             = [aCoder decodeObjectForKey:@"_ID"];
-        _localID        = [aCoder decodeObjectForKey:@"_localID"];
-        _parentID       = [aCoder decodeObjectForKey:@"_parentID"];
-        _parentType     = [aCoder decodeObjectForKey:@"_parentType"];
+        _restAttributes     = [aCoder decodeObjectForKey:@"_restAttributes"];
+        _bindableAttributes = [aCoder decodeObjectForKey:@"_bindableAttributes"];
+        _ID                 = [aCoder decodeObjectForKey:@"_ID"];
+        _localID            = [aCoder decodeObjectForKey:@"_localID"];
+        _parentID           = [aCoder decodeObjectForKey:@"_parentID"];
+        _parentType         = [aCoder decodeObjectForKey:@"_parentType"];
 
     }
 
@@ -556,6 +580,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [aCoder encodeObject:_restAttributes forKey:@"_restAttributes"];
+    [aCoder encodeObject:_bindableAttributes forKey:@"_bindableAttributes"];
     [aCoder encodeObject:_ID forKey:@"_ID"];
     [aCoder encodeObject:_localID forKey:@"_localID"];
     [aCoder encodeObject:_parentID forKey:@"_parentID"];

@@ -560,7 +560,6 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
         _parentID           = [aCoder decodeObjectForKey:@"_parentID"];
         _parentType         = [aCoder decodeObjectForKey:@"_parentType"];
         _validationMessage  = [aCoder decodeObjectForKey:@"_validationMessage"];
-
     }
 
     return self;

@@ -170,6 +170,11 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 }
 
 
+- (CPString)RESTName
+{
+    return [[self class] RESTName];
+}
+
 #pragma mark -
 #pragma mark Key Value Coding
 

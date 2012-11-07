@@ -86,6 +86,7 @@
     {
         var newObject = [self newObject];
         [newObject objectFromJSON:JSONObject[i]];
+        [newObject setParentObject:_entity];
         [dest addObject:newObject];
         [newlyFetchedObjects addObject:newObject];
     }

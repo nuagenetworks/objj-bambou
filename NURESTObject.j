@@ -36,6 +36,8 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 
     CPDictionary    _restAttributes     @accessors(property=RESTAttributes);
     CPArray         _bindableAttributes @accessors(property=bindableAttributes);
+
+    NURESTObject    _parentObject       @accessors(property=parentObject);
 }
 
 
@@ -565,6 +567,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
         _parentID           = [aCoder decodeObjectForKey:@"_parentID"];
         _parentType         = [aCoder decodeObjectForKey:@"_parentType"];
         _validationMessage  = [aCoder decodeObjectForKey:@"_validationMessage"];
+        _parentObject       = [aCoder decodeObjectForKey:@"_parentObject"];
     }
 
     return self;
@@ -581,6 +584,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
     [aCoder encodeObject:_parentID forKey:@"_parentID"];
     [aCoder encodeObject:_parentType forKey:@"_parentType"];
     [aCoder encodeObject:_validationMessage forKey:@"_validationMessage"];
+    [aCoder encodeObject:_parentObject forKey:@"_parentObject"];
 }
 
 @end

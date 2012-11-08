@@ -385,6 +385,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
     [request setURL:[CPURL URLWithString:[[[connection request] URL] absoluteString] + "?responseChoice=" + selectedChoiceID]];
     [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
     [request setHTTPMethod:[[connection request] HTTPMethod]];
+    [request setHTTPBody:[[connection request] HTTPBody]];
 
     // @TODO: remove this and use a notification instead
     if (typeof(NUDataTransferController) != "undefined")

@@ -383,7 +383,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
         return;
 
     [request setURL:[CPURL URLWithString:[[[connection request] URL] absoluteString] + "?responseChoice=" + selectedChoiceID]];
-
+    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
     [request setHTTPMethod:[[connection request] HTTPMethod]];
 
     // @TODO: remove this and use a notification instead

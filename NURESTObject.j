@@ -278,6 +278,16 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
     if (typeof(NUDataTransferController) != "undefined")
         [[NUDataTransferController defaultDataTransferController] hideDataTransfer];
 
+    if ([aConnection hasTimeouted])
+    {
+        CPLog.error("Connection timeouted. Sending NURESTConnectionFailureNotification notification and exiting.");
+        [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConnectionFailureNotification
+                                                    object:self
+                                                 userInfo:aConnection];
+         return;
+    }
+
+
     var url = [[[aConnection request] URL] absoluteString],
         HTTPMethod = [[aConnection request] HTTPMethod],
         responseObject = [[aConnection responseData] JSONObject],
@@ -358,7 +368,10 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 
         // XMLHTTPREQUEST error
         case NURESTConnectionResponseCodeZero:
-            // do nothing.
+            CPLog.error("Connection error with code 0. Sending NURESTConnectionFailureNotification notification and exiting.");
+            [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConnectionFailureNotification
+                                                        object:self
+                                                     userInfo:nil];
             break;
 
         default:

@@ -29,12 +29,17 @@ NURESTConnectionResponseCodeUnauthorized = 401;
 NURESTConnectionResponseCodePreconditionFailed = 412;
 NURESTConnectionResponseCodePermissionDenied = 403;
 NURESTConnectionResponseCodeMultipleChoices = 300;
+NURESTConnectionTimeout = 42;
+
+NURESTConnectionFailureNotification = @"NURESTConnectionFailureNotification";
+
 
 /*! Enhanced version of CPURLConnection
 */
 @implementation NURESTConnection : CPObject
 {
     BOOL            _usesAuthentication     @accessors(property=usesAuthentication);
+    BOOL            _hasTimeouted           @accessors(getter=hasTimeouted);
     CPData          _responseData           @accessors(getter=responseData);
     CPString        _errorMessage           @accessors(property=errorMessage);
     CPURLRequest    _request                @accessors(property=request);
@@ -44,6 +49,7 @@ NURESTConnectionResponseCodeMultipleChoices = 300;
     id              _userInfo               @accessors(property=userInfo);
     int             _responseCode           @accessors(getter=responseCode);
     SEL             _selector               @accessors(property=selector);
+    int             _XHRTimeout             @accessors(property=timeout);
 
     BOOL            _isCanceled;
 }
@@ -83,7 +89,9 @@ NURESTConnectionResponseCodeMultipleChoices = 300;
     {
         _request = aRequest;
         _isCanceled = NO;
+        _hasTimeouted = NO;
         _usesAuthentication = YES;
+        _XHRTimeout = 5000;
         _HTTPRequest = new CFHTTPRequest();
     }
 
@@ -95,12 +103,15 @@ NURESTConnectionResponseCodeMultipleChoices = 300;
 - (void)start
 {
     _isCanceled = NO;
+    _hasTimeouted = NO;
 
     try
     {
         _HTTPRequest.open([_request HTTPMethod], [[_request URL] absoluteString], YES);
 
+        _HTTPRequest._nativeRequest.timeout = _XHRTimeout;
         _HTTPRequest.onreadystatechange = function() { [self _readyStateDidChange]; }
+        _HTTPRequest._nativeRequest.ontimeout = function() { [self _XHRDidTimeout]; }
 
         var fields = [_request allHTTPHeaderFields],
             key = nil,
@@ -156,6 +167,16 @@ NURESTConnectionResponseCodeMultipleChoices = 300;
 
         [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
     }
+}
+
+- (void)_XHRDidTimeout
+{
+    _hasTimeouted = YES;
+
+    if (_target && _selector)
+        [_target performSelector:_selector withObject:self];
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
 @end

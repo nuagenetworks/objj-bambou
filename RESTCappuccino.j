@@ -19,3 +19,4 @@
 @import "NURESTFetcher.j"
 @import "NURESTLoginController.j"
 @import "NURESTObject.j"
+@import "NURESTPushCenter.j"

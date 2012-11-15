@@ -256,6 +256,9 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 */
 - (void)sendRESTCall:(CPURLRequest)aRequest andPerformSelector:(SEL)aSelector ofObject:(id)anObject userInfo:(id)someUserInfo
 {
+    // be sure to set the content-type as application/json
+    [aRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+
     var connection = [NURESTConnection connectionWithRequest:aRequest
                                                      target:self
                                                      selector:@selector(_didReceiveRESTReply:)];
@@ -498,7 +501,6 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
         body = [anEntity objectToJSON];
 
     [URLRequest setHTTPMethod:aMethod];
-    [URLRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
     [URLRequest setHTTPBody:body];
 
     CPLog.debug("Sending method %s to URL %s: %s ", aMethod, [URLRequest URL], body);
@@ -522,7 +524,6 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
         body = JSON.stringify(IDsList);
 
     [URLRequest setHTTPMethod:@"PUT"];
-    [URLRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
     [URLRequest setHTTPBody:body];
 
     CPLog.debug("Sending method PUT to URL %s: %s ", [URLRequest URL], body);

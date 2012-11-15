@@ -47,4 +47,10 @@ var DefaultNURESTLoginController;
     aPassword = nil;
 }
 
+- (void)setPasswordHash:(CPString)aHash
+{
+    _password = aHash;
+    aPassword = nil;
+}
+
 @end

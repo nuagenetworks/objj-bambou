@@ -24,10 +24,9 @@
     CPNumber    _pageSize               @accessors(property=pageSize);
     CPNumber    _totalCount             @accessors(property=totalCount);
     CPObject    _entity                 @accessors(property=entity);
-
+    CPArray     _restName               @accessors(property=restName);
+    CPString    _destinationKeyPath     @accessors(property=destinationKeyPath);
     CPString    _orderedBy;
-    CPArray     _restName;
-    CPString    _destinationKeyPath;
 }
 
 - (void)flush

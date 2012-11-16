@@ -25,6 +25,7 @@ NUPushEventTypeCreate = @"CREATE";
 NUPushEventTypeUpdate = @"UPDATE";
 NUPushEventTypeDelete = @"DELETE";
 NUPushEventTypeRevoke = @"REVOKE";
+NUPushEventTypeGrant  = @"GRANT";
 
 var NURESTPushCenterDefault,
     NURESTPushCenterConnectionRetryDelay = 5000,

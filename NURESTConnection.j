@@ -32,6 +32,9 @@ NURESTConnectionResponseCodeMultipleChoices = 300;
 NURESTConnectionTimeout = 42;
 
 NURESTConnectionFailureNotification = @"NURESTConnectionFailureNotification";
+NURESTConnectionIdleTimeout = @"NURESTConnectionIdleTimeout";
+
+var NURESTObjectLastActionTimer;
 
 
 /*! Enhanced version of CPURLConnection
@@ -40,6 +43,7 @@ NURESTConnectionFailureNotification = @"NURESTConnectionFailureNotification";
 {
     BOOL            _usesAuthentication     @accessors(property=usesAuthentication);
     BOOL            _hasTimeouted           @accessors(getter=hasTimeouted);
+    BOOL            _ignoreRequestIdle      @accessors(property=ignoreRequestIdle);
     CPData          _responseData           @accessors(getter=responseData);
     CPString        _errorMessage           @accessors(property=errorMessage);
     CPURLRequest    _request                @accessors(property=request);
@@ -92,6 +96,7 @@ NURESTConnectionFailureNotification = @"NURESTConnectionFailureNotification";
         _hasTimeouted = NO;
         _usesAuthentication = YES;
         _XHRTimeout = 5000;
+        _ignoreRequestIdle = NO;
         _HTTPRequest = new CFHTTPRequest();
     }
 
@@ -104,6 +109,19 @@ NURESTConnectionFailureNotification = @"NURESTConnectionFailureNotification";
 {
     _isCanceled = NO;
     _hasTimeouted = NO;
+
+    if (!_ignoreRequestIdle)
+    {
+        if (NURESTObjectLastActionTimer)
+            clearTimeout(NURESTObjectLastActionTimer);
+
+        NURESTObjectLastActionTimer = setTimeout(function(){
+            console.warn("Connection idle timer run off!")
+            [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConnectionIdleTimeout
+                                                                object:nil
+                                                             userInfo:nil];
+        }, 1200000);
+    }
 
     try
     {

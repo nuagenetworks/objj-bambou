@@ -116,6 +116,7 @@ _DEBUG_NUMBER_OF_RECEIVED_EVENTS_ = 0;
     _currentConnectionTrialNumber++;
     _currentConnexion = [NURESTConnection connectionWithRequest:request target:self selector:@selector(_didReceiveAliveCheckResponse:)];
     [_currentConnexion setTimeout:0];
+    [_currentConnexion setIgnoreRequestIdle:YES];
     [_currentConnexion start];
 }
 
@@ -172,6 +173,7 @@ _DEBUG_NUMBER_OF_RECEIVED_EVENTS_ = 0;
 
     _currentConnexion = [NURESTConnection connectionWithRequest:request target:self selector:@selector(_didReceiveEvent:)];
     [_currentConnexion setTimeout:0];
+    [_currentConnexion setIgnoreRequestIdle:YES];
     [_currentConnexion start];
 }
 

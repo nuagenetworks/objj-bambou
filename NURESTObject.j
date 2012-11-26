@@ -21,6 +21,7 @@ NURESTObjectStatusTypeSuccess   = @"SUCCESS";
 NURESTObjectStatusTypeWarning   = @"WARNING";
 NURESTObjectStatusTypeFailed    = @"FAILED";
 
+
 /*!
     Basic object with REST saving/fetching utilities
 */

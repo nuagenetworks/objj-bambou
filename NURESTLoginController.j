@@ -53,4 +53,9 @@ var DefaultNURESTLoginController;
     aPassword = nil;
 }
 
+- (BOOL)validateCurrentPassword:(CPString)aPassword
+{
+    return Sha1.hash(aPassword) == _password;
+}
+
 @end

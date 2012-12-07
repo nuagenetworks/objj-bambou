@@ -209,7 +209,7 @@ _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ = 0;
             CPLog.debug(" >>> Received event from server: " + [[aConnection responseData] rawString]);
             _DEBUG_NUMBER_OF_RECEIVED_EVENTS_ += numberOfIndividualEvents;
             _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_++;
-            console.warn("EVENT ("+ _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ +"): " + _DEBUG_NUMBER_OF_RECEIVED_EVENTS_ + " - latest push contains " + numberOfIndividualEvents + " event(s)");
+            CPLog.warn("__DEBUG__EVENT__ (PUSH # %d, total events: %d): latest push contains %d event(s)", _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_, _DEBUG_NUMBER_OF_RECEIVED_EVENTS_, numberOfIndividualEvents);
 
             [[CPNotificationCenter defaultCenter] postNotificationName:NURESTPushCenterPushReceived object:self userInfo:JSONObject];
         }

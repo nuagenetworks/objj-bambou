@@ -32,6 +32,7 @@ var NURESTPushCenterDefault,
     NURESTPushCenterConnectionMaxTrials = 10;
 
 _DEBUG_NUMBER_OF_RECEIVED_EVENTS_ = 0;
+_DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ = 0;
 
 /*! This is the default push center
     Use it by calling [NURESTPushCenter defaultCenter];
@@ -207,7 +208,8 @@ _DEBUG_NUMBER_OF_RECEIVED_EVENTS_ = 0;
         {
             CPLog.debug(" >>> Received event from server: " + [[aConnection responseData] rawString]);
             _DEBUG_NUMBER_OF_RECEIVED_EVENTS_ += numberOfIndividualEvents;
-            console.warn("_DEBUG_NUMBER_OF_RECEIVED_EVENTS_: " + _DEBUG_NUMBER_OF_RECEIVED_EVENTS_ + " - latest push contains " + numberOfIndividualEvents + " event(s)");
+            _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_++;
+            console.warn("EVENT ("+ _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ +"): " + _DEBUG_NUMBER_OF_RECEIVED_EVENTS_ + " - latest push contains " + numberOfIndividualEvents + " event(s)");
 
             [[CPNotificationCenter defaultCenter] postNotificationName:NURESTPushCenterPushReceived object:self userInfo:JSONObject];
         }

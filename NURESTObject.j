@@ -328,13 +328,20 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 
         case NURESTConnectionResponseCodePreconditionFailed:
             [TNAlert showAlertWithMessage:@"412 Error"
-                              informative:@"Header precondition failed. Please report this error back."
+                              informative:@"Header precondition failed for " + url + ". Please report this error back."
                                     style:CPCriticalAlertStyle];
             [[aConnection internalUserInfo][0] performSelector:[aConnection internalUserInfo][1] withObject:aConnection];
             break;
 
-        // internal server error
+        // Bad request
         case NURESTConnectionResponseBadRequest:
+        [TNAlert showAlertWithMessage:@"400 Error"
+                          informative:@"Server responded with a bad request for " + url + ". Please report this error back."
+                                style:CPCriticalAlertStyle];
+        [[aConnection internalUserInfo][0] performSelector:[aConnection internalUserInfo][1] withObject:aConnection];
+        break;
+
+        // internal server error
         case NURESTConnectionResponseCodeInternalServerError:
             [TNAlert showAlertWithMessage:responseObject.errors[0].descriptions[0].title
                               informative:responseObject.errors[0].descriptions[0].description

@@ -17,18 +17,19 @@
 
 @import <Foundation/CPURLConnection.j>
 
-NURESTConnectionResponseCodeZero = 0;
-NURESTConnectionResponseCodeSuccess = 200;
+NURESTConnectionResponseBadRequest = 400;
+NURESTConnectionResponseCodeConflict = 409;
 NURESTConnectionResponseCodeCreated = 201;
 NURESTConnectionResponseCodeEmpty = 204;
-NURESTConnectionResponseCodeNotFound = 404;
-NURESTConnectionResponseCodeConflict = 409;
 NURESTConnectionResponseCodeInternalServerError = 500;
-NURESTConnectionResponseCodeServiceUnavailable = 503;
-NURESTConnectionResponseCodeUnauthorized = 401;
-NURESTConnectionResponseCodePreconditionFailed = 412;
-NURESTConnectionResponseCodePermissionDenied = 403;
 NURESTConnectionResponseCodeMultipleChoices = 300;
+NURESTConnectionResponseCodeNotFound = 404;
+NURESTConnectionResponseCodePermissionDenied = 403;
+NURESTConnectionResponseCodePreconditionFailed = 412;
+NURESTConnectionResponseCodeServiceUnavailable = 503;
+NURESTConnectionResponseCodeSuccess = 200;
+NURESTConnectionResponseCodeUnauthorized = 401;
+NURESTConnectionResponseCodeZero = 0;
 NURESTConnectionTimeout = 42;
 
 NURESTConnectionFailureNotification = @"NURESTConnectionFailureNotification";

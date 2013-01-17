@@ -172,6 +172,11 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
     return "<" + [self className] + "> " + [self ID];
 }
 
+- (CPString)alternativeDescription
+{
+    return [self description];
+}
+
 
 - (CPString)RESTName
 {

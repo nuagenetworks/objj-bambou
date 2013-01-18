@@ -16,6 +16,9 @@
 */
 
 @import <Foundation/CPURLConnection.j>
+@import <Foundation/CPNotificationCenter.j>
+
+@class NURESTLoginController
 
 NURESTConnectionResponseBadRequest = 400;
 NURESTConnectionResponseCodeConflict = 409;

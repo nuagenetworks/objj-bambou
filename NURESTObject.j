@@ -21,6 +21,9 @@ NURESTObjectStatusTypeSuccess   = @"SUCCESS";
 NURESTObjectStatusTypeWarning   = @"WARNING";
 NURESTObjectStatusTypeFailed    = @"FAILED";
 
+@global NUDataTransferController
+@global TNAlert
+
 
 /*!
     Basic object with REST saving/fetching utilities

@@ -16,7 +16,7 @@
 */
 
 @import <Foundation/CPURLConnection.j>
-
+@import <Foundation/CPPredicate.j>
 
 @implementation NURESTFetcher : CPObject
 {

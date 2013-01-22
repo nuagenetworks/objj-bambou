@@ -16,6 +16,7 @@
 */
 
 @import <Foundation/Foundation.j>
+@import "NURESTConnection.j"
 
 NURESTPushCenterPushReceived        = @"NURESTPushCenterPushReceived";
 NURESTPushCenterServerUnreachable   = @"NURESTPushCenterServerUnreachable";

@@ -18,6 +18,9 @@
 @import <Foundation/CPURLConnection.j>
 @import "Resources/SHA1.js"
 
+@global btoa
+
+
 var DefaultNURESTLoginController;
 
 @implementation NURESTLoginController : CPObject

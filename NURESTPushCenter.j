@@ -18,6 +18,8 @@
 @import <Foundation/Foundation.j>
 @import "NURESTConnection.j"
 
+@global CPApp
+
 NURESTPushCenterPushReceived        = @"NURESTPushCenterPushReceived";
 NURESTPushCenterServerUnreachable   = @"NURESTPushCenterServerUnreachable";
 NURESTPushCenterServerReachable     = @"NURESTPushCenterServerReachable";

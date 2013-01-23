@@ -15,7 +15,10 @@
 *
 */
 
-@import <Foundation/CPURLConnection.j>
+@import <Foundation/Foundation.j>
+
+@import "NURESTConnection.j"
+@import "NURESTLoginController.j"
 
 NURESTObjectStatusTypeSuccess   = @"SUCCESS";
 NURESTObjectStatusTypeWarning   = @"WARNING";
@@ -23,6 +26,19 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 
 @global NUDataTransferController
 @global TNAlert
+@global CPCriticalAlertStyle
+@global NURESTConnectionFailureNotification
+@global NURESTConnectionResponseCodeZero
+@global NURESTConnectionResponseCodeConflict
+@global NURESTConnectionResponseCodeUnauthorized
+@global NURESTConnectionResponseCodeMultipleChoices
+@global NURESTConnectionResponseCodeInternalServerError
+@global NURESTConnectionResponseBadRequest
+@global NURESTConnectionResponseCodePreconditionFailed
+@global NURESTConnectionResponseCodeNotFound
+@global NURESTConnectionResponseCodeCreated
+@global NURESTConnectionResponseCodeSuccess
+@global NURESTConnectionResponseCodeEmpty
 
 
 /*!

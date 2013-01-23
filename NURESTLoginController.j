@@ -15,7 +15,7 @@
 *
 */
 
-@import <Foundation/CPURLConnection.j>
+@import <Foundation/Foundation.j>
 @import "Resources/SHA1.js"
 
 @global btoa

@@ -15,8 +15,7 @@
 *
 */
 
-@import <Foundation/CPURLConnection.j>
-@import <Foundation/CPNotificationCenter.j>
+@import <Foundation/Foundation.j>
 
 @class NURESTLoginController
 

@@ -45,8 +45,7 @@
 
 - (void)fetchObjectsMatchingFilter:(id)aFilter page:(CPNumber)aPage andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    var request = [CPURLRequest requestWithURL:[CPURL URLWithString:_restName relativeToURL:[_entity RESTQueryURL]]],
-        someUserInfo = (aSelector && anObject) ? [anObject, aSelector] : nil;
+    var request = [CPURLRequest requestWithURL:[CPURL URLWithString:_restName relativeToURL:[_entity RESTQueryURL]]];
 
     [request setHTTPMethod:@"GET"];
 
@@ -58,7 +57,7 @@
     if (aPage !== nil)
         [request setValue:aPage forHTTPHeaderField:@"X-Nuage-Page"];
 
-    [_entity sendRESTCall:request andPerformSelector:@selector(_didFetchObjects:) ofObject:self userInfo:someUserInfo];
+    [_entity sendRESTCall:request performSelector:@selector(_didFetchObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:nil];
 }
 
 /*! @ignore
@@ -89,15 +88,15 @@
         [newlyFetchedObjects addObject:newObject];
     }
 
-    [self _sendContent:newlyFetchedObjects usingConnectionInfo:[aConnection userInfo]];
+    [self _sendContent:newlyFetchedObjects usingConnection:aConnection];
 }
 
-- (void)_sendContent:(CPArray)someContent usingConnectionInfo:(id)someInfo
+- (void)_sendContent:(CPArray)someContent usingConnection:(id)aConnection
 {
-    if (someInfo)
+    if (aConnection)
     {
-        var target = someInfo[0],
-            selector = someInfo[1];
+        var target = [aConnection internalUserInfo]["remoteTarget"],
+            selector = [aConnection internalUserInfo]["remoteSelector"];
 
         [target performSelector:selector withObjects:self, _entity, someContent];
     }

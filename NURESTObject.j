@@ -196,11 +196,11 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
     return [self description];
 }
 
-
 - (CPString)RESTName
 {
     return [[self class] RESTName];
 }
+
 
 #pragma mark -
 #pragma mark Key Value Coding
@@ -229,34 +229,29 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 */
 - (void)fetch
 {
-    [self fetchAndCallSelector:nil ofObject:nil userInfo:nil]
+    [self fetchAndCallSelector:nil ofObject:nil];
 }
 
 /*! Fetchs object attributes. This requires that the Cappuccino object has a valid ID
     @param aSelector the selector to use when fetching is ok
     @param anObject the target to send the selector
 */
-- (void)fetchAndCallSelector:(SEL)aSelector ofObject:(id)anObject userInfo:(id)someUserInfo
+- (void)fetchAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    if (!_ID)
-        [CPException raise:CPInvalidArgumentException reason:@"Cannot fetch object if not ID is set"];
+    var request = [CPURLRequest requestWithURL:[self RESTQueryURL]];
 
-    var request = [CPURLRequest requestWithURL:[self RESTQueryURL]],
-        someUserInfo = (aSelector && anObject) ? [anObject, aSelector, someUserInfo] : nil;
-
-    [self sendRESTCall:request andPerformSelector:@selector(_didFetchMySelf:) ofObject:self userInfo:someUserInfo];
+    [self sendRESTCall:request performSelector:@selector(_didFetch:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:nil];
 }
 
 /*! @ignore
 */
-- (void)_didFetchMySelf:(CPURLConnection)aConnection
+- (void)_didFetch:(NURESTConnection)aConnection
 {
     var JSONObject = [[aConnection responseData] JSONObject];
 
     [self objectFromJSON:JSONObject[0]];
 
-    if ([aConnection userInfo])
-        [[aConnection userInfo][0] performSelector:[aConnection userInfo][1] withObject:self withObject:[aConnection userInfo][2]];
+    [self _didPerformStandardOperation:aConnection];
 }
 
 
@@ -268,31 +263,20 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
     @param aSelector the selector to execute when complete
     @param anObject the target object
 */
-- (void)sendRESTCall:(CPURLRequest)aRequest andPerformSelector:(SEL)aSelector ofObject:(id)anObject
-{
-    [self sendRESTCall:aRequest andPerformSelector:aSelector ofObject:anObject userInfo:nil];
-}
-
-/*! Send a REST request and perform given selector of given object
-    @param aRequest random CPURLRequest
-    @param aSelector the selector to execute when complete
-    @param anObject the target object
-    @param userInfo random userInfo
-*/
-- (void)sendRESTCall:(CPURLRequest)aRequest andPerformSelector:(SEL)aSelector ofObject:(id)anObject userInfo:(id)someUserInfo
+- (void)sendRESTCall:(CPURLRequest)aRequest performSelector:(SEL)aSelector ofObject:(id)aLocalObject andPerformRemoteSelector:(SEL)aRemoteSelector ofObject:(id)anObject userInfo:(id)someUserInfo
 {
     // be sure to set the content-type as application/json
     [aRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
 
     var connection = [NURESTConnection connectionWithRequest:aRequest
-                                                     target:self
-                                                     selector:@selector(_didReceiveRESTReply:)];
-    [connection setInternalUserInfo:[anObject, aSelector]];
-    [connection setUserInfo:someUserInfo];
+                                                      target:self
+                                                    selector:@selector(_didReceiveRESTReply:)];
 
-    // @TODO: remove this and use a notification instead
-    if (typeof(NUDataTransferController) != "undefined")
-        [[NUDataTransferController defaultDataTransferController] showDataTransfer];
+    [connection setUserInfo:someUserInfo];
+    [connection setInternalUserInfo:{   "localTarget": aLocalObject,
+                                        "localSelector": aSelector,
+                                        "remoteTarget": anObject,
+                                        "remoteSelector": aRemoteSelector}];
 
     CPLog.debug(">>>> Sending " + [[aRequest URL] absoluteString] + " (" + [aRequest HTTPMethod] + ")");
     [connection start];
@@ -302,10 +286,6 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 */
 - (void)_didReceiveRESTReply:(NURESTConnection)aConnection
 {
-    // @TODO: remove this and use a notification instead
-    if (typeof(NUDataTransferController) != "undefined")
-        [[NUDataTransferController defaultDataTransferController] hideDataTransfer];
-
     if ([aConnection hasTimeouted])
     {
         CPLog.error("Connection timeouted. Sending NURESTConnectionFailureNotification notification and exiting.");
@@ -315,12 +295,13 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
          return;
     }
 
-
     var url = [[[aConnection request] URL] absoluteString],
         HTTPMethod = [[aConnection request] HTTPMethod],
         responseObject = [[aConnection responseData] JSONObject],
         rawString = [[aConnection responseData] rawString],
-        responseCode = [aConnection responseCode];
+        responseCode = [aConnection responseCode],
+        localTarget = [aConnection internalUserInfo]["localTarget"],
+        localSelector = [aConnection internalUserInfo]["localSelector"];
 
     CPLog.debug("<<<< Response for %@ %@ (%@): %@", HTTPMethod, url, responseCode, rawString);
 
@@ -330,7 +311,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
         case NURESTConnectionResponseCodeEmpty:
         case NURESTConnectionResponseCodeSuccess:
         case NURESTConnectionResponseCodeCreated:
-            [[aConnection internalUserInfo][0] performSelector:[aConnection internalUserInfo][1] withObject:aConnection];
+            [localTarget performSelector:localSelector withObject:aConnection];
             break;
 
         // resource not found
@@ -346,7 +327,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
                 // [TNAlert showAlertWithMessage:@"404 Error"
                 //                   informative:@"URL " + url + " not found."
                 //                         style:CPCriticalAlertStyle];
-                [[aConnection internalUserInfo][0] performSelector:[aConnection internalUserInfo][1] withObject:aConnection];
+                [localTarget performSelector:localSelector withObject:aConnection];
             }
             break;
 
@@ -354,7 +335,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
             [TNAlert showAlertWithMessage:@"412 Error"
                               informative:@"Header precondition failed for " + url + ". Please report this error back."
                                     style:CPCriticalAlertStyle];
-            [[aConnection internalUserInfo][0] performSelector:[aConnection internalUserInfo][1] withObject:aConnection];
+            [localTarget performSelector:localSelector withObject:aConnection];
             break;
 
         // Bad request
@@ -362,7 +343,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
         [TNAlert showAlertWithMessage:@"400 Error"
                           informative:@"Server responded with a bad request for " + url + ". Please report this error back."
                                 style:CPCriticalAlertStyle];
-        [[aConnection internalUserInfo][0] performSelector:[aConnection internalUserInfo][1] withObject:aConnection];
+        [localTarget performSelector:localSelector withObject:aConnection];
         break;
 
         // internal server error
@@ -393,13 +374,13 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
         // Not authorized
         case NURESTConnectionResponseCodeUnauthorized:
             // in that case we just forward the connection to let traget deal with it
-            [[aConnection internalUserInfo][0] performSelector:[aConnection internalUserInfo][1] withObject:aConnection];
+            [localTarget performSelector:localSelector withObject:aConnection];
             break;
 
         // Server Validation Error
         case NURESTConnectionResponseCodeConflict:
             // in that case we just forward the connection to let login manager deal with it
-            [[aConnection internalUserInfo][0] performSelector:[aConnection internalUserInfo][1] withObject:aConnection];
+            [localTarget performSelector:localSelector withObject:aConnection];
             break;
 
         // XMLHTTPREQUEST error
@@ -435,10 +416,6 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
     [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
     [request setHTTPMethod:[[connection request] HTTPMethod]];
     [request setHTTPBody:[[connection request] HTTPBody]];
-
-    // @TODO: remove this and use a notification instead
-    if (typeof(NUDataTransferController) != "undefined")
-        [[NUDataTransferController defaultDataTransferController] showDataTransfer];
 
     [connection setRequest:request];
     [connection reset];
@@ -530,7 +507,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 */
 - (void)manageChildEntity:(NURESTObject)anEntity intoResource:(CPString)aResource method:(CPString)aMethod andCallSelector:(SEL)aSelector ofObject:(id)anObject customConnectionHandler:(SEL)aCustomHandler
 {
-    var URLRequest = [CPURLRequest requestWithURL:[CPURL URLWithString:aResource relativeToURL:[self RESTQueryURL]]],
+    var URLRequest = [CPURLRequest requestWithURL:aResource ? [CPURL URLWithString:aResource relativeToURL:[self RESTQueryURL]] : [self RESTQueryURL]],
         body = [anEntity objectToJSON];
 
     [URLRequest setHTTPMethod:aMethod];
@@ -538,7 +515,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 
     CPLog.debug("Sending method %s to URL %s: %s ", aMethod, [URLRequest URL], body);
 
-    [self sendRESTCall:URLRequest andPerformSelector:aCustomHandler ofObject:self userInfo:[anObject, aSelector]];
+    [self sendRESTCall:URLRequest performSelector:aCustomHandler ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:anEntity];
 }
 
 /*! Uses this to reference given objects into the given resource of the actual object.
@@ -553,7 +530,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
     for (var i = 0 ; i < [someEntities count]; i++)
         [IDsList addObject:[[someEntities objectAtIndex:i] ID]];
 
-    var URLRequest = [CPURLRequest requestWithURL:[CPURL URLWithString:aResource relativeToURL:[self RESTQueryURL]]],
+    var URLRequest = [CPURLRequest requestWithURL:aResource ? [CPURL URLWithString:aResource relativeToURL:[self RESTQueryURL]] : [self RESTQueryURL]],
         body = JSON.stringify(IDsList);
 
     [URLRequest setHTTPMethod:@"PUT"];
@@ -561,7 +538,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 
     CPLog.debug("Sending method PUT to URL %s: %s ", [URLRequest URL], body);
 
-    [self sendRESTCall:URLRequest andPerformSelector:@selector(_didPerformStandardOperation:) ofObject:self userInfo:[anObject, aSelector]];
+    [self sendRESTCall:URLRequest performSelector:@selector(_didPerformStandardOperation:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:someEntities];
 }
 
 
@@ -594,8 +571,14 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 */
 - (void)_didPerformStandardOperation:(NURESTConnection)aConnection
 {
-    if ([aConnection userInfo][0] && [aConnection userInfo][1]);
-        [[aConnection userInfo][0] performSelector:[aConnection userInfo][1] withObject:self withObject:aConnection];
+    var target = [aConnection internalUserInfo]["remoteTarget"],
+        selector = [aConnection internalUserInfo]["remoteSelector"],
+        userInfo = [aConnection userInfo];
+
+    if (target && selector && userInfo)
+        [target performSelector:selector withObjects:self, userInfo, aConnection];
+    else if (target && selector)
+        [target performSelector:selector withObjects:self, aConnection];
 }
 
 

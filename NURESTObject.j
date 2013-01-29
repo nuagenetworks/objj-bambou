@@ -462,7 +462,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 */
 - (void)addChildEntity:(NURESTObject)anEntity intoResource:(CPString)aResource andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self manageChildEntity:anEntity intoResource:aResource method:@"POST" andCallSelector:aSelector ofObject:anObject];
+    [self manageChildEntity:anEntity intoResource:aResource method:@"POST" andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didAddChildObject:)];
 }
 
 /*! Remove given entity from given ressource of current object
@@ -563,6 +563,17 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
         return;
     }
     CPLog.debug("Creation complete. Object is now: " + [self objectToJSON]);
+
+    [self _didPerformStandardOperation:aConnection];
+}
+
+/*! Called as a custom handler when creating a child object
+*/
+- (void)_didAddChildObject:(NURESTConnection)aConnection
+{
+    var JSONData = [[aConnection responseData] JSONObject];
+    // read the reply to get an object in sync with server
+    [[aConnection userInfo] objectFromJSON:JSONData[0]];
 
     [self _didPerformStandardOperation:aConnection];
 }

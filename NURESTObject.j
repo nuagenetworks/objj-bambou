@@ -550,19 +550,8 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 - (void)_didCreateObject:(NURESTConnection)aConnection
 {
     var JSONData = [[aConnection responseData] JSONObject];
-    try
-    {
-        [self objectFromJSON:JSONData[0]];
-    }
-    catch(e)
-    {
-        var title = "Error while creating object of kind " + [self class],
-            informative = [[aConnection responseData] rawString];
-        CPLog.error(title + " : " + informative + " - EXCEPTION " + e);
-        [TNAlert showAlertWithMessage:title informative:informative style:CPCriticalAlertStyle];
-        return;
-    }
-    CPLog.debug("Creation complete. Object is now: " + [self objectToJSON]);
+
+    try {[self objectFromJSON:JSONData[0]];} catch(e) {}
 
     [self _didPerformStandardOperation:aConnection];
 }
@@ -572,8 +561,8 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 - (void)_didAddChildObject:(NURESTConnection)aConnection
 {
     var JSONData = [[aConnection responseData] JSONObject];
-    // read the reply to get an object in sync with server
-    [[aConnection userInfo] objectFromJSON:JSONData[0]];
+
+    try {[[aConnection userInfo] objectFromJSON:JSONData[0]];} catch(e) {}
 
     [self _didPerformStandardOperation:aConnection];
 }

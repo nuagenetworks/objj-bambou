@@ -120,11 +120,16 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
     [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath];
 }
 
+/*! Expose some property that are bindable, but not from the model.
+    This is usefull when you want to automatize binding of transformed properties.
+*/
 - (void)exposeBindableAttribute:(CPString)aKeyPath
 {
     [_bindableAttributes addObject:aKeyPath];
 }
 
+/*! Returns the list of bindable attributes
+*/
 - (void)bindableAttributes
 {
     return [[_restAttributes allKeys] arrayByAddingObjectsFromArray:_bindableAttributes];
@@ -144,7 +149,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 
         // @TODO: this info should come with the HTTP metadata
         if (attribute == "creationDate")
-            restValue = [CPDate dateWithTimeIntervalSince1970:obj[restPath]];
+            restValue = [CPDate dateWithTimeIntervalSince1970:(parseInt(obj[restPath]) / 1000)];
         else
             restValue = obj[restPath];
         [self setValue:restValue forKeyPath:attribute];
@@ -199,6 +204,15 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 - (CPString)RESTName
 {
     return [[self class] RESTName];
+}
+
+
+#pragma mark -
+#pragma mark Custom accesors
+
+- (CPString)formatedCreationDate
+{
+    return _creationDate.format("mmm dd yyyy HH:MM:ss");
 }
 
 

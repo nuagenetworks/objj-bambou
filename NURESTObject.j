@@ -334,7 +334,7 @@ function _format_log_json(string)
         localTarget = [aConnection internalUserInfo]["localTarget"],
         localSelector = [aConnection internalUserInfo]["localSelector"];
 
-    CPLog.trace("RESTCAPPUCCINO: <<<< Response for\n\n%@ %@ (%@):\n\n%@\n\n", HTTPMethod, url, responseCode, _format_log_json(rawString));
+    CPLog.trace("RESTCAPPUCCINO: <<<< Response for\n\n%@ %@ (%@):\n\n%@", HTTPMethod, url, responseCode, _format_log_json(rawString));
 
     switch (responseCode)
     {

@@ -19,6 +19,8 @@
 @import "NURESTConnection.j"
 
 @global CPApp
+@global _format_log_json;
+
 
 NURESTPushCenterPushReceived        = @"NURESTPushCenterPushReceived";
 NURESTPushCenterServerUnreachable   = @"NURESTPushCenterServerUnreachable";
@@ -193,8 +195,8 @@ _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ = 0;
 
     if ([aConnection responseCode] !== 200)
     {
-        CPLog.error("PUSH CENTER: Connexion failure URL %s. Error Code: %s, (%s) ", _URL, [aConnection responseCode], [aConnection errorMessage]);
-        CPLog.error("PUSH CENTER: Trying to reconnect in 5 seconds")
+        CPLog.error("RESTCAPPUCCINO PUSHCENTER: Connexion failure URL %s. Error Code: %s, (%s) ", _URL, [aConnection responseCode], [aConnection errorMessage]);
+        CPLog.error("RESTCAPPUCCINO PUSHCENTER: Trying to reconnect in 5 seconds")
 
         _lastEventIDBeforeDisconnection = JSONObject ? JSONObject.uuid : nil;
 
@@ -209,16 +211,19 @@ _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ = 0;
 
         try
         {
-            CPLog.debug(" >>> Received event from server: " + [[aConnection responseData] rawString]);
+
             _DEBUG_NUMBER_OF_RECEIVED_EVENTS_ += numberOfIndividualEvents;
             _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_++;
-            CPLog.warn("__DEBUG__EVENT__ (PUSH # %d, total events: %d): latest push contains %d event(s)", _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_, _DEBUG_NUMBER_OF_RECEIVED_EVENTS_, numberOfIndividualEvents);
+
+            CPLog.debug("RESTCAPPUCCINO PUSHCENTER:\n\nReceived Push #%d (total: %d, latest: %d):\n\n%@\n\n",
+                            _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_, _DEBUG_NUMBER_OF_RECEIVED_EVENTS_,
+                            numberOfIndividualEvents, _format_log_json([[aConnection responseData] rawString]));
 
             [[CPNotificationCenter defaultCenter] postNotificationName:NURESTPushCenterPushReceived object:self userInfo:JSONObject];
         }
         catch (e)
         {
-            CPLog.error("PUSH CENTER: An error occured while processing a push event: " + e);
+            CPLog.error("RESTCAPPUCCINO PUSHCENTER: An error occured while processing a push event: " + e);
         }
     }
 

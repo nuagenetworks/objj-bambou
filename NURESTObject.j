@@ -41,6 +41,21 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 @global NURESTConnectionResponseCodeEmpty
 
 
+function _format_log_json(string)
+{
+    if (!string || !string.length)
+        return "";
+
+    try
+    {
+        return JSON.stringify(JSON.parse(string), null, 4);
+    }
+    catch(e)
+    {
+        return string
+    };
+}
+
 /*!
     Basic object with REST saving/fetching utilities
 */
@@ -141,6 +156,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 - (void)objectFromJSON:(CPString)aJSONObject
 {
     var obj = aJSONObject;
+
     for (var i = 0; i < [[_restAttributes allKeys] count]; i++)
     {
         var attribute = [[_restAttributes allKeys] objectAtIndex:i],
@@ -176,7 +192,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
         json[restPath] = value;
     }
 
-    return JSON.stringify(json);
+    return JSON.stringify(json, null, 4);
 }
 
 
@@ -292,7 +308,8 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
                                         "remoteTarget": anObject,
                                         "remoteSelector": aRemoteSelector}];
 
-    CPLog.debug(">>>> Sending " + [[aRequest URL] absoluteString] + " (" + [aRequest HTTPMethod] + ")");
+    CPLog.trace("RESTCAPPUCCINO: >>>> Sending\n\n%@ %@:\n\n%@", [aRequest HTTPMethod], [aRequest URL], _format_log_json([aRequest HTTPBody]));
+
     [connection start];
 }
 
@@ -302,7 +319,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 {
     if ([aConnection hasTimeouted])
     {
-        CPLog.error("Connection timeouted. Sending NURESTConnectionFailureNotification notification and exiting.");
+        CPLog.error("RESTCAPPUCCINO: Connection timeouted. Sending NURESTConnectionFailureNotification notification and exiting.");
         [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConnectionFailureNotification
                                                     object:self
                                                  userInfo:aConnection];
@@ -317,7 +334,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
         localTarget = [aConnection internalUserInfo]["localTarget"],
         localSelector = [aConnection internalUserInfo]["localSelector"];
 
-    CPLog.debug("<<<< Response for %@ %@ (%@): %@", HTTPMethod, url, responseCode, rawString);
+    CPLog.trace("RESTCAPPUCCINO: <<<< Response for\n\n%@ %@ (%@):\n\n%@\n\n", HTTPMethod, url, responseCode, _format_log_json(rawString));
 
     switch (responseCode)
     {
@@ -365,7 +382,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
             [TNAlert showAlertWithMessage:responseObject.errors[0].descriptions[0].title
                               informative:responseObject.errors[0].descriptions[0].description
                                     style:CPCriticalAlertStyle];
-            CPLog.error("Stack Trace (%@): %@", responseObject.internalErrorCode, responseObject.stackTrace);
+            CPLog.error("RESTCAPPUCCINO: Stack Trace (%@): %@", responseObject.internalErrorCode, responseObject.stackTrace);
             break;
 
         // multiple choice
@@ -399,7 +416,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 
         // XMLHTTPREQUEST error
         case NURESTConnectionResponseCodeZero:
-            CPLog.error("Connection error with code 0. Sending NURESTConnectionFailureNotification notification and exiting.");
+            CPLog.error("RESTCAPPUCCINO: Connection error with code 0. Sending NURESTConnectionFailureNotification notification and exiting.");
             [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConnectionFailureNotification
                                                         object:self
                                                      userInfo:nil];
@@ -409,7 +426,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
             var title = @"Unknown response code",
                 informative = @"The server send an unknown response code:  " + responseCode;
             [TNAlert showAlertWithMessage:title informative:informative style:CPCriticalAlertStyle];
-            CPLog.error(title + " : " + informative + " :" +[[aConnection responseData] rawString]);
+            CPLog.error(@"RESTCAPPUCCINO: %@: %@\n\n%@", title, informative, [[aConnection responseData] rawString]);
     }
 }
 
@@ -527,8 +544,6 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
     [URLRequest setHTTPMethod:aMethod];
     [URLRequest setHTTPBody:body];
 
-    CPLog.debug("Sending method %s to URL %s: %s ", aMethod, [URLRequest URL], body);
-
     [self sendRESTCall:URLRequest performSelector:aCustomHandler ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:anEntity];
 }
 
@@ -545,12 +560,10 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
         [IDsList addObject:[[someEntities objectAtIndex:i] ID]];
 
     var URLRequest = [CPURLRequest requestWithURL:aResource ? [CPURL URLWithString:aResource relativeToURL:[self RESTQueryURL]] : [self RESTQueryURL]],
-        body = JSON.stringify(IDsList);
+        body = JSON.stringify(IDsList, null, 4);
 
     [URLRequest setHTTPMethod:@"PUT"];
     [URLRequest setHTTPBody:body];
-
-    CPLog.debug("Sending method PUT to URL %s: %s ", [URLRequest URL], body);
 
     [self sendRESTCall:URLRequest performSelector:@selector(_didPerformStandardOperation:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:someEntities];
 }

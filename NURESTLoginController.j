@@ -27,6 +27,7 @@ var DefaultNURESTLoginController;
 {
     CPString _user      @accessors(property=user);
     CPString _password  @accessors(property=password);
+    CPString _APIKey    @accessors(property=APIKey);
     CPString _company   @accessors(property=company);
     CPString _URL       @accessors(property=URL);
 }
@@ -40,25 +41,14 @@ var DefaultNURESTLoginController;
 
 - (CPString)RESTAuthString
 {
-    var token = @"XREST " + btoa([CPString stringWithFormat:@"%s:%s", _user, _password]);
-    return token;
-}
-
-- (void)setPassword:(CPString)aPassword
-{
-    _password = Sha1.hash(aPassword);
-    aPassword = nil;
-}
-
-- (void)setPasswordHash:(CPString)aHash
-{
-    _password = aHash;
-    aHash = nil;
+    return @"XREST " + btoa([CPString stringWithFormat:@"%s:%s", _user, _APIKey || _password]);
 }
 
 - (BOOL)validateCurrentPassword:(CPString)aPassword
 {
-    return Sha1.hash(aPassword) == _password;
+    // @TODO: Make this work with the new token based authentication;
+
+    return NO;//Sha1.hash(aPassword) == _password;
 }
 
 @end

@@ -25,11 +25,11 @@ var DefaultNURESTLoginController;
 
 @implementation NURESTLoginController : CPObject
 {
-    CPString _user      @accessors(property=user);
-    CPString _password  @accessors(property=password);
     CPString _APIKey    @accessors(property=APIKey);
     CPString _company   @accessors(property=company);
+    CPString _password  @accessors(property=password);
     CPString _URL       @accessors(property=URL);
+    CPString _user      @accessors(property=user);
 }
 
 + (NULoginController)defaultController
@@ -41,14 +41,21 @@ var DefaultNURESTLoginController;
 
 - (CPString)RESTAuthString
 {
-    return @"XREST " + btoa([CPString stringWithFormat:@"%s:%s", _user, _APIKey || _password]);
+    // Generate the auth string. If APIToken is set, it'll be used. Otherwise, the clear
+    // text password will be sent. Users of NURESTLoginController are responsible to
+    // clean the password property.
+    var authString = [CPString stringWithFormat:@"%s:%s", _user, _APIKey || _password];
+
+    console.warn("REMOVE ME DEBUG: Authentication string is: XREST btoa(%s)", authString);
+
+    return @"XREST " + btoa(authString);
 }
 
 - (BOOL)validateCurrentPassword:(CPString)aPassword
 {
     // @TODO: Make this work with the new token based authentication;
 
-    return NO;//Sha1.hash(aPassword) == _password;
+    return NO; //Sha1.hash(aPassword) == _password;
 }
 
 @end

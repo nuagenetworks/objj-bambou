@@ -279,7 +279,8 @@ function _format_log_json(string)
 {
     var JSONObject = [[aConnection responseData] JSONObject];
 
-    [self objectFromJSON:JSONObject[0]];
+    if (JSONObject)
+        [self objectFromJSON:JSONObject[0]];
 
     [self _didPerformStandardOperation:aConnection];
 }

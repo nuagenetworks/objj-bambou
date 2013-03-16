@@ -46,8 +46,6 @@ var DefaultNURESTLoginController;
     // clean the password property.
     var authString = [CPString stringWithFormat:@"%s:%s", _user, _APIKey || _password];
 
-    console.warn("REMOVE ME DEBUG: Authentication string is: XREST btoa(%s)", authString);
-
     return @"XREST " + btoa(authString);
 }
 

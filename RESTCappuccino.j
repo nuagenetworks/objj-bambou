@@ -2,7 +2,7 @@
 *   Filename:         RESTCappuccino.j
 *   Created:          Tue Oct  9 11:49:56 PDT 2012
 *   Author:           Antoine Mercadal <antoine.mercadal@alcatel-lucent.com>
-*   Description:      CNA Dashboard
+*   Description:      VSD Architect
 *   Project:          Cloud Network Automation - Nuage - Data Center Service Delivery - IPD
 *
 * Copyright (c) 2011-2012 Alcatel, Alcatel-Lucent, Inc. All Rights Reserved.

@@ -49,11 +49,4 @@ var DefaultNURESTLoginController;
     return @"XREST " + btoa(authString);
 }
 
-- (BOOL)validateCurrentPassword:(CPString)aPassword
-{
-    // @TODO: Make this work with the new token based authentication;
-
-    return NO; //Sha1.hash(aPassword) == _password;
-}
-
 @end

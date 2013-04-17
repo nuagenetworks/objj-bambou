@@ -24,8 +24,6 @@
 
 NURESTPushCenterPushReceived            = @"NURESTPushCenterPushReceived";
 NURESTPushCenterServerUnreachable       = @"NURESTPushCenterServerUnreachable";
-NURESTPushCenterServerReachable         = @"NURESTPushCenterServerReachable";
-NURESTPushCenterServerDefinitiveFailure = @"NURESTPushCenterServerDefinitiveFailure";
 
 NUPushEventTypeCreate = @"CREATE";
 NUPushEventTypeUpdate = @"UPDATE";
@@ -33,9 +31,7 @@ NUPushEventTypeDelete = @"DELETE";
 NUPushEventTypeRevoke = @"REVOKE";
 NUPushEventTypeGrant  = @"GRANT";
 
-var NURESTPushCenterDefault,
-    NURESTPushCenterConnectionRetryDelay = 5000,
-    NURESTPushCenterConnectionMaxTrials = 10;
+var NURESTPushCenterDefault;
 
 _DEBUG_NUMBER_OF_RECEIVED_EVENTS_ = 0;
 _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ = 0;
@@ -48,10 +44,7 @@ _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ = 0;
     CPURL               _URL                    @accessors(property=URL);
 
     BOOL                _isRunning;
-    BOOL                _isServerUnreachable;
-    id                  _lastEventIDBeforeDisconnection;
     NURESTConnection    _currentConnexion;
-    CPNumber            _currentConnectionTrialNumber;
 }
 
 
@@ -81,8 +74,6 @@ _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ = 0;
         return;
 
      _isRunning = YES;
-    _isServerUnreachable = NO;
-    _currentConnectionTrialNumber = 0;
 
      [self _listenToNextEvent:nil];
 }
@@ -95,74 +86,9 @@ _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ = 0;
         return;
 
      _isRunning = NO;
-     _currentConnectionTrialNumber = 0;
+
      if (_currentConnexion)
          [_currentConnexion cancel];
-}
-
-
-#pragma mark -
-#pragma mark Server health check
-
-/*! This start the life checking of the server.
-    This is automtically sent if any connection problem
-    occurs with event URL.
-*/
-- (void)_waitUntilServerIsBack
-{
-    if (!_isRunning)
-        return;
-
-    _isServerUnreachable = YES;
-    [[CPNotificationCenter defaultCenter] postNotificationName:NURESTPushCenterServerUnreachable
-                                                        object:self
-                                                     userInfo:nil];
-
-    var request = [CPURLRequest requestWithURL:[CPURL URLWithString:@"me" relativeToURL:_URL]];
-
-    _currentConnectionTrialNumber++;
-    _currentConnexion = [NURESTConnection connectionWithRequest:request target:self selector:@selector(_didReceiveAliveCheckResponse:)];
-    [_currentConnexion setTimeout:0];
-    [_currentConnexion setIgnoreRequestIdle:YES];
-    [_currentConnexion start];
-}
-
-/*! @ignore
-*/
-- (void)_didReceiveAliveCheckResponse:(NURESTConnection)aConnection
-{
-    if (!_isRunning)
-        return;
-
-    switch ([aConnection responseCode])
-    {
-        case 200:
-            _currentConnectionTrialNumber = 0;
-            [self _listenToNextEvent:_lastEventIDBeforeDisconnection];
-            _lastEventIDBeforeDisconnection = nil;
-            _isServerUnreachable = NO;
-            [[CPNotificationCenter defaultCenter] postNotificationName:NURESTPushCenterServerReachable
-                                                                object:self
-                                                             userInfo:nil];
-            break;
-
-        default:
-            setTimeout(function(){
-                if (_currentConnectionTrialNumber == -1 || (_currentConnectionTrialNumber < NURESTPushCenterConnectionMaxTrials))
-                {
-                    CPLog.warn("PUSH CENTER: Trying to reconnect... (retry #%@ / %@)", _currentConnectionTrialNumber, NURESTPushCenterConnectionMaxTrials);
-                    [self _waitUntilServerIsBack];
-                }
-                else
-                {
-                    CPLog.error("PUSH CENTER: Maximum number of retry reached. logging out");
-                    [[CPNotificationCenter defaultCenter] postNotificationName:NURESTPushCenterServerDefinitiveFailure
-                                                                        object:self
-                                                                      userInfo:nil];
-                }
-            }, NURESTPushCenterConnectionRetryDelay);
-            break;
-    }
 }
 
 
@@ -199,11 +125,10 @@ _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ = 0;
     if ([aConnection responseCode] !== 200)
     {
         CPLog.error("RESTCAPPUCCINO PUSHCENTER: Connexion failure URL %s. Error Code: %s, (%s) ", _URL, [aConnection responseCode], [aConnection errorMessage]);
-        CPLog.error("RESTCAPPUCCINO PUSHCENTER: Trying to reconnect in 5 seconds")
 
-        _lastEventIDBeforeDisconnection = JSONObject ? JSONObject.uuid : nil;
-
-        [self _waitUntilServerIsBack];
+        [[CPNotificationCenter defaultCenter] postNotificationName:NURESTPushCenterServerUnreachable
+                                                            object:self
+                                                          userInfo:nil];
 
         return;
     }

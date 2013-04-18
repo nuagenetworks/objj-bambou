@@ -383,7 +383,6 @@ function _format_log_json(string)
             [TNAlert showAlertWithMessage:responseObject.errors[0].descriptions[0].title
                               informative:responseObject.errors[0].descriptions[0].description
                                     style:CPCriticalAlertStyle];
-            CPLog.error("RESTCAPPUCCINO: Stack Trace (%@): %@", responseObject.internalErrorCode, responseObject.stackTrace);
             break;
 
         // multiple choice

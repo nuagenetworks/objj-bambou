@@ -35,7 +35,7 @@ NURESTConnectionResponseCodeZero = 0;
 NURESTConnectionTimeout = 42;
 
 NURESTConnectionFailureNotification = @"NURESTConnectionFailureNotification";
-NURESTConnectionIdleTimeout = @"NURESTConnectionIdleTimeout";
+NURESTConnectionIdleTimeoutNotification = @"NURESTConnectionIdleTimeoutNotification";
 
 var NURESTObjectLastActionTimer;
 
@@ -120,7 +120,7 @@ var NURESTObjectLastActionTimer;
 
         NURESTObjectLastActionTimer = setTimeout(function(){
             console.warn("Connection idle timer run off!")
-            [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConnectionIdleTimeout
+            [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConnectionIdleTimeoutNotification
                                                                 object:nil
                                                              userInfo:nil];
         }, 1200000);

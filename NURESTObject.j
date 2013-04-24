@@ -163,7 +163,6 @@ function _format_log_json(string)
             restPath = [_restAttributes objectForKey:attribute],
             restValue;
 
-        // @TODO: this info should come with the HTTP metadata
         if (attribute == "creationDate")
             restValue = [CPDate dateWithTimeIntervalSince1970:(parseInt(obj[restPath]) / 1000)];
         else
@@ -185,7 +184,6 @@ function _format_log_json(string)
             restPath = [_restAttributes objectForKey:attribute],
             value = [self valueForKeyPath:attribute];
 
-        // @TODO: this info should come with the HTTP metadata
         if (attribute == "creationDate")
             continue;
 
@@ -400,6 +398,10 @@ function _format_log_json(string)
             [confirmAlert setUserInfo:{"connection": aConnection, "choices": responseObject.choices}];
             [confirmAlert setDelegate:self];
             [confirmAlert runModal];
+
+            if ([[confirmAlert._window contentView] respondsToSelector:@selector(setCucappIdentifier:)])
+                [[confirmAlert._window contentView] setCucappIdentifier:@"confirmation_alert"];
+
             break;
 
         // Not authorized

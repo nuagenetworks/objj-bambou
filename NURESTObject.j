@@ -346,6 +346,7 @@ function _format_log_json(string)
 
         // resource not found
         case NURESTConnectionResponseCodeNotFound:
+        case NURESTConnectionResponseCodeMethodNotAllowed:
             if (responseObject && responseObject.errors)
             {
                 [TNAlert showAlertWithMessage:responseObject.errors[0].descriptions[0].title

@@ -26,6 +26,7 @@ NURESTConnectionResponseCodeEmpty = 204;
 NURESTConnectionResponseCodeInternalServerError = 500;
 NURESTConnectionResponseCodeMultipleChoices = 300;
 NURESTConnectionResponseCodeNotFound = 404;
+NURESTConnectionResponseCodeMethodNotAllowed = 405;
 NURESTConnectionResponseCodePermissionDenied = 403;
 NURESTConnectionResponseCodePreconditionFailed = 412;
 NURESTConnectionResponseCodeServiceUnavailable = 503;

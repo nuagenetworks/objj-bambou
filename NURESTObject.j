@@ -62,6 +62,7 @@ function _format_log_json(string)
 @implementation NURESTObject : CPObject
 {
     CPDate          _creationDate       @accessors(property=creationDate);
+    CPString        _externalID         @accessors(property=externalID);
     CPString        _ID                 @accessors(property=ID);
     CPString        _localID            @accessors(property=localID);
     CPString        _owner              @accessors(property=owner);
@@ -90,6 +91,7 @@ function _format_log_json(string)
         _localID = [CPString UUID];
 
         [self exposeLocalKeyPathToREST:@"ID"];
+        [self exposeLocalKeyPathToREST:@"externalID"];
         [self exposeLocalKeyPathToREST:@"parentID"];
         [self exposeLocalKeyPathToREST:@"parentType"];
         [self exposeLocalKeyPathToREST:@"owner"];
@@ -621,14 +623,15 @@ function _format_log_json(string)
 {
     if (self = [super init])
     {
-        _restAttributes     = [aCoder decodeObjectForKey:@"_restAttributes"];
         _bindableAttributes = [aCoder decodeObjectForKey:@"_bindableAttributes"];
+        _externalID         = [aCoder decodeObjectForKey:@"_externalID"];
         _ID                 = [aCoder decodeObjectForKey:@"_ID"];
         _localID            = [aCoder decodeObjectForKey:@"_localID"];
         _parentID           = [aCoder decodeObjectForKey:@"_parentID"];
-        _parentType         = [aCoder decodeObjectForKey:@"_parentType"];
-        _validationMessage  = [aCoder decodeObjectForKey:@"_validationMessage"];
         _parentObject       = [aCoder decodeObjectForKey:@"_parentObject"];
+        _parentType         = [aCoder decodeObjectForKey:@"_parentType"];
+        _restAttributes     = [aCoder decodeObjectForKey:@"_restAttributes"];
+        _validationMessage  = [aCoder decodeObjectForKey:@"_validationMessage"];
     }
 
     return self;
@@ -638,14 +641,15 @@ function _format_log_json(string)
 */
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    [aCoder encodeObject:_restAttributes forKey:@"_restAttributes"];
     [aCoder encodeObject:_bindableAttributes forKey:@"_bindableAttributes"];
+    [aCoder encodeObject:_externalID forKey:@"_externalID"];
     [aCoder encodeObject:_ID forKey:@"_ID"];
     [aCoder encodeObject:_localID forKey:@"_localID"];
     [aCoder encodeObject:_parentID forKey:@"_parentID"];
-    [aCoder encodeObject:_parentType forKey:@"_parentType"];
-    [aCoder encodeObject:_validationMessage forKey:@"_validationMessage"];
     [aCoder encodeObject:_parentObject forKey:@"_parentObject"];
+    [aCoder encodeObject:_parentType forKey:@"_parentType"];
+    [aCoder encodeObject:_restAttributes forKey:@"_restAttributes"];
+    [aCoder encodeObject:_validationMessage forKey:@"_validationMessage"];
 }
 
 @end

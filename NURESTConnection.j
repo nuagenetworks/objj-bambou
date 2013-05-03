@@ -91,7 +91,7 @@ var NURESTObjectLastActionTimer;
 /*! Initialize a NURESTConnection with a CPURLRequest
     @param aRequest the request to user
 */
-- (void)initWithRequest:aRequest
+- (id)initWithRequest:aRequest
 {
     if (self = [super init])
     {

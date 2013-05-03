@@ -33,7 +33,7 @@
     [[_entity valueForKey:_destinationKeyPath] removeAllObjects];
 }
 
-- (void)newObject
+- (id)newObject
 {
     return nil;
 }

@@ -54,7 +54,7 @@ _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ = 0;
 /*! Returns the defaultCenter. Initialize it if needed
     @returns default NURESTPushCenter
 */
-+ (void)defaultCenter
++ (NURESTPushCenter)defaultCenter
 {
     if (!NURESTPushCenterDefault)
         NURESTPushCenterDefault = [[NURESTPushCenter alloc] init];

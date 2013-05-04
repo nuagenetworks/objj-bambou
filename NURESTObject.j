@@ -349,10 +349,11 @@ function _format_log_json(string)
             break;
 
         case NURESTConnectionResponseCodeMultipleChoices:
-            var confirmation = [NURESTConfirmation postRESTConfirmationWithName:responseObject.errors[0].descriptions[0].title
-                                                                    description:responseObject.errors[0].descriptions[0].description
-                                                                        choices:responseObject.choices
-                                                                     connection:aConnection];
+            var confirmName = responseObject.errors[0].descriptions[0].title,
+                confirmDescription = responseObject.errors[0].descriptions[0].description,
+                confirmChoices = responseObject.choices
+
+            [NURESTConfirmation postRESTConfirmationWithName:confirmName description:confirmDescription choices:confirmChoices connection:aConnection];
             break;
 
         case NURESTConnectionResponseCodeConflict:
@@ -365,16 +366,14 @@ function _format_log_json(string)
         case NURESTConnectionResponseCodePreconditionFailed:
         case NURESTConnectionResponseBadRequest:
         case NURESTConnectionResponseCodeInternalServerError:
-            var errorName = (responseObject && responseObject.errors) ? responseObject.errors[0].descriptions[0].title : @"Unknow error",
-                errorDescription = (responseObject && responseObject.errors) ? responseObject.errors[0].descriptions[0].description : @"Unknow error";
+            var containsInfo = (responseObject && responseObject.errors),
+                errorName = containsInfo? responseObject.errors[0].descriptions[0].title : @"Unknow error",
+                errorDescription = containsInfo ? responseObject.errors[0].descriptions[0].description : @"Unknow error";
 
-            [NURESTError postRESTErrorWithName:errorName
-                                   description:errorDescription
-                                    connection:aConnection];
+            [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
 
             [localTarget performSelector:localSelector withObject:aConnection];
             break;
-
 
         case NURESTConnectionResponseCodeZero:
             CPLog.error("RESTCAPPUCCINO: Connection error with code 0. Sending NURESTConnectionFailureNotification notification and exiting.");

@@ -21,9 +21,8 @@
 @global CPApp
 @global _format_log_json;
 
-
-NURESTPushCenterPushReceived            = @"NURESTPushCenterPushReceived";
-NURESTPushCenterServerUnreachable       = @"NURESTPushCenterServerUnreachable";
+NURESTPushCenterPushReceived      = @"NURESTPushCenterPushReceived";
+NURESTPushCenterServerUnreachable = @"NURESTPushCenterServerUnreachable";
 
 NUPushEventTypeCreate = @"CREATE";
 NUPushEventTypeUpdate = @"UPDATE";
@@ -36,12 +35,13 @@ var NURESTPushCenterDefault;
 _DEBUG_NUMBER_OF_RECEIVED_EVENTS_ = 0;
 _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ = 0;
 
+
 /*! This is the default push center
     Use it by calling [NURESTPushCenter defaultCenter];
 */
 @implementation NURESTPushCenter : CPObject
 {
-    CPURL               _URL                    @accessors(property=URL);
+    CPURL               _URL                @accessors(property=URL);
 
     BOOL                _isRunning;
     NURESTConnection    _currentConnection;

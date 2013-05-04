@@ -19,24 +19,24 @@
 
 @class NURESTLoginController
 
-NURESTConnectionResponseBadRequest = 400;
-NURESTConnectionResponseCodeConflict = 409;
-NURESTConnectionResponseCodeCreated = 201;
-NURESTConnectionResponseCodeEmpty = 204;
+NURESTConnectionResponseBadRequest              = 400;
+NURESTConnectionResponseCodeConflict            = 409;
+NURESTConnectionResponseCodeCreated             = 201;
+NURESTConnectionResponseCodeEmpty               = 204;
 NURESTConnectionResponseCodeInternalServerError = 500;
-NURESTConnectionResponseCodeMultipleChoices = 300;
-NURESTConnectionResponseCodeNotFound = 404;
-NURESTConnectionResponseCodeMethodNotAllowed = 405;
-NURESTConnectionResponseCodePermissionDenied = 403;
-NURESTConnectionResponseCodePreconditionFailed = 412;
-NURESTConnectionResponseCodeServiceUnavailable = 503;
-NURESTConnectionResponseCodeSuccess = 200;
-NURESTConnectionResponseCodeUnauthorized = 401;
-NURESTConnectionResponseCodeZero = 0;
-NURESTConnectionTimeout = 42;
+NURESTConnectionResponseCodeMethodNotAllowed    = 405;
+NURESTConnectionResponseCodeMultipleChoices     = 300;
+NURESTConnectionResponseCodeNotFound            = 404;
+NURESTConnectionResponseCodePermissionDenied    = 403;
+NURESTConnectionResponseCodePreconditionFailed  = 412;
+NURESTConnectionResponseCodeServiceUnavailable  = 503;
+NURESTConnectionResponseCodeSuccess             = 200;
+NURESTConnectionResponseCodeUnauthorized        = 401;
+NURESTConnectionResponseCodeZero                = 0;
+NURESTConnectionTimeout                         = 42;
 
-NURESTConnectionFailureNotification = @"NURESTConnectionFailureNotification";
-NURESTConnectionIdleTimeoutNotification = @"NURESTConnectionIdleTimeoutNotification";
+NURESTConnectionFailureNotification             = @"NURESTConnectionFailureNotification";
+NURESTConnectionIdleTimeoutNotification         = @"NURESTConnectionIdleTimeoutNotification";
 
 var NURESTObjectLastActionTimer;
 
@@ -73,9 +73,7 @@ var NURESTObjectLastActionTimer;
     @param anErrorSelector the selector to send to anObject in case of error
     @return NURESTConnection fully ready NURESTConnection
 */
-+ (NURESTConnection)connectionWithRequest:(CPURLRequest)aRequest
-                                  target:(CPObject)anObject
-                                selector:(SEL)aSelector
++ (NURESTConnection)connectionWithRequest:(CPURLRequest)aRequest target:(CPObject)anObject selector:(SEL)aSelector
 {
     var connection = [[NURESTConnection alloc] initWithRequest:aRequest];
     [connection setTarget:anObject];
@@ -119,11 +117,9 @@ var NURESTObjectLastActionTimer;
         if (NURESTObjectLastActionTimer)
             clearTimeout(NURESTObjectLastActionTimer);
 
-        NURESTObjectLastActionTimer = setTimeout(function(){
+        NURESTObjectLastActionTimer = setTimeout(function() {
             console.warn("Connection idle timer run off!")
-            [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConnectionIdleTimeoutNotification
-                                                                object:nil
-                                                             userInfo:nil];
+            [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConnectionIdleTimeoutNotification object:nil userInfo:nil];
         }, 1200000);
     }
 
@@ -131,13 +127,13 @@ var NURESTObjectLastActionTimer;
     {
         _HTTPRequest.open([_request HTTPMethod], [[_request URL] absoluteString], YES);
 
-        _HTTPRequest._nativeRequest.timeout = _XHRTimeout;
-        _HTTPRequest.onreadystatechange = function() { [self _readyStateDidChange]; }
+        _HTTPRequest._nativeRequest.timeout   = _XHRTimeout;
+        _HTTPRequest.onreadystatechange       = function() { [self _readyStateDidChange]; }
         _HTTPRequest._nativeRequest.ontimeout = function() { [self _XHRDidTimeout]; }
 
         var fields = [_request allHTTPHeaderFields],
-            key = nil,
-            keys = [fields keyEnumerator];
+            key    = nil,
+            keys   = [fields keyEnumerator];
 
         while (key = [keys nextObject])
             _HTTPRequest.setRequestHeader(key, [fields objectForKey:key]);
@@ -164,12 +160,12 @@ var NURESTObjectLastActionTimer;
 {
     _isCanceled = YES;
 
-    try { _HTTPRequest.abort(); } catch (anException) {}
+    try { _HTTPRequest.abort(); } catch (e) {}
 }
 
 - (void)reset
 {
-    _HTTPRequest = new CFHTTPRequest();
+    _HTTPRequest  = new CFHTTPRequest();
     _responseData = nil;
     _responseCode = nil;
     _errorMessage = nil;

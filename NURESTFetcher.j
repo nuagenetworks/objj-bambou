@@ -109,7 +109,6 @@
 
         [target performSelector:selector withObjects:self, _entity, someContent];
     }
-
 }
 
 - (CPArray)latestSortDescriptors

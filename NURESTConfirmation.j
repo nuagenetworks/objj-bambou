@@ -15,12 +15,12 @@
 *
 */
 
-
 @import <Foundation/Foundation.j>
 
-@global NURESTConnection;
+@class NURESTConnection;
 
 NURESTConfirmationNotification = @"NURESTConfirmationNotification";
+
 
 @implementation NURESTConfirmation : CPObject
 {
@@ -38,9 +38,7 @@ NURESTConfirmationNotification = @"NURESTConfirmationNotification";
     [confirmation setChoices:someChoices];
     [confirmation setConnection:aConnection];
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConfirmationNotification
-                                                object:confirmation
-                                             userInfo:nil];
+    [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConfirmationNotification object:confirmation userInfo:nil];
 }
 
 @end

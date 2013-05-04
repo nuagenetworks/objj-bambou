@@ -302,11 +302,10 @@ function _format_log_json(string)
     // be sure to set the content-type as application/json
     [aRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
 
-    var connection = [NURESTConnection connectionWithRequest:aRequest
-                                                      target:self
-                                                    selector:@selector(_didReceiveRESTReply:)];
+    var connection = [NURESTConnection connectionWithRequest:aRequest target:self selector:@selector(_didReceiveRESTReply:)];
 
     [connection setUserInfo:someUserInfo];
+
     [connection setInternalUserInfo:{   "localTarget": aLocalObject,
                                         "localSelector": aSelector,
                                         "remoteTarget": anObject,

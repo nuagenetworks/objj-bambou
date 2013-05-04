@@ -17,9 +17,10 @@
 
 @import <Foundation/Foundation.j>
 
-@global NURESTConnection;
+@class NURESTConnection;
 
 NURESTErrorNotification = @"NURESTErrorNotification";
+
 
 @implementation NURESTError : CPObject
 {
@@ -35,9 +36,7 @@ NURESTErrorNotification = @"NURESTErrorNotification";
     [error setDescription:aDescription];
     [error setConnection:aConnection];
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:NURESTErrorNotification
-                                                object:error
-                                             userInfo:nil];
+    [[CPNotificationCenter defaultCenter] postNotificationName:NURESTErrorNotification object:error userInfo:nil];
 }
 
 @end

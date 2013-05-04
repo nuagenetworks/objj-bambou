@@ -27,6 +27,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 @global NUDataTransferController
 @global TNAlert
 @global CPCriticalAlertStyle
+@global CPWarningAlertStyle
 @global NURESTConnectionFailureNotification
 @global NURESTConnectionResponseCodeZero
 @global NURESTConnectionResponseCodeConflict
@@ -394,6 +395,7 @@ function _format_log_json(string)
                                            target:self
                                           actions:availableChoices];
 
+            [confirmAlert setAlertStyle:CPWarningAlertStyle];
             [confirmAlert setUserInfo:{"connection": aConnection, "choices": responseObject.choices}];
             [confirmAlert setDelegate:self];
             [confirmAlert runModal];

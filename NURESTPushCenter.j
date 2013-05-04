@@ -44,7 +44,7 @@ _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ = 0;
     CPURL               _URL                    @accessors(property=URL);
 
     BOOL                _isRunning;
-    NURESTConnection    _currentConnexion;
+    NURESTConnection    _currentConnection;
 }
 
 
@@ -54,7 +54,7 @@ _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ = 0;
 /*! Returns the defaultCenter. Initialize it if needed
     @returns default NURESTPushCenter
 */
-+ (void)defaultCenter
++ (NURESTPushCenter)defaultCenter
 {
     if (!NURESTPushCenterDefault)
         NURESTPushCenterDefault = [[NURESTPushCenter alloc] init];
@@ -87,8 +87,8 @@ _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ = 0;
 
      _isRunning = NO;
 
-     if (_currentConnexion)
-         [_currentConnexion cancel];
+     if (_currentConnection)
+         [_currentConnection cancel];
 }
 
 
@@ -106,10 +106,10 @@ _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ = 0;
     var eventURL =  anUUID ? @"events?uuid=" + anUUID : @"events",
         request = [CPURLRequest requestWithURL:[CPURL URLWithString:eventURL relativeToURL:_URL]];
 
-    _currentConnexion = [NURESTConnection connectionWithRequest:request target:self selector:@selector(_didReceiveEvent:)];
-    [_currentConnexion setTimeout:0];
-    [_currentConnexion setIgnoreRequestIdle:YES];
-    [_currentConnexion start];
+    _currentConnection = [NURESTConnection connectionWithRequest:request target:self selector:@selector(_didReceiveEvent:)];
+    [_currentConnection setTimeout:0];
+    [_currentConnection setIgnoreRequestIdle:YES];
+    [_currentConnection start];
 }
 
 /*! @ignore
@@ -124,7 +124,7 @@ _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ = 0;
 
     if ([aConnection responseCode] !== 200)
     {
-        CPLog.error("RESTCAPPUCCINO PUSHCENTER: Connexion failure URL %s. Error Code: %s, (%s) ", _URL, [aConnection responseCode], [aConnection errorMessage]);
+        CPLog.error("RESTCAPPUCCINO PUSHCENTER: Connection failure URL %s. Error Code: %s, (%s) ", _URL, [aConnection responseCode], [aConnection errorMessage]);
 
         [[CPNotificationCenter defaultCenter] postNotificationName:NURESTPushCenterServerUnreachable
                                                             object:self

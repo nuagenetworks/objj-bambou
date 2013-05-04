@@ -147,7 +147,7 @@ function _format_log_json(string)
 
 /*! Returns the list of bindable attributes
 */
-- (void)bindableAttributes
+- (CPArray)bindableAttributes
 {
     return [[_restAttributes allKeys] arrayByAddingObjectsFromArray:_bindableAttributes];
 }

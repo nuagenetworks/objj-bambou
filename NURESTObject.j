@@ -19,16 +19,18 @@
 
 @import "NURESTConnection.j"
 @import "NURESTLoginController.j"
+@import "NURESTError.j"
+@import "NURESTConfirmation.j"
 
 NURESTObjectStatusTypeSuccess   = @"SUCCESS";
 NURESTObjectStatusTypeWarning   = @"WARNING";
 NURESTObjectStatusTypeFailed    = @"FAILED";
 
 @global NUDataTransferController
-@global TNAlert
 @global CPCriticalAlertStyle
 @global CPWarningAlertStyle
 @global NURESTConnectionFailureNotification
+@global NURESTErrorNotification
 @global NURESTConnectionResponseCodeZero
 @global NURESTConnectionResponseCodeConflict
 @global NURESTConnectionResponseCodeUnauthorized
@@ -323,137 +325,67 @@ function _format_log_json(string)
     {
         CPLog.error("RESTCAPPUCCINO: Connection timeouted. Sending NURESTConnectionFailureNotification notification and exiting.");
         [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConnectionFailureNotification
-                                                    object:self
-                                                 userInfo:aConnection];
+                                                            object:self
+                                                          userInfo:aConnection];
          return;
     }
 
-    var url = [[[aConnection request] URL] absoluteString],
-        HTTPMethod = [[aConnection request] HTTPMethod],
+    var url            = [[[aConnection request] URL] absoluteString],
+        HTTPMethod     = [[aConnection request] HTTPMethod],
         responseObject = [[aConnection responseData] JSONObject],
-        rawString = [[aConnection responseData] rawString],
-        responseCode = [aConnection responseCode],
-        localTarget = [aConnection internalUserInfo]["localTarget"],
-        localSelector = [aConnection internalUserInfo]["localSelector"];
+        rawString      = [[aConnection responseData] rawString],
+        responseCode   = [aConnection responseCode],
+        localTarget    = [aConnection internalUserInfo]["localTarget"],
+        localSelector  = [aConnection internalUserInfo]["localSelector"];
 
     CPLog.trace("RESTCAPPUCCINO: <<<< Response for\n\n%@ %@ (%@):\n\n%@", HTTPMethod, url, responseCode, _format_log_json(rawString));
 
     switch (responseCode)
     {
-        // ok or empty
         case NURESTConnectionResponseCodeEmpty:
         case NURESTConnectionResponseCodeSuccess:
         case NURESTConnectionResponseCodeCreated:
             [localTarget performSelector:localSelector withObject:aConnection];
             break;
 
-        // resource not found
+        case NURESTConnectionResponseCodeMultipleChoices:
+            var confirmation = [NURESTConfirmation postRESTConfirmationWithName:responseObject.errors[0].descriptions[0].title
+                                                                    description:responseObject.errors[0].descriptions[0].description
+                                                                        choices:responseObject.choices
+                                                                     connection:aConnection];
+            break;
+
+        case NURESTConnectionResponseCodeConflict:
+        case NURESTConnectionResponseCodeUnauthorized:
+            [localTarget performSelector:localSelector withObject:aConnection];
+            break;
+
         case NURESTConnectionResponseCodeNotFound:
         case NURESTConnectionResponseCodeMethodNotAllowed:
-            if (responseObject && responseObject.errors)
-            {
-                [TNAlert showAlertWithMessage:responseObject.errors[0].descriptions[0].title
-                                                  informative:responseObject.errors[0].descriptions[0].description
-                                                        style:CPCriticalAlertStyle];
-            }
-            [localTarget performSelector:localSelector withObject:aConnection];
-
-            break;
-
         case NURESTConnectionResponseCodePreconditionFailed:
-            [TNAlert showAlertWithMessage:@"412 Error"
-                              informative:@"Header precondition failed for " + url + ". Please report this error back."
-                                    style:CPCriticalAlertStyle];
-            [localTarget performSelector:localSelector withObject:aConnection];
-            break;
-
-        // Bad request
         case NURESTConnectionResponseBadRequest:
-            [TNAlert showAlertWithMessage:@"400 Error"
-                              informative:@"Server responded with a bad request for " + url + ". Please report this error back."
-                                    style:CPCriticalAlertStyle];
-            [localTarget performSelector:localSelector withObject:aConnection];
-        break;
-
-        // internal server error
         case NURESTConnectionResponseCodeInternalServerError:
-            [TNAlert showAlertWithMessage:responseObject.errors[0].descriptions[0].title
-                              informative:responseObject.errors[0].descriptions[0].description
-                                    style:CPCriticalAlertStyle];
+            var errorName = (responseObject && responseObject.errors) ? responseObject.errors[0].descriptions[0].title : @"Unknow error",
+                errorDescription = (responseObject && responseObject.errors) ? responseObject.errors[0].descriptions[0].description : @"Unknow error";
+
+            [NURESTError postRESTErrorWithName:errorName
+                                   description:errorDescription
+                                    connection:aConnection];
+
             [localTarget performSelector:localSelector withObject:aConnection];
             break;
 
-        // multiple choice
-        case NURESTConnectionResponseCodeMultipleChoices:
-            var availableChoices = [];
 
-            for (var i = 0; i < responseObject.choices.length; i++)
-                [availableChoices addObject:[responseObject.choices[i].label, nil]];
-
-            var confirmAlert = [TNAlert alertWithMessage:responseObject.errors[0].descriptions[0].title
-                                      informative:responseObject.errors[0].descriptions[0].description
-                                           target:self
-                                          actions:availableChoices];
-
-            [confirmAlert setAlertStyle:CPWarningAlertStyle];
-            [confirmAlert setUserInfo:{"connection": aConnection, "choices": responseObject.choices}];
-            [confirmAlert setDelegate:self];
-            [confirmAlert runModal];
-
-            if ([[confirmAlert._window contentView] respondsToSelector:@selector(setCucappIdentifier:)])
-                [[confirmAlert._window contentView] setCucappIdentifier:@"confirmation_alert"];
-
-            break;
-
-        // Not authorized
-        case NURESTConnectionResponseCodeUnauthorized:
-            // in that case we just forward the connection to let traget deal with it
-            [localTarget performSelector:localSelector withObject:aConnection];
-            break;
-
-        // Server Validation Error
-        case NURESTConnectionResponseCodeConflict:
-            // in that case we just forward the connection to let login manager deal with it
-            [localTarget performSelector:localSelector withObject:aConnection];
-            break;
-
-        // XMLHTTPREQUEST error
         case NURESTConnectionResponseCodeZero:
             CPLog.error("RESTCAPPUCCINO: Connection error with code 0. Sending NURESTConnectionFailureNotification notification and exiting.");
             [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConnectionFailureNotification
-                                                        object:self
-                                                     userInfo:nil];
+                                                                object:self
+                                                              userInfo:nil];
             break;
 
         default:
-            var title = @"Unknown response code",
-                informative = @"The server send an unknown response code:  " + responseCode;
-            [TNAlert showAlertWithMessage:title informative:informative style:CPCriticalAlertStyle];
-            CPLog.error(@"RESTCAPPUCCINO: %@: %@\n\n%@", title, informative, [[aConnection responseData] rawString]);
+            CPLog.error(@"RESTCAPPUCCINO: Report this error, because this should not happen:\n\n%@", [[aConnection responseData] rawString]);
     }
-}
-
-/*! @ignore
-    Reprocess the URL to add ?validate=false if needed
-*/
-- (void)alertDidEnd:(CPAlert)theAlert returnCode:(int)returnCode
-{
-    var connection = [theAlert userInfo].connection,
-        choices = [theAlert userInfo].choices,
-        request = [[CPURLRequest alloc] init],
-        selectedChoiceID = [choices objectAtIndex:returnCode].id;
-
-    if (!selectedChoiceID)
-        return;
-
-    [request setURL:[CPURL URLWithString:[[[connection request] URL] absoluteString] + "?responseChoice=" + selectedChoiceID]];
-    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-    [request setHTTPMethod:[[connection request] HTTPMethod]];
-    [request setHTTPBody:[[connection request] HTTPBody]];
-
-    [connection setRequest:request];
-    [connection reset];
-    [connection start];
 }
 
 

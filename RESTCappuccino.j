@@ -15,7 +15,9 @@
 *
 */
 
+@import "NURESTConfirmation.j"
 @import "NURESTConnection.j"
+@import "NURESTError.j"
 @import "NURESTFetcher.j"
 @import "NURESTLoginController.j"
 @import "NURESTObject.j"

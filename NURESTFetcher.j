@@ -16,16 +16,19 @@
 */
 
 @import <Foundation/Foundation.j>
+@import "NURESTConnection.j"
 
 @implementation NURESTFetcher : CPObject
 {
-    CPNumber    _latestLoadedPage       @accessors(property=latestLoadedPage);
-    CPNumber    _pageSize               @accessors(property=pageSize);
-    CPNumber    _totalCount             @accessors(property=totalCount);
-    CPObject    _entity                 @accessors(property=entity);
-    CPArray     _restName               @accessors(property=restName);
-    CPString    _destinationKeyPath     @accessors(property=destinationKeyPath);
-    CPString    _orderedBy;
+    CPArray             _restName               @accessors(property=restName);
+    CPNumber            _latestLoadedPage       @accessors(property=latestLoadedPage);
+    CPNumber            _pageSize               @accessors(property=pageSize);
+    CPNumber            _totalCount             @accessors(property=totalCount);
+    CPObject            _entity                 @accessors(property=entity);
+    CPString            _destinationKeyPath     @accessors(property=destinationKeyPath);
+    NURESTConnection    _lastConnection         @accessors(property=lastConnection);
+
+    CPString            _orderedBy;
 }
 
 - (void)flush
@@ -64,9 +67,15 @@
 */
 - (void)_didFetchObjects:(CPURLConnection)aConnection
 {
+    _lastConnection = aConnection;
+
     if ([aConnection responseCode] != 200)
     {
-        //[self _sendContent:[] usingConnectionInfo:[aConnection userInfo]];
+        _totalCount = 0;
+        _pageSize = 0;
+        _latestLoadedPage = 0;
+        _orderedBy = @"";
+        [self _sendContent:nil usingConnection:aConnection];
         return;
     }
 

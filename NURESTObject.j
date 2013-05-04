@@ -355,13 +355,8 @@ function _format_log_json(string)
                                                   informative:responseObject.errors[0].descriptions[0].description
                                                         style:CPCriticalAlertStyle];
             }
-            else
-            {
-                // [TNAlert showAlertWithMessage:@"404 Error"
-                //                   informative:@"URL " + url + " not found."
-                //                         style:CPCriticalAlertStyle];
-                [localTarget performSelector:localSelector withObject:aConnection];
-            }
+            [localTarget performSelector:localSelector withObject:aConnection];
+
             break;
 
         case NURESTConnectionResponseCodePreconditionFailed:
@@ -373,10 +368,10 @@ function _format_log_json(string)
 
         // Bad request
         case NURESTConnectionResponseBadRequest:
-        [TNAlert showAlertWithMessage:@"400 Error"
-                          informative:@"Server responded with a bad request for " + url + ". Please report this error back."
-                                style:CPCriticalAlertStyle];
-        [localTarget performSelector:localSelector withObject:aConnection];
+            [TNAlert showAlertWithMessage:@"400 Error"
+                              informative:@"Server responded with a bad request for " + url + ". Please report this error back."
+                                    style:CPCriticalAlertStyle];
+            [localTarget performSelector:localSelector withObject:aConnection];
         break;
 
         // internal server error
@@ -384,6 +379,7 @@ function _format_log_json(string)
             [TNAlert showAlertWithMessage:responseObject.errors[0].descriptions[0].title
                               informative:responseObject.errors[0].descriptions[0].description
                                     style:CPCriticalAlertStyle];
+            [localTarget performSelector:localSelector withObject:aConnection];
             break;
 
         // multiple choice

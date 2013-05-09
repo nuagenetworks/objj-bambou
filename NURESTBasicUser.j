@@ -115,8 +115,6 @@ var NURESTBasicUserCurrent = nil;
         _APIKey         = [aCoder decodeObjectForKey:@"_APIKey"];
         _password       = [aCoder decodeObjectForKey:@"_password"];
         _userName       = [aCoder decodeObjectForKey:@"_userName"];
-
-        [self _init];
     }
 
     return self;

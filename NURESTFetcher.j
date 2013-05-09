@@ -20,12 +20,12 @@
 
 @implementation NURESTFetcher : CPObject
 {
-    CPArray             _restName               @accessors(property=restName);
     CPNumber            _latestLoadedPage       @accessors(property=latestLoadedPage);
     CPNumber            _pageSize               @accessors(property=pageSize);
     CPNumber            _totalCount             @accessors(property=totalCount);
     CPObject            _entity                 @accessors(property=entity);
     CPString            _destinationKeyPath     @accessors(property=destinationKeyPath);
+    CPString            _restName              @accessors(property=restName);
     NURESTConnection    _lastConnection         @accessors(property=lastConnection);
 
     CPString            _orderedBy;
@@ -65,7 +65,7 @@
 
 /*! @ignore
 */
-- (void)_didFetchObjects:(CPURLConnection)aConnection
+- (void)_didFetchObjects:(NURESTConnection)aConnection
 {
     _lastConnection = aConnection;
 
@@ -100,7 +100,7 @@
     [self _sendContent:newlyFetchedObjects usingConnection:aConnection];
 }
 
-- (void)_sendContent:(CPArray)someContent usingConnection:(id)aConnection
+- (void)_sendContent:(CPArray)someContent usingConnection:(NURESTConnection)aConnection
 {
     if (aConnection)
     {

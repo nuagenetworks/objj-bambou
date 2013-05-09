@@ -28,8 +28,8 @@ var DefaultNURESTLoginController;
     CPString _APIKey    @accessors(property=APIKey);
     CPString _company   @accessors(property=company);
     CPString _password  @accessors(property=password);
-    CPString _URL       @accessors(property=URL);
     CPString _user      @accessors(property=user);
+    CPURL    _URL       @accessors(property=URL);
 }
 
 + (NULoginController)defaultController

@@ -22,3 +22,4 @@
 @import "NURESTLoginController.j"
 @import "NURESTObject.j"
 @import "NURESTPushCenter.j"
+@import "NURESTBasicUser.j"

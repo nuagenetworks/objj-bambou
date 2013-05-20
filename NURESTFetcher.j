@@ -122,7 +122,9 @@
     for (var i = 0; i < [elements count]; i++)
     {
         var tokens = elements[i].split(" "),
-            descriptor = [CPSortDescriptor sortDescriptorWithKey:tokens[0]  ascending:(tokens[1] == "ASC")];
+            descriptor = [CPSortDescriptor sortDescriptorWithKey:tokens[0]
+                                                       ascending:(tokens[1] == "ASC")
+                                                        selector:@selector(caseInsensitiveCompare:)];
 
         [descriptors addObject:descriptor];
     }

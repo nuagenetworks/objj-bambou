@@ -107,6 +107,7 @@
         var target = [aConnection internalUserInfo]["remoteTarget"],
             selector = [aConnection internalUserInfo]["remoteSelector"];
 
+        // should be - (void)didFetcher:ofObject:countContent: or something like that
         [target performSelector:selector withObjects:self, _entity, someContent];
     }
 }
@@ -130,6 +131,25 @@
     }
 
     return descriptors;
+}
+
+- (void)countObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject
+{
+    var request = [CPURLRequest requestWithURL:[CPURL URLWithString:_restName relativeToURL:[_entity RESTQueryURL]]];
+
+    [request setHTTPMethod:@"HEAD"];
+
+    [_entity sendRESTCall:request performSelector:@selector(_didCountObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:nil];
+}
+
+- (void)_didCountObjects:(NURESTConnection)aConnection
+{
+    var count = parseInt([aConnection nativeRequest].getResponseHeader("X-Nuage-Count")),
+        target = [aConnection internalUserInfo]["remoteTarget"],
+        selector = [aConnection internalUserInfo]["remoteSelector"];
+
+    // should be - (void)didFetcher:ofObject:countContent: or something like that
+    [target performSelector:selector withObjects:self, _entity, count];
 }
 
 @end

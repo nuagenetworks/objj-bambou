@@ -24,16 +24,26 @@ NURESTErrorNotification = @"NURESTErrorNotification";
 
 @implementation NURESTError : CPObject
 {
-    NURESTConnection    connection  @accessors;
-    CPString            name        @accessors;
-    CPString            description @accessors;
+    CPDate              receivedDate    @accessors;
+    CPString            description     @accessors;
+    CPString            name            @accessors;
+    NURESTConnection    connection      @accessors;
 }
 
-+ (void)postRESTErrorWithName:(CPString)aName description:(CPString)aDescription connection:(NURESTConnection)aConnection
++ (void)RESTErrorWithName:(CPString)aName description:(CPString)aDescription
 {
     var error = [[NURESTError alloc] init];
     [error setName:aName];
     [error setDescription:aDescription];
+    [error setReceivedDate:new Date()];
+
+    return error;
+}
+
++ (void)postRESTErrorWithName:(CPString)aName description:(CPString)aDescription connection:(NURESTConnection)aConnection
+{
+    var error = [NURESTError RESTErrorWithName:aName description:aDescription];
+
     [error setConnection:aConnection];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:NURESTErrorNotification object:error userInfo:nil];

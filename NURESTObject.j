@@ -582,3 +582,54 @@ function _format_log_json(string)
 
 @end
 
+
+@implementation NURESTObject (EXPERIMENTAL)
+
+/*! Create object and call given function
+*/
+- (void)createAndCallFunction:(function)aFunction
+{
+    var URLRequest = [CPURLRequest requestWithURL:[self RESTQueryURL]],
+        body = [self objectToJSON];
+
+    [URLRequest setHTTPMethod:@"POST"];
+    [URLRequest setHTTPBody:body];
+
+    [self sendRESTCall:URLRequest performSelector:@selector(_didCreateAndCallFunction:) ofObject:self andPerformRemoteSelector:nil ofObject:nil userInfo:aFunction];
+}
+
+- (void)_didCreateAndCallFunction:(NURESTConnection)aConnection
+{
+    var callback = [aConnection userInfo],
+        JSONData = [[aConnection responseData] JSONObject];
+
+    try {[self objectFromJSON:JSONData[0]];} catch(e) {}
+
+    callback(self);
+}
+
+/*! Create object and call given function
+*/
+- (void)addChild:(NURESTObject)aChildObject andCallFunction:(function)aFunction
+{
+    var URLRequest = [CPURLRequest requestWithURL:[CPURL URLWithString:[aChildObject RESTName] + 's' relativeToURL:[self RESTQueryURL]]],
+        body = [aChildObject objectToJSON];
+
+    [URLRequest setHTTPMethod:@"POST"];
+    [URLRequest setHTTPBody:body];
+
+    [self sendRESTCall:URLRequest performSelector:@selector(_didAddChildAndCallFunction:) ofObject:self andPerformRemoteSelector:nil ofObject:nil userInfo:{"function": aFunction, "child": aChildObject}];
+}
+
+- (void)_didAddChildAndCallFunction:(NURESTConnection)aConnection
+{
+    var callback = [aConnection userInfo]["function"],
+        child  = [aConnection userInfo]["child"],
+        JSONData = [[aConnection responseData] JSONObject];
+
+    try {[child objectFromJSON:JSONData[0]];} catch(e) {}
+
+    callback(child);
+}
+
+@end

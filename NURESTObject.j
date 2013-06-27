@@ -335,7 +335,10 @@ function _format_log_json(string)
         rawString      = [[aConnection responseData] rawString],
         responseCode   = [aConnection responseCode],
         localTarget    = [aConnection internalUserInfo]["localTarget"],
-        localSelector  = [aConnection internalUserInfo]["localSelector"];
+        localSelector  = [aConnection internalUserInfo]["localSelector"],
+        remoteTarget    = [aConnection internalUserInfo]["remoteTarget"],
+        remoteSelector  = [aConnection internalUserInfo]["remoteSelector"],
+        localyManagedConflict = NO;
 
     CPLog.trace("RESTCAPPUCCINO: <<<< Response for\n\n%@ %@ (%@):\n\n%@", HTTPMethod, url, responseCode, _format_log_json(rawString));
 
@@ -355,11 +358,23 @@ function _format_log_json(string)
             [NURESTConfirmation postRESTConfirmationWithName:confirmName description:confirmDescription choices:confirmChoices connection:aConnection];
             break;
 
-        case NURESTConnectionResponseCodeConflict:
         case NURESTConnectionResponseCodeUnauthorized:
             [localTarget performSelector:localSelector withObject:aConnection];
             break;
 
+        case NURESTConnectionResponseCodeConflict:
+            // Here is a little bit of assumption. We received a conflict, but we have no remote selector to call
+            // This certainly means that this error will remain unknown to the user. So we take the call, and
+            // we push a NURESTError about it. Because we are cool guys. And we love you. Don't thank us, it's natural
+            if (!remoteTarget || !remoteSelector)
+                localyManagedConflict = YES; // as we don't break here, it will trigger the next test case.
+            else
+            {
+                [localTarget performSelector:localSelector withObject:aConnection];
+                break;
+            }
+
+        case localyManagedConflict:
         case NURESTConnectionResponseCodeNotFound:
         case NURESTConnectionResponseCodeMethodNotAllowed:
         case NURESTConnectionResponseCodePreconditionFailed:

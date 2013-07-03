@@ -602,6 +602,31 @@ function _format_log_json(string)
 
 /*! Create object and call given function
 */
+- (void)saveAndCallFunction:(function)aFunction
+{
+    var URLRequest = [CPURLRequest requestWithURL:[self RESTQueryURL]],
+        body = [self objectToJSON];
+
+    [URLRequest setHTTPMethod:@"PUT"];
+    [URLRequest setHTTPBody:body];
+
+    [self sendRESTCall:URLRequest performSelector:@selector(_didSaveAndCallFunction:) ofObject:self andPerformRemoteSelector:nil ofObject:nil userInfo:aFunction];
+}
+
+- (void)_didSaveAndCallFunction:(NURESTConnection)aConnection
+{
+    var callback = [aConnection userInfo],
+        JSONData = [[aConnection responseData] JSONObject];
+
+    try {[self objectFromJSON:JSONData[0]];} catch(e) {}
+
+    callback(self);
+}
+
+
+
+/*! Create object and call given function
+*/
 - (void)createAndCallFunction:(function)aFunction
 {
     var URLRequest = [CPURLRequest requestWithURL:[self RESTQueryURL]],

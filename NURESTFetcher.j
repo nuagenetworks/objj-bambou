@@ -25,7 +25,8 @@
     CPNumber            _totalCount             @accessors(property=totalCount);
     CPObject            _entity                 @accessors(property=entity);
     CPString            _destinationKeyPath     @accessors(property=destinationKeyPath);
-    CPString            _restName              @accessors(property=restName);
+    CPString            _restName               @accessors(property=restName);
+    CPString            _transactionID          @accessors(property=transactionID);
     NURESTConnection    _lastConnection         @accessors(property=lastConnection);
 
     CPString            _orderedBy;
@@ -60,6 +61,7 @@
     if (aPage !== nil)
         [request setValue:aPage forHTTPHeaderField:@"X-Nuage-Page"];
 
+    _transactionID = [CPString UUID];
     [_entity sendRESTCall:request performSelector:@selector(_didFetchObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:nil];
 }
 

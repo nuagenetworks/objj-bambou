@@ -63,6 +63,8 @@
 
     _transactionID = [CPString UUID];
     [_entity sendRESTCall:request performSelector:@selector(_didFetchObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:nil];
+
+    return _transactionID;
 }
 
 /*! @ignore

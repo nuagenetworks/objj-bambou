@@ -112,16 +112,20 @@ function _format_log_json(string)
 
 - (void)discard
 {
+    [self discardChildren];
+    _parentObject = nil;
+    _childrenLists = nil;
+
+    delete self;
+}
+
+- (void)discardChildren
+{
     var enumerator = [_childrenLists objectEnumerator],
         children;
 
     while (children = [enumerator nextObject])
         [children makeObjectsPerformSelector:@selector(discard)];
-
-    _parentObject = nil;
-    _childrenLists = nil;
-
-    delete self;
 }
 
 - (void)registerChildrenList:(CPArray)aList

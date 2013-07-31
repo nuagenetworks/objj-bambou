@@ -77,6 +77,8 @@ function _format_log_json(string)
     CPArray         _bindableAttributes @accessors(property=bindableAttributes);
 
     NURESTObject    _parentObject       @accessors(property=parentObject);
+
+    CPArray         _childrenLists;
 }
 
 
@@ -104,11 +106,28 @@ function _format_log_json(string)
     return self;
 }
 
+
+#pragma mark -
+#pragma mark  Memory Management
+
 - (void)discard
 {
+    var enumerator = [_childrenLists objectEnumerator],
+        children;
+
+    while (children = [enumerator nextObject])
+        [children makeObjectsPerformSelector:@selector(discard)];
+
     _parentObject = nil;
+    _childrenLists = nil;
+
+    delete self;
 }
 
+- (void)registerChildrenList:(CPArray)aList
+{
+    [_childrenLists addObject:aList];
+}
 
 #pragma mark -
 #pragma mark REST configuration

@@ -104,6 +104,11 @@ function _format_log_json(string)
     return self;
 }
 
+- (void)discard
+{
+    _parentObject = nil;
+}
+
 
 #pragma mark -
 #pragma mark REST configuration

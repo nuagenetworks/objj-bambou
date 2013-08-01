@@ -92,9 +92,10 @@
     _latestLoadedPage = parseInt([aConnection nativeRequest].getResponseHeader("X-Nuage-Page"));
     _orderedBy = [aConnection nativeRequest].getResponseHeader("X-Nuage-OrderBy");
 
-    for (var i = 0; i < [JSONObject count]; i++)
+    for (var i = [JSONObject count] - 1; i >= 0; i--)
     {
         var newObject = [self newObject];
+
         [newObject objectFromJSON:JSONObject[i]];
         [newObject setParentObject:_entity];
         [dest addObject:newObject];

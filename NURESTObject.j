@@ -534,7 +534,8 @@ function _format_log_json(string)
 - (void)setEntities:(CPArray)someEntities intoResource:(CPString)aResource andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
     var IDsList = [];
-    for (var i = 0 ; i < [someEntities count]; i++)
+
+    for (var i = [someEntities count] - 1; i >= 0; i--)
         [IDsList addObject:[[someEntities objectAtIndex:i] ID]];
 
     var URLRequest = [CPURLRequest requestWithURL:aResource ? [CPURL URLWithString:aResource relativeToURL:[self RESTQueryURL]] : [self RESTQueryURL]],

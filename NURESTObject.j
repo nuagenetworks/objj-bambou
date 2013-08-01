@@ -188,11 +188,12 @@ function _format_log_json(string)
 */
 - (void)objectFromJSON:(CPString)aJSONObject
 {
-    var obj = aJSONObject;
+    var obj = aJSONObject,
+        keys = [_restAttributes allKeys];
 
-    for (var i = 0; i < [[_restAttributes allKeys] count]; i++)
+    for (var i = [keys count] - 1; i >= 0; i--)
     {
-        var attribute = [[_restAttributes allKeys] objectAtIndex:i],
+        var attribute = [keys objectAtIndex:i],
             restPath = [_restAttributes objectForKey:attribute],
             restValue;
 
@@ -209,11 +210,12 @@ function _format_log_json(string)
 */
 - (CPString)objectToJSON
 {
-    var json = {};
+    var json = {},
+        keys = [_restAttributes allKeys];
 
-    for (var i = 0; i < [[_restAttributes allKeys] count]; i++)
+    for (var i = [keys count] - 1; i >= 0; i--)
     {
-        var attribute = [[_restAttributes allKeys] objectAtIndex:i],
+        var attribute = [keys objectAtIndex:i],
             restPath = [_restAttributes objectForKey:attribute],
             value = [self valueForKeyPath:attribute];
 
@@ -381,7 +383,7 @@ function _format_log_json(string)
         case NURESTConnectionResponseCodeMultipleChoices:
             var confirmName = responseObject.errors[0].descriptions[0].title,
                 confirmDescription = responseObject.errors[0].descriptions[0].description,
-                confirmChoices = responseObject.choices
+                confirmChoices = responseObject.choices;
 
             [NURESTConfirmation postRESTConfirmationWithName:confirmName description:confirmDescription choices:confirmChoices connection:aConnection];
             break;

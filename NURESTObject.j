@@ -121,11 +121,11 @@ function _format_log_json(string)
 
 - (void)discardChildren
 {
-    var enumerator = [_childrenLists objectEnumerator],
-        children;
-
-    while (children = [enumerator nextObject])
+    for (var i = [_childrenLists count] - 1; i >= 0; i--)
+    {
+        var children = [_childrenLists objectAtIndex:i];
         [children makeObjectsPerformSelector:@selector(discard)];
+    }
 }
 
 - (void)registerChildrenList:(CPArray)aList

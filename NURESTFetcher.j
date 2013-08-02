@@ -125,7 +125,7 @@
     var descriptors = [CPArray array],
         elements = _orderedBy.split(",");
 
-    for (var i = 0; i < [elements count]; i++)
+    for (var i = 0, c = [elements count]; i < c; i++)
     {
         var tokens = elements[i].split(" "),
             descriptor = [CPSortDescriptor sortDescriptorWithKey:tokens[0]

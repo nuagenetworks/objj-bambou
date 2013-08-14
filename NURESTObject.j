@@ -123,7 +123,7 @@ function _format_log_json(string)
 {
     for (var i = [_childrenLists count] - 1; i >= 0; i--)
     {
-        var children = [_childrenLists objectAtIndex:i];
+        var children = _childrenLists[i];
         [children makeObjectsPerformSelector:@selector(discard)];
     }
 }
@@ -193,7 +193,7 @@ function _format_log_json(string)
 
     for (var i = [keys count] - 1; i >= 0; i--)
     {
-        var attribute = [keys objectAtIndex:i],
+        var attribute = keys[i],
             restPath = [_restAttributes objectForKey:attribute],
             restValue;
 
@@ -215,7 +215,7 @@ function _format_log_json(string)
 
     for (var i = [keys count] - 1; i >= 0; i--)
     {
-        var attribute = [keys objectAtIndex:i],
+        var attribute = keys[i],
             restPath = [_restAttributes objectForKey:attribute],
             value = [self valueForKeyPath:attribute];
 
@@ -536,7 +536,7 @@ function _format_log_json(string)
     var IDsList = [];
 
     for (var i = [someEntities count] - 1; i >= 0; i--)
-        [IDsList addObject:[[someEntities objectAtIndex:i] ID]];
+        [IDsList addObject:[someEntities[i] ID]];
 
     var URLRequest = [CPURLRequest requestWithURL:aResource ? [CPURL URLWithString:aResource relativeToURL:[self RESTQueryURL]] : [self RESTQueryURL]],
         body = JSON.stringify(IDsList, null, 4);

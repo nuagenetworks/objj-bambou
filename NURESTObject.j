@@ -87,7 +87,7 @@ function _format_log_json(string)
 
 /*! Initialize the NURESTObject
 */
-- (NURESTObject)init
+- (id)init
 {
     if (self = [super init])
     {

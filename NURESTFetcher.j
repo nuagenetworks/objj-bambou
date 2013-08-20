@@ -23,10 +23,10 @@
     CPNumber            _latestLoadedPage       @accessors(property=latestLoadedPage);
     CPNumber            _pageSize               @accessors(property=pageSize);
     CPNumber            _totalCount             @accessors(property=totalCount);
-    CPObject            _entity                 @accessors(property=entity);
     CPString            _destinationKeyPath     @accessors(property=destinationKeyPath);
     CPString            _restName               @accessors(property=restName);
     CPString            _transactionID          @accessors(property=transactionID);
+    id                  _entity                 @accessors(property=entity);
     NURESTConnection    _lastConnection         @accessors(property=lastConnection);
 
     CPString            _orderedBy;

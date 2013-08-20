@@ -606,6 +606,7 @@ function _format_log_json(string)
         _parentType         = [aCoder decodeObjectForKey:@"_parentType"];
         _restAttributes     = [aCoder decodeObjectForKey:@"_restAttributes"];
         _validationMessage  = [aCoder decodeObjectForKey:@"_validationMessage"];
+        _owner              = [aCoder decodeObjectForKey:@"_owner"];
     }
 
     return self;
@@ -624,6 +625,7 @@ function _format_log_json(string)
     [aCoder encodeObject:_parentType forKey:@"_parentType"];
     [aCoder encodeObject:_restAttributes forKey:@"_restAttributes"];
     [aCoder encodeObject:_validationMessage forKey:@"_validationMessage"];
+    [aCoder encodeObject:_owner forKey:@"_owner"];
 }
 
 @end

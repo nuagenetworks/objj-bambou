@@ -201,6 +201,7 @@ function _format_log_json(string)
             restValue = [CPDate dateWithTimeIntervalSince1970:(parseInt(obj[restPath]) / 1000)];
         else
             restValue = obj[restPath];
+
         [self setValue:restValue forKeyPath:attribute];
     }
 }
@@ -221,9 +222,6 @@ function _format_log_json(string)
 
         if (attribute == "creationDate")
             continue;
-
-        if (value == [CPNull null])
-            value = nil;
 
         json[restPath] = value;
     }

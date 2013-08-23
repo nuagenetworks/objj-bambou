@@ -222,6 +222,9 @@ function _format_log_json(string)
         if (attribute == "creationDate")
             continue;
 
+        if (value == [CPNull null])
+            value = nil;
+
         json[restPath] = value;
     }
 

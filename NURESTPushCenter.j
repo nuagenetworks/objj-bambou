@@ -137,22 +137,14 @@ _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ = 0;
     {
         var numberOfIndividualEvents = JSONObject.events.length;
 
-        try
-        {
+        _DEBUG_NUMBER_OF_RECEIVED_EVENTS_ += numberOfIndividualEvents;
+        _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_++;
 
-            _DEBUG_NUMBER_OF_RECEIVED_EVENTS_ += numberOfIndividualEvents;
-            _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_++;
+        CPLog.debug("RESTCAPPUCCINO PUSHCENTER:\n\nReceived Push #%d (total: %d, latest: %d):\n\n%@\n\n",
+                        _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_, _DEBUG_NUMBER_OF_RECEIVED_EVENTS_,
+                        numberOfIndividualEvents, _format_log_json([[aConnection responseData] rawString]));
 
-            CPLog.debug("RESTCAPPUCCINO PUSHCENTER:\n\nReceived Push #%d (total: %d, latest: %d):\n\n%@\n\n",
-                            _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_, _DEBUG_NUMBER_OF_RECEIVED_EVENTS_,
-                            numberOfIndividualEvents, _format_log_json([[aConnection responseData] rawString]));
-
-            [[CPNotificationCenter defaultCenter] postNotificationName:NURESTPushCenterPushReceived object:self userInfo:JSONObject];
-        }
-        catch (e)
-        {
-            CPLog.error("RESTCAPPUCCINO PUSHCENTER: An error occured while processing a push event: " + e);
-        }
+        [[CPNotificationCenter defaultCenter] postNotificationName:NURESTPushCenterPushReceived object:self userInfo:JSONObject];
     }
 
     if (_isRunning)

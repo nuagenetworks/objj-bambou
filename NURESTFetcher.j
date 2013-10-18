@@ -112,7 +112,7 @@
         var target = [aConnection internalUserInfo]["remoteTarget"],
             selector = [aConnection internalUserInfo]["remoteSelector"];
 
-        // should be - (void)didFetcher:ofObject:countContent: or something like that
+        // should be - (void)fetcher:ofObject:didCountContent: or something like that
         [target performSelector:selector withObjects:self, _entity, someContent];
     }
 }
@@ -153,7 +153,7 @@
         target = [aConnection internalUserInfo]["remoteTarget"],
         selector = [aConnection internalUserInfo]["remoteSelector"];
 
-    // should be - (void)didFetcher:ofObject:countContent: or something like that
+    // should be - (void)fetcher:ofObject:didCountContent: or something like that
     [target performSelector:selector withObjects:self, _entity, count];
 }
 

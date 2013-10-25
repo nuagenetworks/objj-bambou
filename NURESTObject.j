@@ -262,7 +262,7 @@ function _format_log_json(string)
     return _owner == [[NURESTUser defaultUser] ID];
 }
 
-- (BOOL)isCurrentUserOwnerOfAnyParentOfTypes:(CPArray)someRESTNames
+- (BOOL)isCurrentUserOwnerOfAnyParentMatchingTypes:(CPArray)someRESTNames
 {
     var parent = self;
 

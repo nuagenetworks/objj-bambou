@@ -262,6 +262,17 @@ function _format_log_json(string)
     return _owner == [[NURESTUser defaultUser] ID];
 }
 
+- (BOOL)isCurrentUserOwnerOfAnyParentOfTypes:(CPArray)someRESTNames
+{
+    var parent = self;
+
+    while (parent = [parent _parentObject])
+        if ([someRESTNames containsObject:[parent RESTName]] && [parent isOwnedByCurrentUser])
+            return YES;
+
+    return NO;
+}
+
 
 #pragma mark -
 #pragma mark Custom accesors

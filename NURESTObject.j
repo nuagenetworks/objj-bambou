@@ -266,7 +266,7 @@ function _format_log_json(string)
 {
     var parent = self;
 
-    while (parent = [parent _parentObject])
+    while (parent = [parent parentObject])
         if ([someRESTNames containsObject:[parent RESTName]] && [parent isOwnedByCurrentUser])
             return YES;
 

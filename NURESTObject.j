@@ -26,6 +26,7 @@ NURESTObjectStatusTypeSuccess   = @"SUCCESS";
 NURESTObjectStatusTypeWarning   = @"WARNING";
 NURESTObjectStatusTypeFailed    = @"FAILED";
 
+@class NURESTUser
 @global NUDataTransferController
 @global CPCriticalAlertStyle
 @global CPWarningAlertStyle
@@ -254,6 +255,11 @@ function _format_log_json(string)
 - (CPString)RESTName
 {
     return [[self class] RESTName];
+}
+
+- (BOOL)isOwnedByCurrentUser
+{
+    return _owner == [[NURESTUser defaultUser] ID];
 }
 
 

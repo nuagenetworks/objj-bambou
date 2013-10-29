@@ -234,6 +234,26 @@ function _format_log_json(string)
 #pragma mark -
 #pragma mark Comparison
 
+- (BOOL)isSame:(NURESTObject)anEntity
+{
+    if ([anEntity RESTName] != [self RESTName])
+        return NO;
+
+    var attributes = [self bindableAttributes];
+
+    for (var i = [attributes count] - 1; i >= 0; i--)
+    {
+        var attribute = attributes[i];
+
+        if (attribute == "creationDate")
+            continue;
+
+        if ([self valueForKeyPath:attribute] != [anEntity valueForKeyPath:attribute])
+            return NO;
+    }
+    return YES;
+}
+
 - (BOOL)isEqual:(NURESTObject)anEntity
 {
     if (_ID)
@@ -616,15 +636,16 @@ function _format_log_json(string)
     if (self = [super init])
     {
         _bindableAttributes = [aCoder decodeObjectForKey:@"_bindableAttributes"];
+        _creationDate       = [aCoder decodeObjectForKey:@"_creationDate"];
         _externalID         = [aCoder decodeObjectForKey:@"_externalID"];
         _ID                 = [aCoder decodeObjectForKey:@"_ID"];
         _localID            = [aCoder decodeObjectForKey:@"_localID"];
+        _owner              = [aCoder decodeObjectForKey:@"_owner"];
         _parentID           = [aCoder decodeObjectForKey:@"_parentID"];
         _parentObject       = [aCoder decodeObjectForKey:@"_parentObject"];
         _parentType         = [aCoder decodeObjectForKey:@"_parentType"];
         _restAttributes     = [aCoder decodeObjectForKey:@"_restAttributes"];
         _validationMessage  = [aCoder decodeObjectForKey:@"_validationMessage"];
-        _owner              = [aCoder decodeObjectForKey:@"_owner"];
     }
 
     return self;
@@ -635,15 +656,16 @@ function _format_log_json(string)
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [aCoder encodeObject:_bindableAttributes forKey:@"_bindableAttributes"];
+    [aCoder encodeObject:_creationDate forKey:@"_creationDate"];
     [aCoder encodeObject:_externalID forKey:@"_externalID"];
     [aCoder encodeObject:_ID forKey:@"_ID"];
     [aCoder encodeObject:_localID forKey:@"_localID"];
+    [aCoder encodeObject:_owner forKey:@"_owner"];
     [aCoder encodeObject:_parentID forKey:@"_parentID"];
     [aCoder encodeObject:_parentObject forKey:@"_parentObject"];
     [aCoder encodeObject:_parentType forKey:@"_parentType"];
     [aCoder encodeObject:_restAttributes forKey:@"_restAttributes"];
     [aCoder encodeObject:_validationMessage forKey:@"_validationMessage"];
-    [aCoder encodeObject:_owner forKey:@"_owner"];
 }
 
 @end

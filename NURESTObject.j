@@ -302,6 +302,17 @@ function _format_log_json(string)
     return NO;
 }
 
+- (BOOL)parentOfType:(CPString)aRESTName
+{
+    var parent = self;
+
+    while (parent = [parent parentObject])
+        if (aRESTName == [parent RESTName])
+            return parent;
+
+    return nil;
+}
+
 
 #pragma mark -
 #pragma mark Custom accesors

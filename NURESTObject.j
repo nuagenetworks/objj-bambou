@@ -302,12 +302,12 @@ function _format_log_json(string)
     return NO;
 }
 
-- (NURESTObject)parentWithRESTName:(CPString)aRESTName
+- (NURESTObject)parentWithRESTNameMatching:(CPArray)someRESTNames
 {
     var parent = self;
 
     while (parent = [parent parentObject])
-        if (aRESTName == [parent RESTName])
+        if ([someRESTNames containsObject:[parent RESTName]])
             return parent;
 
     return nil;

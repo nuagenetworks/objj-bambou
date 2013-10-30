@@ -302,7 +302,7 @@ function _format_log_json(string)
     return NO;
 }
 
-- (BOOL)parentOfType:(CPString)aRESTName
+- (NURESTObject)parentOfType:(CPString)aRESTName
 {
     var parent = self;
 

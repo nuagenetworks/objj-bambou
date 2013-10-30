@@ -248,7 +248,16 @@ function _format_log_json(string)
         if (attribute == "creationDate")
             continue;
 
-        if ([self valueForKeyPath:attribute] != [anEntity valueForKeyPath:attribute])
+        var localValue = [self valueForKeyPath:attribute],
+            remoteValue = [anEntity valueForKeyPath:attribute];
+
+        if ([localValue isKindOfClass:CPString] && ![localValue length])
+            localValue = nil;
+
+        if ([remoteValue isKindOfClass:CPString] && ![remoteValue length])
+            remoteValue = nil;
+
+        if (localValue != remoteValue)
             return NO;
     }
     return YES;

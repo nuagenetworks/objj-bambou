@@ -34,7 +34,7 @@
 
 - (void)flush
 {
-    [[_entity valueForKey:_destinationKeyPath] removeAllObjects];
+    [[_entity valueForKeyPath:_destinationKeyPath] removeAllObjects];
 }
 
 - (id)newObject

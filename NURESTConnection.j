@@ -97,7 +97,7 @@ var NURESTObjectLastActionTimer;
         _isCanceled = NO;
         _hasTimeouted = NO;
         _usesAuthentication = YES;
-        _XHRTimeout = 30000;
+        _XHRTimeout = 300000;
         _ignoreRequestIdle = NO;
         _HTTPRequest = new CFHTTPRequest();
     }

@@ -98,10 +98,14 @@
 
         [newObject objectFromJSON:JSONObject[i]];
         [newObject setParentObject:_entity];
-        [dest addObject:newObject];
+
+        if (![dest containsObject:newObject])
+            [dest addObject:newObject];
+
         [newlyFetchedObjects addObject:newObject];
     }
 
+    // @TODO: wy sending a copy? I should be better to directly pass the dest. It should be working by now.
     [self _sendContent:newlyFetchedObjects usingConnection:aConnection];
 }
 

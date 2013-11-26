@@ -189,19 +189,21 @@ function _format_log_json(string)
 */
 - (void)objectFromJSON:(CPString)aJSONObject
 {
-    var obj = aJSONObject,
-        keys = [_restAttributes allKeys];
+    var keys = [_restAttributes allKeys];
+
+    // set the mandatory attributes first
+    [self setID:aJSONObject.ID];
+    [self setCreationDate:[CPDate dateWithTimeIntervalSince1970:(parseInt(aJSONObject.creationDate) / 1000)]];
+
+    // cleanup these keys
+    [keys removeObject:@"ID"]
+    [keys removeObject:@"creationDate"]
 
     for (var i = [keys count] - 1; i >= 0; i--)
     {
         var attribute = keys[i],
             restPath = [_restAttributes objectForKey:attribute],
-            restValue;
-
-        if (attribute == "creationDate")
-            restValue = [CPDate dateWithTimeIntervalSince1970:(parseInt(obj[restPath]) / 1000)];
-        else
-            restValue = obj[restPath];
+            restValue =  aJSONObject[restPath];
 
         [self setValue:restValue forKeyPath:attribute];
     }

@@ -144,7 +144,17 @@
 
 - (void)countObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
+    [self countObjectsAndCallSelector:aSelector ofObject:anObject matchingFilter:nil];
+}
+
+- (void)countObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject matchingFilter:(CPPredicate)aFilter
+{
     var request = [CPURLRequest requestWithURL:[CPURL URLWithString:_restName relativeToURL:[_entity RESTQueryURL]]];
+
+    if ([aFilter isKindOfClass:CPPredicate])
+        [request setValue:[aFilter predicateFormat] forHTTPHeaderField:@"X-Nuage-Filter"];
+    else if ([aFilter isKindOfClass:CPString])
+        [request setValue:aFilter forHTTPHeaderField:@"X-Nuage-Filter"];
 
     [request setHTTPMethod:@"HEAD"];
 

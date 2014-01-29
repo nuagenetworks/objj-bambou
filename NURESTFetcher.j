@@ -106,6 +106,9 @@
     }
 
     // @TODO: wy sending a copy? I should be better to directly pass the dest. It should be working by now.
+    // @EDIT: Actually, I'm not sure. This is used as datasource content, and removing stuff from datasource
+    // will remove it from the RESTObject array, and that could cause some weird error. I need to deeply check
+    // if it is safe or not to simply give the destination array... wait and see
     [self _sendContent:newlyFetchedObjects usingConnection:aConnection];
 }
 

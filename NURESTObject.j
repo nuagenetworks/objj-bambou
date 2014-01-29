@@ -471,7 +471,7 @@ function _format_log_json(string)
         case NURESTConnectionResponseBadRequest:
         case NURESTConnectionResponseCodeInternalServerError:
             var containsInfo = (responseObject && responseObject.errors),
-                errorName = containsInfo? responseObject.errors[0].descriptions[0].title : @"Unknown error",
+                errorName = containsInfo? responseObject.errors[0].descriptions[0].title : @"Internal Server Error",
                 errorDescription = containsInfo ? responseObject.errors[0].descriptions[0].description : @"Please check the log for more information about this error";
 
             [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];

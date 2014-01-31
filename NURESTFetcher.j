@@ -23,6 +23,7 @@
     CPNumber            _latestLoadedPage       @accessors(property=latestLoadedPage);
     CPNumber            _pageSize               @accessors(property=pageSize);
     CPNumber            _totalCount             @accessors(property=totalCount);
+    CPPredicate         _masterFilter           @accessors(property=masterFilter);
     CPString            _destinationKeyPath     @accessors(property=destinationKeyPath);
     CPString            _restName               @accessors(property=restName);
     CPString            _transactionID          @accessors(property=transactionID);
@@ -53,7 +54,9 @@
 
     [request setHTTPMethod:@"GET"];
 
-    if ([aFilter isKindOfClass:CPPredicate])
+    if (_masterFilter)
+        [request setValue:[_masterFilter predicateFormat] forHTTPHeaderField:@"X-Nuage-Filter"];
+    else if ([aFilter isKindOfClass:CPPredicate])
         [request setValue:[aFilter predicateFormat] forHTTPHeaderField:@"X-Nuage-Filter"];
     else if ([aFilter isKindOfClass:CPString])
         [request setValue:aFilter forHTTPHeaderField:@"X-Nuage-Filter"];
@@ -154,7 +157,9 @@
 {
     var request = [CPURLRequest requestWithURL:[CPURL URLWithString:_restName relativeToURL:[_entity RESTQueryURL]]];
 
-    if ([aFilter isKindOfClass:CPPredicate])
+    if (_masterFilter)
+        [request setValue:[_masterFilter predicateFormat] forHTTPHeaderField:@"X-Nuage-Filter"];
+    else if ([aFilter isKindOfClass:CPPredicate])
         [request setValue:[aFilter predicateFormat] forHTTPHeaderField:@"X-Nuage-Filter"];
     else if ([aFilter isKindOfClass:CPString])
         [request setValue:aFilter forHTTPHeaderField:@"X-Nuage-Filter"];

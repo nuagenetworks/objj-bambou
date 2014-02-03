@@ -20,6 +20,7 @@
 
 @implementation NURESTFetcher : CPObject
 {
+    CPArray             _groupedBy              @accessors(property=groupedBy);
     CPNumber            _latestLoadedPage       @accessors(property=latestLoadedPage);
     CPNumber            _pageSize               @accessors(property=pageSize);
     CPNumber            _totalCount             @accessors(property=totalCount);
@@ -43,6 +44,33 @@
     return nil;
 }
 
+- (void)_prepareHeadersForRequest:(CPURLRequest)aRequest withFilter:(id)aFilter page:(CPNumber)aPage
+{
+    if (_masterFilter)
+        [aRequest setValue:[_masterFilter predicateFormat] forHTTPHeaderField:@"X-Nuage-Filter"];
+    else if ([aFilter isKindOfClass:CPPredicate])
+        [aRequest setValue:[aFilter predicateFormat] forHTTPHeaderField:@"X-Nuage-Filter"];
+    else if ([aFilter isKindOfClass:CPString])
+        [aRequest setValue:aFilter forHTTPHeaderField:@"X-Nuage-Filter"];
+
+    if (aPage !== nil)
+        [aRequest setValue:aPage forHTTPHeaderField:@"X-Nuage-Page"];
+
+    if (_groupedBy)
+    {
+        var headerString = @""
+        for (var i = 0, c = [_groupedBy count]; i < c; i++)
+        {
+            headerString += _groupedBy[i];
+            if (i + 1 < c)
+                headerString += @", ";
+        }
+
+        [aRequest setValue:@"true" forHTTPHeaderField:@"X-Nuage-GroupedBy"];
+        [aRequest setValue:headerString forHTTPHeaderField:@"X-Nuage-GroupedBy-Attributes"];
+    }
+}
+
 - (void)fetchObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
     [self fetchObjectsMatchingFilter:nil page:nil andCallSelector:aSelector ofObject:anObject];
@@ -54,15 +82,7 @@
 
     [request setHTTPMethod:@"GET"];
 
-    if (_masterFilter)
-        [request setValue:[_masterFilter predicateFormat] forHTTPHeaderField:@"X-Nuage-Filter"];
-    else if ([aFilter isKindOfClass:CPPredicate])
-        [request setValue:[aFilter predicateFormat] forHTTPHeaderField:@"X-Nuage-Filter"];
-    else if ([aFilter isKindOfClass:CPString])
-        [request setValue:aFilter forHTTPHeaderField:@"X-Nuage-Filter"];
-
-    if (aPage !== nil)
-        [request setValue:aPage forHTTPHeaderField:@"X-Nuage-Page"];
+    [self _prepareHeadersForRequest:request withFilter:aFilter page:aPage];
 
     _transactionID = [CPString UUID];
     [_entity sendRESTCall:request performSelector:@selector(_didFetchObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:nil];
@@ -115,6 +135,27 @@
     [self _sendContent:newlyFetchedObjects usingConnection:aConnection];
 }
 
+- (void)countObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject matchingFilter:(CPPredicate)aFilter
+{
+    var request = [CPURLRequest requestWithURL:[CPURL URLWithString:_restName relativeToURL:[_entity RESTQueryURL]]];
+
+    [request setHTTPMethod:@"HEAD"];
+
+    [self _prepareHeadersForRequest:request withFilter:aFilter page:nil];
+
+    [_entity sendRESTCall:request performSelector:@selector(_didCountObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:nil];
+}
+
+- (void)_didCountObjects:(NURESTConnection)aConnection
+{
+    var count = parseInt([aConnection nativeRequest].getResponseHeader("X-Nuage-Count")),
+        target = [aConnection internalUserInfo]["remoteTarget"],
+        selector = [aConnection internalUserInfo]["remoteSelector"];
+
+    // should be - (void)fetcher:ofObject:didCountContent: or something like that
+    [target performSelector:selector withObjects:self, _entity, count];
+}
+
 - (void)_sendContent:(CPArray)someContent usingConnection:(NURESTConnection)aConnection
 {
     if (aConnection)
@@ -151,32 +192,6 @@
 - (void)countObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
     [self countObjectsAndCallSelector:aSelector ofObject:anObject matchingFilter:nil];
-}
-
-- (void)countObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject matchingFilter:(CPPredicate)aFilter
-{
-    var request = [CPURLRequest requestWithURL:[CPURL URLWithString:_restName relativeToURL:[_entity RESTQueryURL]]];
-
-    if (_masterFilter)
-        [request setValue:[_masterFilter predicateFormat] forHTTPHeaderField:@"X-Nuage-Filter"];
-    else if ([aFilter isKindOfClass:CPPredicate])
-        [request setValue:[aFilter predicateFormat] forHTTPHeaderField:@"X-Nuage-Filter"];
-    else if ([aFilter isKindOfClass:CPString])
-        [request setValue:aFilter forHTTPHeaderField:@"X-Nuage-Filter"];
-
-    [request setHTTPMethod:@"HEAD"];
-
-    [_entity sendRESTCall:request performSelector:@selector(_didCountObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:nil];
-}
-
-- (void)_didCountObjects:(NURESTConnection)aConnection
-{
-    var count = parseInt([aConnection nativeRequest].getResponseHeader("X-Nuage-Count")),
-        target = [aConnection internalUserInfo]["remoteTarget"],
-        selector = [aConnection internalUserInfo]["remoteSelector"];
-
-    // should be - (void)fetcher:ofObject:didCountContent: or something like that
-    [target performSelector:selector withObjects:self, _entity, count];
 }
 
 @end

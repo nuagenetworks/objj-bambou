@@ -58,7 +58,7 @@
 
     if (_groupedBy)
     {
-        var headerString = @""
+        var headerString = @"";
         for (var i = 0, c = [_groupedBy count]; i < c; i++)
         {
             headerString += _groupedBy[i];

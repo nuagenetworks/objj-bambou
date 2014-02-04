@@ -66,8 +66,8 @@
                 headerString += @", ";
         }
 
-        [aRequest setValue:@"true" forHTTPHeaderField:@"X-Nuage-GroupedBy"];
-        [aRequest setValue:headerString forHTTPHeaderField:@"X-Nuage-GroupedBy-Attributes"];
+        [aRequest setValue:@"true" forHTTPHeaderField:@"X-Nuage-GroupBy"];
+        [aRequest setValue:headerString forHTTPHeaderField:@"X-Nuage-Attributes"];
     }
 }
 

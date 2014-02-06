@@ -531,21 +531,21 @@ function _format_log_json(string)
 */
 - (void)createAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self manageChildEntity:self intoResource:nil method:@"POST" andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didCreateObject:)];
+    [self manageChildEntity:self resource:nil method:@"POST" andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didCreateObject:)];
 }
 
 /*! Delete object and call given selector
 */
 - (void)deleteAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self manageChildEntity:self intoResource:nil method:@"DELETE" andCallSelector:aSelector ofObject:anObject];
+    [self manageChildEntity:self resource:nil method:@"DELETE" andCallSelector:aSelector ofObject:anObject customConnectionHandler:nil];
 }
 
 /*! Update object and call given selector
 */
 - (void)saveAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self manageChildEntity:self intoResource:nil method:@"PUT" andCallSelector:aSelector ofObject:anObject];
+    [self manageChildEntity:self resource:nil method:@"PUT" andCallSelector:aSelector ofObject:anObject customConnectionHandler:nil];
 }
 
 
@@ -554,50 +554,33 @@ function _format_log_json(string)
 
 /*! Add given entity into given ressource of current object
     for example, to add a NUGroup into a NUEnterprise, you can call
-     [anEnterpriese addChildEntity:aGroup intoResource:@"groups" andCallSelector:nil ofObject:nil]
+     [anEnterpriese addChildEntity:aGroup resource:@"groups" andCallSelector:nil ofObject:nil]
 
     @param anEntity the NURESTObject object of add
-    @param aResource the destination REST resource
     @param aSelector the selector to call when complete
     @param anObject the target object
 */
-- (void)addChildEntity:(NURESTObject)anEntity intoResource:(CPString)aResource andCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (void)addChildEntity:(NURESTObject)anEntity andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self manageChildEntity:anEntity intoResource:aResource method:@"POST" andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didAddChildObject:)];
+    [self manageChildEntity:anEntity resource:[anEntity RESTResourceName] method:@"POST" andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didAddChildObject:)];
 }
 
 /*! Remove given entity from given ressource of current object
     for example, to remove a NUGroup into a NUEnterprise, you can call
-     [anEnterpriese removeChildEntity:aGroup fromResource:@"groups" andCallSelector:nil ofObject:nil]
+     [anEnterpriese removeChildEntity:aGroup andCallSelector:nil ofObject:nil]
 
     @param anEntity the NURESTObject object of add
-    @param aResource the destination REST resource
     @param aSelector the selector to call when complete
     @param anObject the target object
 */
-- (void)removeChildEntity:(NURESTObject)anEntity fromResource:(CPString)aResource andCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (void)removeChildEntity:(NURESTObject)anEntity andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self manageChildEntity:anEntity intoResource:aResource method:@"DELETE" andCallSelector:aSelector ofObject:anObject];
+    [self manageChildEntity:anEntity resource:[anEntity RESTResourceName] method:@"DELETE" andCallSelector:aSelector ofObject:anObject customConnectionHandler:nil];
 }
 
 /*! Low level child manegement. Send given HTTP method with given entity to given ressource of current object
     for example, to remove a NUGroup into a NUEnterprise, you can call
-     [anEnterpriese removeChildEntity:aGroup fromResource:@"groups" method:NURESTObjectMethodDelete andCallSelector:nil ofObject:nil]
-
-    @param anEntity the NURESTObject object of add
-    @param aResource the destination REST resource
-    @param aMethod HTTP method
-    @param aSelector the selector to call when complete
-    @param anObject the target object
-*/
-- (void)manageChildEntity:(NURESTObject)anEntity intoResource:(CPString)aResource method:(CPString)aMethod andCallSelector:(SEL)aSelector ofObject:(id)anObject
-{
-    [self manageChildEntity:anEntity intoResource:aResource method:aMethod andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didPerformStandardOperation:)];
-}
-
-/*! Low level child manegement. Send given HTTP method with given entity to given ressource of current object
-    for example, to remove a NUGroup into a NUEnterprise, you can call
-     [anEnterpriese removeChildEntity:aGroup fromResource:@"groups" method:NURESTObjectMethodDelete andCallSelector:nil ofObject:nil]
+     [anEnterpriese removeChildEntity:aGroup method:NURESTObjectMethodDelete andCallSelector:nil ofObject:nil]
 
     @param anEntity the NURESTObject object of add
     @param aResource the destination REST resource
@@ -606,7 +589,7 @@ function _format_log_json(string)
     @param anObject the target object
     @param aCustomHandler custom handler to call when complete
 */
-- (void)manageChildEntity:(NURESTObject)anEntity intoResource:(CPString)aResource method:(CPString)aMethod andCallSelector:(SEL)aSelector ofObject:(id)anObject customConnectionHandler:(SEL)aCustomHandler
+- (void)manageChildEntity:(NURESTObject)anEntity resource:(CPString)aResource method:(CPString)aMethod andCallSelector:(SEL)aSelector ofObject:(id)anObject customConnectionHandler:(SEL)aCustomHandler
 {
     var body = [anEntity objectToJSON],
         request;
@@ -623,7 +606,8 @@ function _format_log_json(string)
     [request setHTTPMethod:aMethod];
     [request setHTTPBody:body];
 
-    [self sendRESTCall:request performSelector:aCustomHandler ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:anEntity];
+    var handlerSelector = aCustomHandler || @selector(_didPerformStandardOperation:)
+    [self sendRESTCall:request performSelector:handlerSelector ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:anEntity];
 }
 
 /*! Uses this to reference given objects into the given resource of the actual object.
@@ -632,20 +616,20 @@ function _format_log_json(string)
     @param aSelector the selector to call when complete
     @param anObject the target object
 */
-- (void)setEntities:(CPArray)someEntities intoResource:(CPString)aResource andCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (void)setEntities:(CPArray)someEntities andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
     var IDsList = [];
 
     for (var i = [someEntities count] - 1; i >= 0; i--)
         [IDsList addObject:[someEntities[i] ID]];
 
-    var URLRequest = [CPURLRequest requestWithURL:aResource ? [CPURL URLWithString:aResource relativeToURL:[self RESTResourceURL]] : [self RESTResourceURL]],
+    var request = [CPURLRequest requestWithURL:[CPURL URLWithString:[[someEntities firstObject] RESTResourceName] relativeToURL:[self RESTResourceURL]]],
         body = JSON.stringify(IDsList, null, 4);
 
-    [URLRequest setHTTPMethod:@"PUT"];
-    [URLRequest setHTTPBody:body];
+    [request setHTTPMethod:@"PUT"];
+    [request setHTTPBody:body];
 
-    [self sendRESTCall:URLRequest performSelector:@selector(_didPerformStandardOperation:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:someEntities];
+    [self sendRESTCall:request performSelector:@selector(_didPerformStandardOperation:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:someEntities];
 }
 
 

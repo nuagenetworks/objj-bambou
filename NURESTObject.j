@@ -688,20 +688,42 @@ function _format_log_json(string)
 */
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    if (self = [super init])
+    if (self = [self init])
     {
         _useSameQueryNameThanRESTName = [aCoder decodeBoolForKey:@"_useSameQueryNameThanRESTName"];
         _bindableAttributes           = [aCoder decodeObjectForKey:@"_bindableAttributes"];
-        _creationDate                 = [aCoder decodeObjectForKey:@"_creationDate"];
-        _externalID                   = [aCoder decodeObjectForKey:@"_externalID"];
-        _ID                           = [aCoder decodeObjectForKey:@"_ID"];
         _localID                      = [aCoder decodeObjectForKey:@"_localID"];
-        _owner                        = [aCoder decodeObjectForKey:@"_owner"];
-        _parentID                     = [aCoder decodeObjectForKey:@"_parentID"];
         _parentObject                 = [aCoder decodeObjectForKey:@"_parentObject"];
-        _parentType                   = [aCoder decodeObjectForKey:@"_parentType"];
         _restAttributes               = [aCoder decodeObjectForKey:@"_restAttributes"];
         _validationMessage            = [aCoder decodeObjectForKey:@"_validationMessage"];
+
+        var encodedKeys = [aCoder._plistObject allKeys];
+
+        for (var i = [encodedKeys count] - 1; i >= 0; i--)
+        {
+            var key = encodedKeys[i],
+                splitedInfo = key.split("@");
+
+            if ([splitedInfo count] != 2)
+                continue;
+
+            var localKeyPath = splitedInfo[0],
+                encodedYype = splitedInfo[1];
+
+            switch (encodedYype)
+            {
+                case "boolean":
+                    [self setValue:[aCoder decodeBoolForKey:key] forKeyPath:localKeyPath];
+                    break;
+
+                case "number":
+                    [self setValue:[aCoder decodeFloatForKey:key] forKeyPath:localKeyPath];
+                    break;
+
+                default:
+                    [self setValue:[aCoder decodeObjectForKey:key] forKeyPath:localKeyPath];
+            }
+        }
     }
 
     return self;
@@ -713,16 +735,34 @@ function _format_log_json(string)
 {
     [aCoder encodeBool:_useSameQueryNameThanRESTName forKey:@"_usesPluralQueryURL"];
     [aCoder encodeObject:_bindableAttributes forKey:@"_bindableAttributes"];
-    [aCoder encodeObject:_creationDate forKey:@"_creationDate"];
-    [aCoder encodeObject:_externalID forKey:@"_externalID"];
-    [aCoder encodeObject:_ID forKey:@"_ID"];
     [aCoder encodeObject:_localID forKey:@"_localID"];
-    [aCoder encodeObject:_owner forKey:@"_owner"];
-    [aCoder encodeObject:_parentID forKey:@"_parentID"];
     [aCoder encodeObject:_parentObject forKey:@"_parentObject"];
-    [aCoder encodeObject:_parentType forKey:@"_parentType"];
     [aCoder encodeObject:_restAttributes forKey:@"_restAttributes"];
     [aCoder encodeObject:_validationMessage forKey:@"_validationMessage"];
+
+    var bindableAttributes = [self bindableAttributes];
+    for (var i = [bindableAttributes count] - 1; i >= 0; i--)
+    {
+        var attr = bindableAttributes[i],
+            key = attr;
+
+        switch (typeof(attr))
+        {
+            case "boolean":
+                key += "@bool";
+                [aCoder encodeBool:[self valueForKeyPath:attr] forKey:key];
+                break;
+
+            case "number":
+                key += "@number";
+                [aCoder encodeFloat:[self valueForKeyPath:attr] forKey:key];
+                break;
+
+            default:
+                key += "@object";
+                [aCoder encodeObject:[self valueForKeyPath:attr] forKey:key];
+        }
+    }
 }
 
 @end

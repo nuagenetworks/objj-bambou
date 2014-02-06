@@ -18,6 +18,9 @@
 @import <Foundation/Foundation.j>
 @import "NURESTConnection.j"
 
+@global NURESTBasicUser
+@global NURESTLoginController
+
 @implementation NURESTFetcher : CPObject
 {
     CPArray             _groupedBy              @accessors(property=groupedBy);
@@ -78,7 +81,11 @@
 
 - (void)fetchObjectsMatchingFilter:(id)aFilter page:(CPNumber)aPage andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    var request = [CPURLRequest requestWithURL:[CPURL URLWithString:_restName relativeToURL:[_entity RESTQueryURL]]];
+    var request;
+    if ([_entity isKindOfClass:NURESTBasicUser])
+        request = [CPURLRequest requestWithURL:[CPURL URLWithString:_restName relativeToURL:[[NURESTLoginController defaultController] URL]]];
+    else
+        request = [CPURLRequest requestWithURL:[CPURL URLWithString:_restName relativeToURL:[_entity RESTQueryURL]]];
 
     [request setHTTPMethod:@"GET"];
 

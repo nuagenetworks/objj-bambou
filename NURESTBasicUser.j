@@ -69,11 +69,6 @@ var NURESTBasicUserCurrent = nil;
 #pragma mark -
 #pragma mark Rest
 
-- (CPURL)RESTQueryURL
-{
-    return [super RESTQueryURL];
-}
-
 - (void)prepareUpdatePassword:(CPString)aNewPassword
 {
     _desiredNewPassword = aNewPassword;
@@ -81,7 +76,7 @@ var NURESTBasicUserCurrent = nil;
 
 - (void)saveAndCallSelector:(SEL)aSelector ofObject:(id)anObject password:(CPString)aPassword
 {
-    var request = [CPURLRequest requestWithURL:[CPURL URLWithString:@"me" relativeToURL:[self RESTQueryURL]]],
+    var request = [CPURLRequest requestWithURL:[self RESTQueryURL]],
         someUserInfo = (aSelector && anObject) ? [anObject, aSelector] : nil;
 
     if (_desiredNewPassword)

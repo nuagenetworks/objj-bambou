@@ -26,7 +26,7 @@ NURESTObjectStatusTypeSuccess   = @"SUCCESS";
 NURESTObjectStatusTypeWarning   = @"WARNING";
 NURESTObjectStatusTypeFailed    = @"FAILED";
 
-@class NURESTUser
+@class NURESTBasicUser
 @global NUDataTransferController
 @global CPCriticalAlertStyle
 @global CPWarningAlertStyle
@@ -65,19 +65,20 @@ function _format_log_json(string)
 */
 @implementation NURESTObject : CPObject
 {
-    CPDate          _creationDate       @accessors(property=creationDate);
-    CPString        _externalID         @accessors(property=externalID);
-    CPString        _ID                 @accessors(property=ID);
-    CPString        _localID            @accessors(property=localID);
-    CPString        _owner              @accessors(property=owner);
-    CPString        _parentID           @accessors(property=parentID);
-    CPString        _parentType         @accessors(property=parentType);
-    CPString        _validationMessage  @accessors(property=validationMessage);
+    BOOL            _useSameQueryNameThanRESTName   @accessors(property=useSameQueryNameThanRESTName);
+    CPDate          _creationDate                   @accessors(property=creationDate);
+    CPString        _externalID                     @accessors(property=externalID);
+    CPString        _ID                             @accessors(property=ID);
+    CPString        _localID                        @accessors(property=localID);
+    CPString        _owner                          @accessors(property=owner);
+    CPString        _parentID                       @accessors(property=parentID);
+    CPString        _parentType                     @accessors(property=parentType);
+    CPString        _validationMessage              @accessors(property=validationMessage);
 
-    CPDictionary    _restAttributes     @accessors(property=RESTAttributes);
-    CPArray         _bindableAttributes @accessors(property=bindableAttributes);
+    CPDictionary    _restAttributes                 @accessors(property=RESTAttributes);
+    CPArray         _bindableAttributes             @accessors(property=bindableAttributes);
 
-    NURESTObject    _parentObject       @accessors(property=parentObject);
+    NURESTObject    _parentObject                   @accessors(property=parentObject);
 
     CPArray         _childrenLists;
 }
@@ -95,6 +96,7 @@ function _format_log_json(string)
         _restAttributes = [CPDictionary dictionary];
         _bindableAttributes = [CPArray array];
         _localID = [CPString UUID];
+        _useSameQueryNameThanRESTName = NO;
 
         [self exposeLocalKeyPathToREST:@"ID"];
         [self exposeLocalKeyPathToREST:@"externalID"];
@@ -143,7 +145,29 @@ function _format_log_json(string)
 */
 - (CPURL)RESTQueryURL
 {
-    return [[NURESTLoginController defaultController] URL];
+    var queryName = [self RESTName];
+
+    if (!_useSameQueryNameThanRESTName)
+    {
+        switch (queryName.slice(-1))
+        {
+            case @"s":
+                break;
+
+            case @"y":
+                queryName = queryName.substr(0, queryName.length);
+                queryName += @"ies";
+                break;
+
+            default:
+                queryName += @"s";
+        }
+    }
+
+    if (!_ID)
+        return [CPURL URLWithString:queryName + @"/" relativeToURL:[[NURESTLoginController defaultController] URL]];
+    else
+        return [CPURL URLWithString:queryName + @"/" + _ID + "/" relativeToURL:[[NURESTLoginController defaultController] URL]];
 }
 
 /*! Exposes new attribute for REST managing
@@ -290,7 +314,7 @@ function _format_log_json(string)
 
 - (BOOL)isOwnedByCurrentUser
 {
-    return _owner == [[NURESTUser defaultUser] ID];
+    return _owner == [[NURESTBasicUser defaultUser] ID];
 }
 
 - (BOOL)isCurrentUserOwnerOfAnyParentMatchingTypes:(CPArray)someRESTNames
@@ -576,13 +600,22 @@ function _format_log_json(string)
 */
 - (void)manageChildEntity:(NURESTObject)anEntity intoResource:(CPString)aResource method:(CPString)aMethod andCallSelector:(SEL)aSelector ofObject:(id)anObject customConnectionHandler:(SEL)aCustomHandler
 {
-    var URLRequest = [CPURLRequest requestWithURL:aResource ? [CPURL URLWithString:aResource relativeToURL:[self RESTQueryURL]] : [self RESTQueryURL]],
-        body = [anEntity objectToJSON];
+    var body = [anEntity objectToJSON],
+        request;
 
-    [URLRequest setHTTPMethod:aMethod];
-    [URLRequest setHTTPBody:body];
+    // if we are adding stuff under a NURESTBasicUser, then consider this as root
+    if ([self isKindOfClass:NURESTBasicUser])
+    {
+        var rootURL = [[NURESTLoginController defaultController] URL];
+        request = [CPURLRequest requestWithURL:aResource ? [CPURL URLWithString:aResource relativeToURL:rootURL] : rootURL];
+    }
+    else
+        request = [CPURLRequest requestWithURL:aResource ? [CPURL URLWithString:aResource relativeToURL:[self RESTQueryURL]] : [self RESTQueryURL]];
 
-    [self sendRESTCall:URLRequest performSelector:aCustomHandler ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:anEntity];
+    [request setHTTPMethod:aMethod];
+    [request setHTTPBody:body];
+
+    [self sendRESTCall:request performSelector:aCustomHandler ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:anEntity];
 }
 
 /*! Uses this to reference given objects into the given resource of the actual object.
@@ -657,17 +690,18 @@ function _format_log_json(string)
 {
     if (self = [super init])
     {
-        _bindableAttributes = [aCoder decodeObjectForKey:@"_bindableAttributes"];
-        _creationDate       = [aCoder decodeObjectForKey:@"_creationDate"];
-        _externalID         = [aCoder decodeObjectForKey:@"_externalID"];
-        _ID                 = [aCoder decodeObjectForKey:@"_ID"];
-        _localID            = [aCoder decodeObjectForKey:@"_localID"];
-        _owner              = [aCoder decodeObjectForKey:@"_owner"];
-        _parentID           = [aCoder decodeObjectForKey:@"_parentID"];
-        _parentObject       = [aCoder decodeObjectForKey:@"_parentObject"];
-        _parentType         = [aCoder decodeObjectForKey:@"_parentType"];
-        _restAttributes     = [aCoder decodeObjectForKey:@"_restAttributes"];
-        _validationMessage  = [aCoder decodeObjectForKey:@"_validationMessage"];
+        _useSameQueryNameThanRESTName = [aCoder decodeBoolForKey:@"_useSameQueryNameThanRESTName"];
+        _bindableAttributes           = [aCoder decodeObjectForKey:@"_bindableAttributes"];
+        _creationDate                 = [aCoder decodeObjectForKey:@"_creationDate"];
+        _externalID                   = [aCoder decodeObjectForKey:@"_externalID"];
+        _ID                           = [aCoder decodeObjectForKey:@"_ID"];
+        _localID                      = [aCoder decodeObjectForKey:@"_localID"];
+        _owner                        = [aCoder decodeObjectForKey:@"_owner"];
+        _parentID                     = [aCoder decodeObjectForKey:@"_parentID"];
+        _parentObject                 = [aCoder decodeObjectForKey:@"_parentObject"];
+        _parentType                   = [aCoder decodeObjectForKey:@"_parentType"];
+        _restAttributes               = [aCoder decodeObjectForKey:@"_restAttributes"];
+        _validationMessage            = [aCoder decodeObjectForKey:@"_validationMessage"];
     }
 
     return self;
@@ -677,6 +711,7 @@ function _format_log_json(string)
 */
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
+    [aCoder encodeBool:_useSameQueryNameThanRESTName forKey:@"_usesPluralQueryURL"];
     [aCoder encodeObject:_bindableAttributes forKey:@"_bindableAttributes"];
     [aCoder encodeObject:_creationDate forKey:@"_creationDate"];
     [aCoder encodeObject:_externalID forKey:@"_externalID"];

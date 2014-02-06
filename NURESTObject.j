@@ -104,7 +104,7 @@ function _format_log_json(string)
         case @"s":
             break;
 
-        case @"y":
+        case @"ry":
             queryName = queryName.substr(0, queryName.length);
             queryName += @"ies";
             break;

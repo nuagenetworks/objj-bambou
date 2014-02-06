@@ -606,7 +606,7 @@ function _format_log_json(string)
     [request setHTTPMethod:aMethod];
     [request setHTTPBody:body];
 
-    var handlerSelector = aCustomHandler || @selector(_didPerformStandardOperation:)
+    var handlerSelector = aCustomHandler || @selector(_didPerformStandardOperation:);
     [self sendRESTCall:request performSelector:handlerSelector ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:anEntity];
 }
 

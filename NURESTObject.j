@@ -104,10 +104,13 @@ function _format_log_json(string)
         case @"s":
             break;
 
-        case @"ry":
-            queryName = queryName.substr(0, queryName.length);
-            queryName += @"ies";
-            break;
+        case @"y":
+            if (queryName.slice(-2) == @"ry")
+            {
+                queryName = queryName.substr(0, queryName.length);
+                queryName += @"ies";
+                break;
+            }
 
         default:
             queryName += @"s";

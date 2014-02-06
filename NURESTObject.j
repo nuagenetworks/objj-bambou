@@ -73,7 +73,6 @@ function _format_log_json(string)
     CPString        _owner                          @accessors(property=owner);
     CPString        _parentID                       @accessors(property=parentID);
     CPString        _parentType                     @accessors(property=parentType);
-    CPString        _validationMessage              @accessors(property=validationMessage);
 
     CPDictionary    _restAttributes                 @accessors(property=RESTAttributes);
     CPArray         _bindableAttributes             @accessors(property=bindableAttributes);
@@ -139,11 +138,9 @@ function _format_log_json(string)
 #pragma mark -
 #pragma mark REST configuration
 
-/*! Builds the base query URL to manage this object
-    this must be overiden by subclasses
-    @return a CPURL representing the REST endpoint to manage this object
+/*! Returns the REST query name.
 */
-- (CPURL)RESTQueryURL
+- (CPString)RESTResourceName
 {
     var queryName = [self RESTName];
 
@@ -163,6 +160,17 @@ function _format_log_json(string)
                 queryName += @"s";
         }
     }
+
+    return queryName;
+}
+
+/*! Builds the base query URL to manage this object
+    this must be overiden by subclasses
+    @return a CPURL representing the REST endpoint to manage this object
+*/
+- (CPURL)RESTResourceURL
+{
+    var queryName = [self RESTResourceName];
 
     if (!_ID)
         return [CPURL URLWithString:queryName + @"/" relativeToURL:[[NURESTLoginController defaultController] URL]];
@@ -385,7 +393,7 @@ function _format_log_json(string)
 */
 - (void)fetchAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    var request = [CPURLRequest requestWithURL:[self RESTQueryURL]];
+    var request = [CPURLRequest requestWithURL:[self RESTResourceURL]];
 
     [self sendRESTCall:request performSelector:@selector(_didFetch:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:nil];
 }
@@ -610,7 +618,7 @@ function _format_log_json(string)
         request = [CPURLRequest requestWithURL:aResource ? [CPURL URLWithString:aResource relativeToURL:rootURL] : rootURL];
     }
     else
-        request = [CPURLRequest requestWithURL:aResource ? [CPURL URLWithString:aResource relativeToURL:[self RESTQueryURL]] : [self RESTQueryURL]];
+        request = [CPURLRequest requestWithURL:aResource ? [CPURL URLWithString:aResource relativeToURL:[self RESTResourceURL]] : [self RESTResourceURL]];
 
     [request setHTTPMethod:aMethod];
     [request setHTTPBody:body];
@@ -631,7 +639,7 @@ function _format_log_json(string)
     for (var i = [someEntities count] - 1; i >= 0; i--)
         [IDsList addObject:[someEntities[i] ID]];
 
-    var URLRequest = [CPURLRequest requestWithURL:aResource ? [CPURL URLWithString:aResource relativeToURL:[self RESTQueryURL]] : [self RESTQueryURL]],
+    var URLRequest = [CPURLRequest requestWithURL:aResource ? [CPURL URLWithString:aResource relativeToURL:[self RESTResourceURL]] : [self RESTResourceURL]],
         body = JSON.stringify(IDsList, null, 4);
 
     [URLRequest setHTTPMethod:@"PUT"];
@@ -691,11 +699,8 @@ function _format_log_json(string)
     if (self = [self init])
     {
         _useSameQueryNameThanRESTName = [aCoder decodeBoolForKey:@"_useSameQueryNameThanRESTName"];
-        _bindableAttributes           = [aCoder decodeObjectForKey:@"_bindableAttributes"];
         _localID                      = [aCoder decodeObjectForKey:@"_localID"];
         _parentObject                 = [aCoder decodeObjectForKey:@"_parentObject"];
-        _restAttributes               = [aCoder decodeObjectForKey:@"_restAttributes"];
-        _validationMessage            = [aCoder decodeObjectForKey:@"_validationMessage"];
 
         var encodedKeys = [aCoder._plistObject allKeys];
 
@@ -734,11 +739,8 @@ function _format_log_json(string)
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [aCoder encodeBool:_useSameQueryNameThanRESTName forKey:@"_usesPluralQueryURL"];
-    [aCoder encodeObject:_bindableAttributes forKey:@"_bindableAttributes"];
     [aCoder encodeObject:_localID forKey:@"_localID"];
     [aCoder encodeObject:_parentObject forKey:@"_parentObject"];
-    [aCoder encodeObject:_restAttributes forKey:@"_restAttributes"];
-    [aCoder encodeObject:_validationMessage forKey:@"_validationMessage"];
 
     var bindableAttributes = [self bindableAttributes];
     for (var i = [bindableAttributes count] - 1; i >= 0; i--)
@@ -774,7 +776,7 @@ function _format_log_json(string)
 */
 - (void)saveAndCallFunction:(function)aFunction
 {
-    var URLRequest = [CPURLRequest requestWithURL:[self RESTQueryURL]],
+    var URLRequest = [CPURLRequest requestWithURL:[self RESTResourceURL]],
         body = [self objectToJSON];
 
     [URLRequest setHTTPMethod:@"PUT"];
@@ -799,7 +801,7 @@ function _format_log_json(string)
 */
 - (void)createAndCallFunction:(function)aFunction
 {
-    var URLRequest = [CPURLRequest requestWithURL:[self RESTQueryURL]],
+    var URLRequest = [CPURLRequest requestWithURL:[self RESTResourceURL]],
         body = [self objectToJSON];
 
     [URLRequest setHTTPMethod:@"POST"];
@@ -822,7 +824,7 @@ function _format_log_json(string)
 */
 - (void)addChild:(NURESTObject)aChildObject andCallFunction:(function)aFunction
 {
-    var URLRequest = [CPURLRequest requestWithURL:[CPURL URLWithString:[aChildObject RESTName] + 's' relativeToURL:[self RESTQueryURL]]],
+    var URLRequest = [CPURLRequest requestWithURL:[CPURL URLWithString:[aChildObject RESTName] + 's' relativeToURL:[self RESTResourceURL]]],
         body = [aChildObject objectToJSON];
 
     [URLRequest setHTTPMethod:@"POST"];

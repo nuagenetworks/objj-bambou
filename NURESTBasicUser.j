@@ -76,7 +76,7 @@ var NURESTBasicUserCurrent = nil;
 
 - (void)saveAndCallSelector:(SEL)aSelector ofObject:(id)anObject password:(CPString)aPassword
 {
-    var request = [CPURLRequest requestWithURL:[self RESTQueryURL]],
+    var request = [CPURLRequest requestWithURL:[self RESTResourceURL]],
         someUserInfo = (aSelector && anObject) ? [anObject, aSelector] : nil;
 
     if (_desiredNewPassword)

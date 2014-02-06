@@ -635,14 +635,14 @@ function _format_log_json(string)
     @param aSelector the selector to call when complete
     @param anObject the target object
 */
-- (void)setEntities:(CPArray)someEntities andCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (void)setEntities:(CPArray)someEntities ofClass:(class)aClass andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
     var IDsList = [];
 
     for (var i = [someEntities count] - 1; i >= 0; i--)
         [IDsList addObject:[someEntities[i] ID]];
 
-    var request = [CPURLRequest requestWithURL:[CPURL URLWithString:[[someEntities firstObject] RESTResourceName] relativeToURL:[self RESTResourceURL]]],
+    var request = [CPURLRequest requestWithURL:[CPURL URLWithString:[aClass RESTResourceName] relativeToURL:[self RESTResourceURL]]],
         body = JSON.stringify(IDsList, null, 4);
 
     [request setHTTPMethod:@"PUT"];

@@ -65,7 +65,6 @@ function _format_log_json(string)
 */
 @implementation NURESTObject : CPObject
 {
-    BOOL            _useSameQueryNameThanRESTName   @accessors(property=useSameQueryNameThanRESTName);
     CPDate          _creationDate                   @accessors(property=creationDate);
     CPString        _externalID                     @accessors(property=externalID);
     CPString        _ID                             @accessors(property=ID);
@@ -84,6 +83,46 @@ function _format_log_json(string)
 
 
 #pragma mark -
+#pragma mark Class Methods
+
++ (CPString)RESTName
+{
+    [CPException raise:CPInternalInconsistencyException reason:"Subclasses of NURESTObject must implement + (CPString)RESTName"];
+}
+
+/*! Returns the REST query name.
+*/
++ (CPString)RESTResourceName
+{
+    var queryName = [self RESTName];
+
+    if ([self RESTResourceNameFixed])
+        return queryName;
+
+    switch (queryName.slice(-1))
+    {
+        case @"s":
+            break;
+
+        case @"y":
+            queryName = queryName.substr(0, queryName.length);
+            queryName += @"ies";
+            break;
+
+        default:
+            queryName += @"s";
+    }
+
+    return queryName;
+}
+
++ (BOOL)RESTResourceNameFixed
+{
+    return NO
+}
+
+
+#pragma mark -
 #pragma mark Initialization
 
 /*! Initialize the NURESTObject
@@ -95,7 +134,6 @@ function _format_log_json(string)
         _restAttributes = [CPDictionary dictionary];
         _bindableAttributes = [CPArray array];
         _localID = [CPString UUID];
-        _useSameQueryNameThanRESTName = NO;
 
         [self exposeLocalKeyPathToREST:@"ID"];
         [self exposeLocalKeyPathToREST:@"externalID"];
@@ -142,26 +180,7 @@ function _format_log_json(string)
 */
 - (CPString)RESTResourceName
 {
-    var queryName = [self RESTName];
-
-    if (!_useSameQueryNameThanRESTName)
-    {
-        switch (queryName.slice(-1))
-        {
-            case @"s":
-                break;
-
-            case @"y":
-                queryName = queryName.substr(0, queryName.length);
-                queryName += @"ies";
-                break;
-
-            default:
-                queryName += @"s";
-        }
-    }
-
-    return queryName;
+    return [[self class] RESTResourceName];
 }
 
 /*! Builds the base query URL to manage this object
@@ -682,7 +701,6 @@ function _format_log_json(string)
 {
     if (self = [self init])
     {
-        _useSameQueryNameThanRESTName = [aCoder decodeBoolForKey:@"_useSameQueryNameThanRESTName"];
         _localID                      = [aCoder decodeObjectForKey:@"_localID"];
         _parentObject                 = [aCoder decodeObjectForKey:@"_parentObject"];
 
@@ -722,7 +740,6 @@ function _format_log_json(string)
 */
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    [aCoder encodeBool:_useSameQueryNameThanRESTName forKey:@"_usesPluralQueryURL"];
     [aCoder encodeObject:_localID forKey:@"_localID"];
     [aCoder encodeObject:_parentObject forKey:@"_parentObject"];
 

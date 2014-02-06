@@ -37,6 +37,29 @@
     CPString            _orderedBy;
 }
 
+
+#pragma mark -
+#pragma mark Class Methods
+
++ (class)managedObjectClass
+{
+    [CPException raise:CPInternalInconsistencyException reason:"NURESTFetcher subclasses must implement managedObjectClass"];
+}
+
+
+#pragma mark -
+#pragma mark Initialization
+
+- (id)init
+{
+    if (self = [super init])
+    {
+        _restName = [[[self class] managedObjectClass] RESTResourceName];
+    }
+
+    return self;
+}
+
 - (void)flush
 {
     [[_entity valueForKeyPath:_destinationKeyPath] removeAllObjects];
@@ -44,7 +67,7 @@
 
 - (id)newObject
 {
-    return nil;
+    return [[[self class] managedObjectClass] new];
 }
 
 - (void)_prepareHeadersForRequest:(CPURLRequest)aRequest withFilter:(id)aFilter page:(CPNumber)aPage

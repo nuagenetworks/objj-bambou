@@ -290,12 +290,12 @@ function _format_log_json(string)
 #pragma mark -
 #pragma mark Comparison
 
-- (BOOL)isSame:(NURESTObject)anEntity
+- (BOOL)isRESTEqual:(NURESTObject)anEntity
 {
     if ([anEntity RESTName] != [self RESTName])
         return NO;
 
-    var attributes = [self bindableAttributes];
+    var attributes = [[self RESTAttributes] allKeys];
 
     for (var i = [attributes count] - 1; i >= 0; i--)
     {

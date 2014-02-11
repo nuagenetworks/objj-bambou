@@ -241,7 +241,7 @@ function _format_log_json(string)
 /*! Build current object with given JSONObject
     @param aJSONObject the JSON structure to parse
 */
-- (void)objectFromJSON:(CPString)aJSONObject
+- (void)objectFromJSON:(id)aJSONObject
 {
     var keys = [_restAttributes allKeys];
 

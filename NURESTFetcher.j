@@ -46,6 +46,18 @@
     [CPException raise:CPInternalInconsistencyException reason:"NURESTFetcher subclasses must implement managedObjectClass"];
 }
 
++ (NURESTFetcher)fetcherWithEntity:(NURESTObject)anEntity destinationKeyPath:(CPString)aDestinationKeyPath
+{
+    var fetcher = [[self class] new];
+    [fetcher setEntity:anEntity];
+    [fetcher setDestinationKeyPath:aDestinationKeyPath];
+
+    [anEntity setValue:[] forKeyPath:aDestinationKeyPath];
+    [anEntity registerChildrenList:[anEntity valueForKeyPath:aDestinationKeyPath]];
+
+    return fetcher;
+}
+
 
 #pragma mark -
 #pragma mark Initialization

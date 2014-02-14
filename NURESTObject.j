@@ -173,7 +173,6 @@ function _format_log_json(string)
 
 - (void)registerChildrenList:(CPArray)aList
 {
-    aList = [];
     [_childrenLists addObject:aList];
 }
 

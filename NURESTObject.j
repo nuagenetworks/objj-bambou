@@ -231,6 +231,12 @@ function _format_log_json(string)
     [_bindableAttributes addObject:aKeyPath];
 }
 
+- (CPString)localKeyPathForRESTKeyPath:(CPString)aKeyPath
+{
+    return [[_restAttributes allKeysForObject:aKeyPath] firstObject];
+}
+
+
 /*! Returns the list of bindable attributes
 */
 - (CPArray)bindableAttributes

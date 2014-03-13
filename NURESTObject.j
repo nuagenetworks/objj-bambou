@@ -162,6 +162,8 @@ function _format_log_json(string)
     [_childrenRegistry removeAllObjects];
     _childrenRegistry = nil;
 
+    CPLog.debug("RESTCAPPUCCINO: discarding object " + [self ID] + " of type " + [self RESTName]);
+
     delete self;
 }
 

@@ -78,7 +78,7 @@ function _format_log_json(string)
 
     NURESTObject    _parentObject                   @accessors(property=parentObject);
 
-    CPArray         _childrenLists;
+    CPDictionary    _childrenRegistry;
 }
 
 
@@ -157,24 +157,34 @@ function _format_log_json(string)
 {
     [self discardChildren];
     _parentObject = nil;
-    _childrenLists = nil;
+
+    [_childrenRegistry removeAllObjects];
+    _childrenRegistry = nil;
 
     delete self;
 }
 
 - (void)discardChildren
 {
-    for (var i = [_childrenLists count] - 1; i >= 0; i--)
+    var children = [_childrenRegistry allValues];
+
+    for (var i = [children count] - 1; i >= 0; i--)
     {
-        var children = _childrenLists[i];
-        [children makeObjectsPerformSelector:@selector(discard)];
+        var child = children[i];
+        [var makeObjectsPerformSelector:@selector(discard)];
     }
 }
 
-- (void)registerChildrenList:(CPArray)aList
+- (void)registerChildrenList:(CPArray)aList forRESTName:(CPString)aRESTName
 {
-    [_childrenLists addObject:aList];
+    [_childrenRegistry setObject:aList forKeyPath:aRESTName];
 }
+
+- (CPArray)childrenListWithRESTName:(CPString)aRESTName
+{
+    return [_childrenRegistry objectForKey:aRESTName];
+}
+
 
 #pragma mark -
 #pragma mark REST configuration

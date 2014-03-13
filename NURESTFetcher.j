@@ -53,7 +53,7 @@
     [fetcher setDestinationKeyPath:aDestinationKeyPath];
 
     [anEntity setValue:[] forKeyPath:aDestinationKeyPath];
-    [anEntity registerChildrenList:[anEntity valueForKeyPath:aDestinationKeyPath]];
+    [anEntity registerChildrenList:[anEntity valueForKeyPath:aDestinationKeyPath] forRESTName:[[[self class] managedObjectClass] RESTName]];
 
     return fetcher;
 }

@@ -185,6 +185,16 @@ function _format_log_json(string)
     return [_childrenRegistry objectForKey:aRESTName];
 }
 
+- (void)addChild:(NURESTObject)aChildObject
+{
+    [[self childrenListWithRESTName:[aChildObject RESTName]] addObject:aChildObject];
+}
+
+- (void)removeChild:(NURESTObject)aChildObject
+{
+    [[self childrenListWithRESTName:[aChildObject RESTName]] removeObject:aChildObject];
+}
+
 
 #pragma mark -
 #pragma mark REST configuration

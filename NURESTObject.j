@@ -171,7 +171,7 @@ function _format_log_json(string)
     for (var i = [children count] - 1; i >= 0; i--)
     {
         var child = children[i];
-        [var makeObjectsPerformSelector:@selector(discard)];
+        [child makeObjectsPerformSelector:@selector(discard)];
     }
 }
 

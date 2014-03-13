@@ -137,6 +137,7 @@ function _format_log_json(string)
         _restAttributes = [CPDictionary dictionary];
         _bindableAttributes = [CPArray array];
         _localID = [CPString UUID];
+        _childrenRegistry = @{};
 
         [self exposeLocalKeyPathToREST:@"ID"];
         [self exposeLocalKeyPathToREST:@"externalID"];
@@ -169,15 +170,12 @@ function _format_log_json(string)
     var children = [_childrenRegistry allValues];
 
     for (var i = [children count] - 1; i >= 0; i--)
-    {
-        var child = children[i];
-        [child makeObjectsPerformSelector:@selector(discard)];
-    }
+        [children[i] makeObjectsPerformSelector:@selector(discard)];
 }
 
 - (void)registerChildrenList:(CPArray)aList forRESTName:(CPString)aRESTName
 {
-    [_childrenRegistry setObject:aList forKeyPath:aRESTName];
+    [_childrenRegistry setObject:aList forKey:aRESTName];
 }
 
 - (CPArray)childrenListWithRESTName:(CPString)aRESTName

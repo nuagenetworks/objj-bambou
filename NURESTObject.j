@@ -195,6 +195,14 @@ function _format_log_json(string)
     [[self childrenListWithRESTName:[aChildObject RESTName]] removeObject:aChildObject];
 }
 
+- (void)updateChild:(NURESTObject)aChildObject
+{
+    var children = [self childrenListWithRESTName:[aChildObject RESTName]],
+        index = [children indexOfObject:aChildObject];
+
+    [children replaceObjectAtIndex:index withObject:aChildObject];
+}
+
 
 #pragma mark -
 #pragma mark REST configuration

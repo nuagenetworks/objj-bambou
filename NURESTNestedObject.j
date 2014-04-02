@@ -37,7 +37,7 @@
     @param aKeyPath the parentObject's key path that stores the nestedObject ID
     @param aClass the class of the nestedObject
 */
-- (void)initWithParentObject:(NURESTObject)anObject nestedObjectIDKeyPath:(CPString)aKeyPath nestedObjectClass:(class)aClass
+- (void)initWithParentObject:(NURESTObject)anObject nestedObjectIDKeyPath:(CPString)aKeyPath nestedObjectClass:(Class)aClass
 {
     if (self = [super init])
     {

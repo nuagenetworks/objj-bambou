@@ -41,7 +41,7 @@
 #pragma mark -
 #pragma mark Class Methods
 
-+ (class)managedObjectClass
++ (Class)managedObjectClass
 {
     [CPException raise:CPInternalInconsistencyException reason:"NURESTFetcher subclasses must implement managedObjectClass"];
 }

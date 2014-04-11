@@ -179,7 +179,11 @@
 
 - (void)countObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject matchingFilter:(CPPredicate)aFilter
 {
-    var request = [CPURLRequest requestWithURL:[CPURL URLWithString:_restName relativeToURL:[_entity RESTResourceURL]]];
+    var request;
+    if ([_entity isKindOfClass:NURESTBasicUser])
+        request = [CPURLRequest requestWithURL:[CPURL URLWithString:_restName relativeToURL:[[NURESTLoginController defaultController] URL]]];
+    else
+        request = [CPURLRequest requestWithURL:[CPURL URLWithString:_restName relativeToURL:[_entity RESTResourceURL]]];
 
     [request setHTTPMethod:@"HEAD"];
 

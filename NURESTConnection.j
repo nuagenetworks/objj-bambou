@@ -144,6 +144,9 @@ var NURESTObjectLastActionTimer;
             _HTTPRequest.setRequestHeader("Authorization", [[NURESTLoginController defaultController] RESTAuthString]);
         }
 
+        if ([[NURESTLoginController defaultController] isImpersonating])
+            _HTTPRequest.setRequestHeader("X-Nuage-Proxy", [[NURESTLoginController defaultController] impersonation]);
+
         _HTTPRequest.send([_request HTTPBody]);
     }
     catch (anException)

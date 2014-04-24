@@ -507,16 +507,15 @@ function _format_log_json(string)
          return;
     }
 
-    var url            = [[[aConnection request] URL] absoluteString],
-        HTTPMethod     = [[aConnection request] HTTPMethod],
-        responseObject = [[aConnection responseData] JSONObject],
-        rawString      = [[aConnection responseData] rawString],
-        responseCode   = [aConnection responseCode],
-        localTarget    = [aConnection internalUserInfo]["localTarget"],
-        localSelector  = [aConnection internalUserInfo]["localSelector"],
-        remoteTarget    = [aConnection internalUserInfo]["remoteTarget"],
-        remoteSelector  = [aConnection internalUserInfo]["remoteSelector"],
-        localyManagedConflict = NO;
+    var url                   = [[[aConnection request] URL] absoluteString],
+        HTTPMethod            = [[aConnection request] HTTPMethod],
+        responseObject        = [[aConnection responseData] JSONObject],
+        rawString             = [[aConnection responseData] rawString],
+        responseCode          = [aConnection responseCode],
+        localTarget           = [aConnection internalUserInfo]["localTarget"],
+        localSelector         = [aConnection internalUserInfo]["localSelector"],
+        remoteTarget          = [aConnection internalUserInfo]["remoteTarget"],
+        remoteSelector        = [aConnection internalUserInfo]["remoteSelector"];
 
     CPLog.trace("RESTCAPPUCCINO: <<<< Response for\n\n%@ %@ (%@):\n\n%@", HTTPMethod, url, responseCode, _format_log_json(rawString));
 
@@ -529,38 +528,59 @@ function _format_log_json(string)
             break;
 
         case NURESTConnectionResponseCodeMultipleChoices:
-            var confirmName = responseObject.errors[0].descriptions[0].title,
+            var confirmName        = responseObject.errors[0].descriptions[0].title,
                 confirmDescription = responseObject.errors[0].descriptions[0].description,
-                confirmChoices = responseObject.choices;
+                confirmChoices     = responseObject.choices;
 
             [NURESTConfirmation postRESTConfirmationWithName:confirmName description:confirmDescription choices:confirmChoices connection:aConnection];
             break;
 
-        case NURESTConnectionResponseCodeUnauthorized:
-            [localTarget performSelector:localSelector withObject:aConnection];
-            break;
-
         case NURESTConnectionResponseCodeConflict:
-            // Here is a little bit of assumption. We received a conflict, but we have no remote selector to call
-            // This certainly means that this error will remain unknown to the user. So we take the call, and
-            // we push a NURESTError about it. Because we are cool guys. And we love you. Don't thank us, it's natural
+            // We received a conflict, but we have no remote selector to call we push a NURESTError about it.
             if (!remoteTarget || !remoteSelector)
-                localyManagedConflict = YES; // as we don't break here, it will trigger the next test case.
+            {
+                var errorName        = @"Unhandled Conflict (" + responseCode +")",
+                    errorDescription = @"An conflict has been raised by the server and has not been handled by the application. Please check the log, and report.";
+
+                [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
+            }
             else
             {
                 [localTarget performSelector:localSelector withObject:aConnection];
-                break;
             }
+            break;
 
-        case localyManagedConflict:
+        case NURESTConnectionResponseCodeUnauthorized:
+            // We received a forbidden error, but we have no remote selector to call we push a NURESTError about it.
+            if (!remoteTarget || !remoteSelector)
+            {
+                var errorName        = @"Unhandled Forbidden Action (" + responseCode +")",
+                    errorDescription = @"An unauthorized action has been done and has not been handled by the application. Please check the log, and report.";
+
+                [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
+            }
+            else
+            {
+                [localTarget performSelector:localSelector withObject:aConnection];
+            }
+            break;
+
         case NURESTConnectionResponseCodeNotFound:
         case NURESTConnectionResponseCodeMethodNotAllowed:
         case NURESTConnectionResponseCodePreconditionFailed:
         case NURESTConnectionResponseBadRequest:
+            var containsInfo     = (responseObject && responseObject.errors),
+                errorName        = containsInfo ? responseObject.errors[0].descriptions[0].title : @"Error Code " + responseCode,
+                errorDescription = containsInfo ? responseObject.errors[0].descriptions[0].description : @"Please check the log and report this error.";
+
+            [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
+
+            [localTarget performSelector:localSelector withObject:aConnection];
+            break;
+
         case NURESTConnectionResponseCodeInternalServerError:
-            var containsInfo = (responseObject && responseObject.errors),
-                errorName = containsInfo? responseObject.errors[0].descriptions[0].title : @"Internal Server Error",
-                errorDescription = containsInfo ? responseObject.errors[0].descriptions[0].description : @"Please check the log for more information about this error";
+            var errorName        = @"[CRITICAL] Internal Server Error",
+                errorDescription = @"Please check the log and report this error to the server team";
 
             [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
 

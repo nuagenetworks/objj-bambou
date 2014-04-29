@@ -543,7 +543,7 @@ function _format_log_json(string)
                     errorName        = containsInfo ? responseObject.errors[0].descriptions[0].title : @"Unhandled Conflict (" + responseCode + ")",
                     errorDescription = containsInfo ? responseObject.errors[0].descriptions[0].description : @"A conflict has been raised by the server and has not been handled by the application. Please check the log, and report.";;
 
-                    [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
+                [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
             }
             else
             {

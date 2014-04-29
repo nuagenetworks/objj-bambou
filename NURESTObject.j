@@ -539,10 +539,11 @@ function _format_log_json(string)
             // We received a conflict, but we have no remote selector to call we push a NURESTError about it.
             if (!remoteTarget || !remoteSelector)
             {
-                var errorName        = @"Unhandled Conflict (" + responseCode + ")",
-                    errorDescription = @"An conflict has been raised by the server and has not been handled by the application. Please check the log, and report.";
+                var containsInfo     = (responseObject && responseObject.errors),
+                    errorName        = containsInfo ? responseObject.errors[0].descriptions[0].title : @"Unhandled Conflict (" + responseCode + ")",
+                    errorDescription = containsInfo ? responseObject.errors[0].descriptions[0].description : @"A conflict has been raised by the server and has not been handled by the application. Please check the log, and report.";;
 
-                [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
+                    [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
             }
             else
             {

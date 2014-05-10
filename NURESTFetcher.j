@@ -28,6 +28,7 @@
     CPNumber            _pageSize               @accessors(property=pageSize);
     CPNumber            _totalCount             @accessors(property=totalCount);
     CPPredicate         _masterFilter           @accessors(property=masterFilter);
+    CPPredicate         _masterOrder            @accessors(property=masterOrder);
     CPString            _destinationKeyPath     @accessors(property=destinationKeyPath);
     CPString            _restName               @accessors(property=restName);
     CPString            _transactionID          @accessors(property=transactionID);
@@ -91,8 +92,8 @@
     else if ([aFilter isKindOfClass:CPString])
         [aRequest setValue:aFilter forHTTPHeaderField:@"X-Nuage-Filter"];
 
-    if (_orderedBy)
-        [aRequest setValue:_orderedBy forHTTPHeaderField:@"X-Nuage-OrderBy"];
+    if (_masterOrder)
+        [aRequest setValue:_masterOrder forHTTPHeaderField:@"X-Nuage-OrderBy"];
 
     if (aPage !== nil)
         [aRequest setValue:aPage forHTTPHeaderField:@"X-Nuage-Page"];

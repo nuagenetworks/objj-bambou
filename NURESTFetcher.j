@@ -91,6 +91,9 @@
     else if ([aFilter isKindOfClass:CPString])
         [aRequest setValue:aFilter forHTTPHeaderField:@"X-Nuage-Filter"];
 
+    if (_orderedBy)
+        [aRequest setValue:_orderedBy forHTTPHeaderField:@"X-Nuage-OrderBy"];
+
     if (aPage !== nil)
         [aRequest setValue:aPage forHTTPHeaderField:@"X-Nuage-Page"];
 

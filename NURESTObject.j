@@ -571,11 +571,14 @@ function _format_log_json(string)
         case NURESTConnectionResponseCodeMethodNotAllowed:
         case NURESTConnectionResponseCodePreconditionFailed:
         case NURESTConnectionResponseBadRequest:
-            var containsInfo     = (responseObject && responseObject.errors),
-                errorName        = containsInfo ? responseObject.errors[0].descriptions[0].title : @"Error Code " + responseCode,
-                errorDescription = containsInfo ? responseObject.errors[0].descriptions[0].description : @"Please check the log and report this error.";
+            if (!remoteTarget || !remoteSelector)
+            {
+                var containsInfo     = (responseObject && responseObject.errors),
+                    errorName        = containsInfo ? responseObject.errors[0].descriptions[0].title : @"Error Code " + responseCode,
+                    errorDescription = containsInfo ? responseObject.errors[0].descriptions[0].description : @"Please check the log and report this error.";
 
-            [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
+                [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
+            }
 
             [localTarget performSelector:localSelector withObject:aConnection];
             break;

@@ -551,6 +551,7 @@ function _format_log_json(string)
             }
             break;
 
+        case NURESTConnectionResponseCodePermissionDenied:
         case NURESTConnectionResponseCodeUnauthorized:
             // We received a forbidden error, but we have no remote selector to call we push a NURESTError about it.
             if (!remoteTarget || !remoteSelector)

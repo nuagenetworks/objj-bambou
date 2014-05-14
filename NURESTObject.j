@@ -501,107 +501,26 @@ function _format_log_json(string)
     if ([aConnection hasTimeouted])
     {
         CPLog.error("RESTCAPPUCCINO: Connection timeouted. Sending NURESTConnectionFailureNotification notification and exiting.");
-        [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConnectionFailureNotification
-                                                            object:self
-                                                          userInfo:aConnection];
+        [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConnectionFailureNotification object:self userInfo:aConnection];
          return;
     }
 
-    var url                   = [[[aConnection request] URL] absoluteString],
-        HTTPMethod            = [[aConnection request] HTTPMethod],
-        responseObject        = [[aConnection responseData] JSONObject],
-        rawString             = [[aConnection responseData] rawString],
-        responseCode          = [aConnection responseCode],
-        localTarget           = [aConnection internalUserInfo]["localTarget"],
-        localSelector         = [aConnection internalUserInfo]["localSelector"],
-        remoteTarget          = [aConnection internalUserInfo]["remoteTarget"],
-        remoteSelector        = [aConnection internalUserInfo]["remoteSelector"];
+    var url            = [[[aConnection request] URL] absoluteString],
+        HTTPMethod     = [[aConnection request] HTTPMethod],
+        rawString      = [[aConnection responseData] rawString],
+        responseCode   = [aConnection responseCode],
+        localTarget    = [aConnection internalUserInfo]["localTarget"],
+        localSelector  = [aConnection internalUserInfo]["localSelector"],
+        remoteTarget   = [aConnection internalUserInfo]["remoteTarget"],
+        remoteSelector = [aConnection internalUserInfo]["remoteSelector"],
+        hasHandlers    = (remoteTarget && remoteSelector);
 
     CPLog.trace("RESTCAPPUCCINO: <<<< Response for\n\n%@ %@ (%@):\n\n%@", HTTPMethod, url, responseCode, _format_log_json(rawString));
 
-    switch (responseCode)
-    {
-        case NURESTConnectionResponseCodeEmpty:
-        case NURESTConnectionResponseCodeSuccess:
-        case NURESTConnectionResponseCodeCreated:
-            [localTarget performSelector:localSelector withObject:aConnection];
-            break;
+    var shouldProceed = [NURESTConnection handleResponseForConnection:aConnection postErrorMessage:!hasHandlers];
 
-        case NURESTConnectionResponseCodeMultipleChoices:
-            var confirmName        = responseObject.errors[0].descriptions[0].title,
-                confirmDescription = responseObject.errors[0].descriptions[0].description,
-                confirmChoices     = responseObject.choices;
-
-            [NURESTConfirmation postRESTConfirmationWithName:confirmName description:confirmDescription choices:confirmChoices connection:aConnection];
-            break;
-
-        case NURESTConnectionResponseCodeConflict:
-            // We received a conflict, but we have no remote selector to call we push a NURESTError about it.
-            if (!remoteTarget || !remoteSelector)
-            {
-                var containsInfo     = (responseObject && responseObject.errors),
-                    errorName        = containsInfo ? responseObject.errors[0].descriptions[0].title : @"Unhandled Conflict (" + responseCode + ")",
-                    errorDescription = containsInfo ? responseObject.errors[0].descriptions[0].description : @"A conflict has been raised by the server and has not been handled by the application. Please check the log, and report.";;
-
-                [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
-            }
-            else
-            {
-                [localTarget performSelector:localSelector withObject:aConnection];
-            }
-            break;
-
-        case NURESTConnectionResponseCodePermissionDenied:
-        case NURESTConnectionResponseCodeUnauthorized:
-            // We received a forbidden error, but we have no remote selector to call we push a NURESTError about it.
-            if (!remoteTarget || !remoteSelector)
-            {
-                var errorName        = @"Unhandled Forbidden Action (" + responseCode + ")",
-                    errorDescription = @"An unauthorized action has been done and has not been handled by the application. Please check the log, and report.";
-
-                [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
-            }
-            else
-            {
-                [localTarget performSelector:localSelector withObject:aConnection];
-            }
-            break;
-
-        case NURESTConnectionResponseCodeNotFound:
-        case NURESTConnectionResponseCodeMethodNotAllowed:
-        case NURESTConnectionResponseCodePreconditionFailed:
-        case NURESTConnectionResponseBadRequest:
-            if (!remoteTarget || !remoteSelector)
-            {
-                var containsInfo     = (responseObject && responseObject.errors),
-                    errorName        = containsInfo ? responseObject.errors[0].descriptions[0].title : @"Error Code " + responseCode,
-                    errorDescription = containsInfo ? responseObject.errors[0].descriptions[0].description : @"Please check the log and report this error.";
-
-                [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
-            }
-
-            [localTarget performSelector:localSelector withObject:aConnection];
-            break;
-
-        case NURESTConnectionResponseCodeInternalServerError:
-            var errorName        = @"[CRITICAL] Internal Server Error",
-                errorDescription = @"Please check the log and report this error to the server team";
-
-            [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
-
-            [localTarget performSelector:localSelector withObject:aConnection];
-            break;
-
-        case NURESTConnectionResponseCodeZero:
-            CPLog.error("RESTCAPPUCCINO: Connection error with code 0. Sending NURESTConnectionFailureNotification notification and exiting.");
-            [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConnectionFailureNotification
-                                                                object:self
-                                                              userInfo:nil];
-            break;
-
-        default:
-            CPLog.error(@"RESTCAPPUCCINO: Report this error, because this should not happen:\n\n%@", [[aConnection responseData] rawString]);
-    }
+    if (hasHandlers && shouldProceed)
+        [localTarget performSelector:localSelector withObject:aConnection];
 }
 
 

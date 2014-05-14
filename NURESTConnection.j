@@ -82,6 +82,89 @@ var NURESTObjectLastActionTimer;
     return connection;
 }
 
++ (BOOL)handleResponseForConnection:(NURESTConnection)aConnection postErrorMessage:(BOOL)shouldPost
+{
+    var responseObject   = [[aConnection responseData] JSONObject],
+        responseCode     = [aConnection responseCode],
+        containsInfo     = (responseObject && responseObject.errors),
+        errorName        = containsInfo ? responseObject.errors[0].descriptions[0].title : nil,
+        errorDescription = containsInfo ? responseObject.errors[0].descriptions[0].description : nil;
+
+    switch (responseCode)
+    {
+        case NURESTConnectionResponseCodeEmpty:
+        case NURESTConnectionResponseCodeSuccess:
+        case NURESTConnectionResponseCodeCreated:
+            return YES;
+
+        case NURESTConnectionResponseCodeMultipleChoices:
+
+            [NURESTConfirmation postRESTConfirmationWithName:errorName description:errorDescription choices:responseObject.choices connection:aConnection];
+
+            return NO;
+
+        case NURESTConnectionResponseCodeConflict:
+
+            if (!shouldPost)
+                return YES;
+
+            [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
+
+            return NO;
+
+
+        case NURESTConnectionResponseCodePermissionDenied:
+        case NURESTConnectionResponseCodeUnauthorized:
+
+            if (!shouldPost)
+                return YES;
+
+            var errorName        = @"Permission denied",
+                errorDescription = @"You are not allowed to access this resource.";
+
+            [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
+
+            return NO;
+
+
+        case NURESTConnectionResponseCodeNotFound:
+        case NURESTConnectionResponseCodeMethodNotAllowed:
+        case NURESTConnectionResponseCodePreconditionFailed:
+        case NURESTConnectionResponseBadRequest:
+
+            if (!shouldPost)
+                return YES;
+
+            [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
+
+            return NO;
+
+
+        case NURESTConnectionResponseCodeInternalServerError:
+            var errorName        = @"[CRITICAL] Internal Server Error",
+                errorDescription = @"Please check the log and report this error to the server team";
+
+            [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
+
+            return NO;
+
+
+        case NURESTConnectionResponseCodeZero:
+
+            CPLog.error("RESTCAPPUCCINO: Connection error with code 0. Sending NURESTConnectionFailureNotification notification and exiting.");
+            [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConnectionFailureNotification object:self userInfo:nil];
+
+            return NO;
+
+
+        default:
+
+            CPLog.error(@"RESTCAPPUCCINO: Report this error, because this should not happen:\n\n%@", [[aConnection responseData] rawString]);
+
+            return NO;
+    }
+}
+
 
 #pragma mark -
 #pragma mark Initialization

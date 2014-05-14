@@ -23,4 +23,3 @@
 @import "NURESTObject.j"
 @import "NURESTPushCenter.j"
 @import "NURESTBasicUser.j"
-@import "NURESTNestedObject.j"

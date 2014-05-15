@@ -130,6 +130,7 @@ var NURESTObjectLastActionTimer;
         case NURESTConnectionResponseCodeNotFound:
         case NURESTConnectionResponseCodeMethodNotAllowed:
         case NURESTConnectionResponseCodePreconditionFailed:
+        case NURESTConnectionResponseCodeServiceUnavailable:
         case NURESTConnectionResponseBadRequest:
 
             if (!shouldPost)
@@ -147,7 +148,6 @@ var NURESTObjectLastActionTimer;
             [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
 
             return NO;
-
 
         case NURESTConnectionResponseCodeZero:
 

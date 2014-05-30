@@ -24,10 +24,10 @@ NURESTErrorNotification = @"NURESTErrorNotification";
 
 @implementation NURESTError : CPObject
 {
-    CPDate              receivedDate    @accessors;
-    CPString            description     @accessors;
-    CPString            name            @accessors;
-    NURESTConnection    connection      @accessors;
+    CPDate              _receivedDate    @accessors(property=receivedDate);
+    CPString            _description     @accessors(property=description);
+    CPString            _name            @accessors(property=name);
+    NURESTConnection    _connection      @accessors(property=connection);
 }
 
 + (void)RESTErrorWithName:(CPString)aName description:(CPString)aDescription

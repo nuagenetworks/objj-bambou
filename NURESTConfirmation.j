@@ -58,9 +58,8 @@ NURESTConfirmationNotification = @"NURESTConfirmationNotification";
     if (_currentChoice === nil)
         [CPException raise:CPInvalidArgumentException reason:@"confirmChoice is not set"];
 
-    var request = [[CPURLRequest alloc] init];
-
-    var cleanedUpURL = [[[_connection request] URL] absoluteString].split("?")[0];
+    var request = [[CPURLRequest alloc] init],
+        cleanedUpURL = [[[_connection request] URL] absoluteString].split("?")[0];
 
     [request setURL:[CPURL URLWithString:cleanedUpURL + "?responseChoice=" + _currentChoice]];
     [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];

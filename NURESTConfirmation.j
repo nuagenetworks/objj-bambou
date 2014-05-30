@@ -32,13 +32,18 @@ NURESTConfirmationNotification = @"NURESTConfirmationNotification";
     NURESTConnection    _connection      @accessors(property=connection);
 }
 
-+ (void)RESTConfirmationWithName:(CPString)aName description:(CPString)aDescription choices:(CPArray)someChoices
+
+#pragma mark -
+#pragma mark Class Methods
+
++ (void)RESTConfirmationWithName:(CPString)aName description:(CPString)aDescription choices:(CPArray)someChoices connection:(NURESTConnection)aConnection
 {
     var confirmation = [[NURESTConfirmation alloc] init];
     [confirmation setName:aName];
     [confirmation setDescription:aDescription];
     [confirmation setChoices:someChoices];
     [confirmation setCurrentChoice:1];
+    [confirmation setConnection:aConnection];
     [confirmation setReceivedDate:new Date()];
 
     return confirmation;
@@ -46,12 +51,12 @@ NURESTConfirmationNotification = @"NURESTConfirmationNotification";
 
 + (void)postRESTConfirmationWithName:(CPString)aName description:(CPString)aDescription choices:(CPArray)someChoices connection:(NURESTConnection)aConnection
 {
-    var confirmation = [NURESTConfirmation RESTConfirmationWithName:aName description:aDescription choices:someChoices];
-
-    [confirmation setConnection:aConnection];
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConfirmationNotification object:confirmation userInfo:nil];
+    [[NURESTConfirmation RESTConfirmationWithName:aName description:aDescription choices:someChoices connection:aConnection] post];
 }
+
+
+#pragma mark -
+#pragma mark Utilities
 
 - (void)confirm
 {
@@ -72,6 +77,11 @@ NURESTConfirmationNotification = @"NURESTConfirmationNotification";
     [_connection setRequest:request];
     [_connection reset];
     [_connection start];
+}
+
+- (void)post
+{
+    [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConfirmationNotification object:self userInfo:nil];
 }
 
 @end

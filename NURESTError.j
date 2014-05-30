@@ -30,11 +30,16 @@ NURESTErrorNotification = @"NURESTErrorNotification";
     NURESTConnection    _connection      @accessors(property=connection);
 }
 
-+ (void)RESTErrorWithName:(CPString)aName description:(CPString)aDescription
+
+#pragma mark -
+#pragma mark Class Methods
+
++ (void)RESTErrorWithName:(CPString)aName description:(CPString)aDescription connection:(NURESTConnection)aConnection
 {
     var error = [[NURESTError alloc] init];
     [error setName:aName];
     [error setDescription:aDescription];
+    [error setConnection:aConnection];
     [error setReceivedDate:new Date()];
 
     return error;
@@ -42,11 +47,16 @@ NURESTErrorNotification = @"NURESTErrorNotification";
 
 + (void)postRESTErrorWithName:(CPString)aName description:(CPString)aDescription connection:(NURESTConnection)aConnection
 {
-    var error = [NURESTError RESTErrorWithName:aName description:aDescription];
+    [[NURESTError RESTErrorWithName:aName description:aDescription connection:aConnection] post];
+}
 
-    [error setConnection:aConnection];
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:NURESTErrorNotification object:error userInfo:nil];
+#pragma mark -
+#pragma mark Utilities
+
+- (void)post
+{
+    [[CPNotificationCenter defaultCenter] postNotificationName:NURESTErrorNotification object:self userInfo:nil];
 }
 
 @end

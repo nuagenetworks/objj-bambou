@@ -58,7 +58,7 @@ NURESTConfirmationNotification = @"NURESTConfirmationNotification";
     if (_currentChoice === nil)
         [CPException raise:CPInvalidArgumentException reason:@"confirmChoice is not set"];
 
-    if (responseChoice == 0)
+    if (_responseChoice == 0)
         return;
 
     var request = [[CPURLRequest alloc] init],

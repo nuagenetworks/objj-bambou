@@ -38,7 +38,8 @@ NURESTConnectionTimeout                         = 42;
 NURESTConnectionFailureNotification             = @"NURESTConnectionFailureNotification";
 NURESTConnectionIdleTimeoutNotification         = @"NURESTConnectionIdleTimeoutNotification";
 
-var NURESTObjectLastActionTimer;
+var NURESTObjectLastActionTimer,
+    NURESTConnectionAutoConfirm = NO;
 
 
 /*! Enhanced version of CPURLConnection
@@ -82,6 +83,16 @@ var NURESTObjectLastActionTimer;
     return connection;
 }
 
++ (void)setConnectionAutoConfirm:(BOOL)isEnabled
+{
+    NURESTConnectionAutoConfirm = isEnabled;
+}
+
++ (void)connectionAutoConfirm
+{
+    return NURESTConnectionAutoConfirm;
+}
+
 + (BOOL)handleResponseForConnection:(NURESTConnection)aConnection postErrorMessage:(BOOL)shouldPost
 {
     var responseObject   = [[aConnection responseData] JSONObject],
@@ -98,8 +109,10 @@ var NURESTObjectLastActionTimer;
             return YES;
 
         case NURESTConnectionResponseCodeMultipleChoices:
-
-            [NURESTConfirmation postRESTConfirmationWithName:errorName description:errorDescription choices:responseObject.choices connection:aConnection];
+            if (NURESTConnectionAutoConfirm)
+                [[NURESTConfirmation RESTConfirmationWithName:errorName description:errorDescription choices:responseObject.choices connection:aConnection] confirm];
+            else
+                [NURESTConfirmation postRESTConfirmationWithName:errorName description:errorDescription choices:responseObject.choices connection:aConnection];
 
             return NO;
 

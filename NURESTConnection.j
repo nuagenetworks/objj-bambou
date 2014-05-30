@@ -83,14 +83,9 @@ var NURESTObjectLastActionTimer,
     return connection;
 }
 
-+ (void)setConnectionAutoConfirm:(BOOL)isEnabled
++ (void)setAutoConfirm:(BOOL)isEnabled
 {
     NURESTConnectionAutoConfirm = isEnabled;
-}
-
-+ (void)connectionAutoConfirm
-{
-    return NURESTConnectionAutoConfirm;
 }
 
 + (BOOL)handleResponseForConnection:(NURESTConnection)aConnection postErrorMessage:(BOOL)shouldPost

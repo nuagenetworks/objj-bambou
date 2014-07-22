@@ -74,11 +74,26 @@ function _format_log_json(string)
     CPString        _parentType                     @accessors(property=parentType);
 
     CPDictionary    _restAttributes                 @accessors(property=RESTAttributes);
+    CPDictionary    _searchAttributes               @accessors(getter=searchAttributes);
     CPArray         _bindableAttributes             @accessors(property=bindableAttributes);
 
     NURESTObject    _parentObject                   @accessors(property=parentObject);
 
     CPDictionary    _childrenRegistry;
+}
+
+
+/*! Returns a list of attributes that should not appear in search attributes.
+*/
+- (CPArray)ignoredSearchOnKeyPaths
+{
+    return [@"creationDate",
+            @"externalID",
+            @"ID",
+            @"localID",
+            @"owner",
+            @"parentID",
+            @"parentType"];
 }
 
 
@@ -134,17 +149,18 @@ function _format_log_json(string)
 {
     if (self = [super init])
     {
-        _restAttributes = [CPDictionary dictionary];
         _bindableAttributes = [CPArray array];
-        _localID = [CPString UUID];
         _childrenRegistry = @{};
+        _localID = [CPString UUID];
+        _restAttributes = [CPDictionary dictionary];
+        _searchAttributes = [CPDictionary dictionary];
 
-        [self exposeLocalKeyPathToREST:@"ID"];
+        [self exposeLocalKeyPathToREST:@"creationDate"];
         [self exposeLocalKeyPathToREST:@"externalID"];
+        [self exposeLocalKeyPathToREST:@"ID"];
+        [self exposeLocalKeyPathToREST:@"owner"];
         [self exposeLocalKeyPathToREST:@"parentID"];
         [self exposeLocalKeyPathToREST:@"parentType"];
-        [self exposeLocalKeyPathToREST:@"owner"];
-        [self exposeLocalKeyPathToREST:@"creationDate"];
     }
 
     return self;
@@ -231,6 +247,30 @@ function _format_log_json(string)
 /*! Exposes new attribute for REST managing
     for example, if subclass has an attribute "name" and you want to be able to save it
     in REST data model, use
+        - [self exposeLocalKeyPath:@"name" toRESTKeyPath:@"name" withChoices:[@"A", @"B", @"C", @"D"]];
+    You can also save the attribute to another leaf, like
+        - [self exposeLocalKeyPath:@"name" toRESTKeyPath:@"basicattributes.name" withChoices:[@"A", @"B", @"C", @"D"]];
+    @param aKeyPath the local key path to expose
+    @param aRestKeyPath the destination key path of the REST object
+    @param arrayChoices a list of the valid choices for the rest API
+*/
+- (void)exposeLocalKeyPath:(CPString)aKeyPath toRESTKeyPath:(CPString)aRestKeyPath withChoices:(CPArray)arrayChoices
+{
+    if (![[self ignoredSearchOnKeyPaths] containsObject:aKeyPath])
+    {
+        var attributeInfo = [CPDictionary dictionary];
+
+        if (arrayChoices)
+            [attributeInfo setObject:arrayChoices forKey:@"choices"];
+
+        [_searchAttributes setObject:attributeInfo forKey:aKeyPath];
+    }
+
+    [_restAttributes setObject:aRestKeyPath forKey:aKeyPath];
+}
+/*! Exposes new attribute for REST managing
+    for example, if subclass has an attribute "name" and you want to be able to save it
+    in REST data model, use
         - [self exposeLocalKeyPath:@"name" toRESTKeyPath:@"name"];
     You can also save the attribute to another leaf, like
         - [self exposeLocalKeyPath:@"name" toRESTKeyPath:@"basicattributes.name"];
@@ -239,7 +279,17 @@ function _format_log_json(string)
 */
 - (void)exposeLocalKeyPath:(CPString)aKeyPath toRESTKeyPath:(CPString)aRestKeyPath
 {
-    [_restAttributes setObject:aRestKeyPath forKey:aKeyPath];
+    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath withChoices:nil];
+}
+
+/*! Same as exposeLocalKeyPath:toRESTKeyPath:. Difference is that the rest keypath
+    will be the same than the local key path
+    @param aKeyPath the local key path to expose
+    @param arrayChoices a list of the valid choices for the rest API
+*/
+- (void)exposeLocalKeyPathToREST:(CPString)aKeyPath withChoices:(CPArray)arrayChoices
+{
+    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath withChoices:arrayChoices];
 }
 
 /*! Same as exposeLocalKeyPath:toRESTKeyPath:. Difference is that the rest keypath
@@ -248,7 +298,7 @@ function _format_log_json(string)
 */
 - (void)exposeLocalKeyPathToREST:(CPString)aKeyPath
 {
-    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath];
+    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath withChoices:nil];
 }
 
 /*! Expose some property that are bindable, but not from the model.

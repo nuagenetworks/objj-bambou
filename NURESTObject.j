@@ -85,15 +85,9 @@ function _format_log_json(string)
 
 /*! Returns a list of attributes that should not appear in search attributes.
 */
-- (CPArray)ignoredSearchOnKeyPaths
+- (CPArray)keyPathAllowedForSearch
 {
-    return [@"creationDate",
-            @"externalID",
-            @"ID",
-            @"localID",
-            @"owner",
-            @"parentID",
-            @"parentType"];
+    return [];
 }
 
 
@@ -256,7 +250,7 @@ function _format_log_json(string)
 */
 - (void)exposeLocalKeyPath:(CPString)aKeyPath toRESTKeyPath:(CPString)aRestKeyPath withChoices:(CPArray)arrayChoices
 {
-    if (![[self ignoredSearchOnKeyPaths] containsObject:aKeyPath])
+    if ([[self keyPathAllowedForSearch] containsObject:aKeyPath])
     {
         var attributeInfo = [CPDictionary dictionary];
 

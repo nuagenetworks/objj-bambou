@@ -26,6 +26,8 @@ NURESTObjectStatusTypeSuccess   = @"SUCCESS";
 NURESTObjectStatusTypeWarning   = @"WARNING";
 NURESTObjectStatusTypeFailed    = @"FAILED";
 
+NURESTOBJECT_ATTRIBUTECHOINCES = @"choices";
+
 @class NURESTBasicUser
 @global NUDataTransferController
 @global CPCriticalAlertStyle
@@ -43,6 +45,8 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 @global NURESTConnectionResponseCodeCreated
 @global NURESTConnectionResponseCodeSuccess
 @global NURESTConnectionResponseCodeEmpty
+
+
 
 
 function _format_log_json(string)
@@ -255,7 +259,7 @@ function _format_log_json(string)
         var attributeInfo = [CPDictionary dictionary];
 
         if (arrayChoices)
-            [attributeInfo setObject:arrayChoices forKey:@"choices"];
+            [attributeInfo setObject:arrayChoices forKey:NURESTOBJECT_ATTRIBUTECHOINCES];
 
         [_searchAttributes setObject:attributeInfo forKey:aKeyPath];
     }

@@ -47,8 +47,6 @@ NURESTObjectAttributeChoicesKey = @"choices";
 @global NURESTConnectionResponseCodeEmpty
 
 
-
-
 function _format_log_json(string)
 {
     if (!string || !string.length)

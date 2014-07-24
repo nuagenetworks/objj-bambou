@@ -26,7 +26,7 @@ NURESTObjectStatusTypeSuccess   = @"SUCCESS";
 NURESTObjectStatusTypeWarning   = @"WARNING";
 NURESTObjectStatusTypeFailed    = @"FAILED";
 
-NURESTOBJECT_ATTRIBUTECHOINCES = @"choices";
+NURESTObjectAttributeChoicesKey = @"choices";
 
 @class NURESTBasicUser
 @global NUDataTransferController
@@ -91,8 +91,7 @@ function _format_log_json(string)
 */
 - (CPArray)ignoredSearchOnKeyPaths
 {
-    return [@"creationDate",
-            @"externalID",
+    return [@"externalID",
             @"ID",
             @"localID",
             @"owner",
@@ -251,21 +250,21 @@ function _format_log_json(string)
 /*! Exposes new attribute for REST managing
     for example, if subclass has an attribute "name" and you want to be able to save it
     in REST data model, use
-        - [self exposeLocalKeyPath:@"name" toRESTKeyPath:@"name" withChoices:[@"A", @"B", @"C", @"D"]];
+        - [self exposeLocalKeyPath:@"name" toRESTKeyPath:@"name" choices:[@"A", @"B", @"C", @"D"]];
     You can also save the attribute to another leaf, like
-        - [self exposeLocalKeyPath:@"name" toRESTKeyPath:@"basicattributes.name" withChoices:[@"A", @"B", @"C", @"D"]];
+        - [self exposeLocalKeyPath:@"name" toRESTKeyPath:@"basicattributes.name" choices:[@"A", @"B", @"C", @"D"]];
     @param aKeyPath the local key path to expose
     @param aRestKeyPath the destination key path of the REST object
     @param arrayChoices a list of the valid choices for the rest API
 */
-- (void)exposeLocalKeyPath:(CPString)aKeyPath toRESTKeyPath:(CPString)aRestKeyPath withChoices:(CPArray)arrayChoices
+- (void)exposeLocalKeyPath:(CPString)aKeyPath toRESTKeyPath:(CPString)aRestKeyPath choices:(CPArray)arrayChoices
 {
     if (![[self ignoredSearchOnKeyPaths] containsObject:aKeyPath])
     {
         var attributeInfo = [CPDictionary dictionary];
 
         if (arrayChoices)
-            [attributeInfo setObject:arrayChoices forKey:NURESTOBJECT_ATTRIBUTECHOINCES];
+            [attributeInfo setObject:arrayChoices forKey:NURESTObjectAttributeChoicesKey];
 
         [_searchAttributes setObject:attributeInfo forKey:aKeyPath];
     }
@@ -283,7 +282,7 @@ function _format_log_json(string)
 */
 - (void)exposeLocalKeyPath:(CPString)aKeyPath toRESTKeyPath:(CPString)aRestKeyPath
 {
-    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath withChoices:nil];
+    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath choices:nil];
 }
 
 /*! Same as exposeLocalKeyPath:toRESTKeyPath:. Difference is that the rest keypath
@@ -291,9 +290,9 @@ function _format_log_json(string)
     @param aKeyPath the local key path to expose
     @param arrayChoices a list of the valid choices for the rest API
 */
-- (void)exposeLocalKeyPathToREST:(CPString)aKeyPath withChoices:(CPArray)arrayChoices
+- (void)exposeLocalKeyPathToREST:(CPString)aKeyPath choices:(CPArray)arrayChoices
 {
-    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath withChoices:arrayChoices];
+    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath choices:arrayChoices];
 }
 
 /*! Same as exposeLocalKeyPath:toRESTKeyPath:. Difference is that the rest keypath
@@ -302,7 +301,7 @@ function _format_log_json(string)
 */
 - (void)exposeLocalKeyPathToREST:(CPString)aKeyPath
 {
-    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath withChoices:nil];
+    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath choices:nil];
 }
 
 /*! Expose some property that are bindable, but not from the model.

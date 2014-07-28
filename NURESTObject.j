@@ -143,12 +143,12 @@ function _format_log_json(string)
         _restAttributes = [CPDictionary dictionary];
         _searchAttributes = [CPDictionary dictionary];
 
-        [self exposeLocalKeyPathToREST:@"creationDate" isSearchable:YES];
-        [self exposeLocalKeyPathToREST:@"externalID"];
-        [self exposeLocalKeyPathToREST:@"ID"];
-        [self exposeLocalKeyPathToREST:@"owner"];
-        [self exposeLocalKeyPathToREST:@"parentID"];
-        [self exposeLocalKeyPathToREST:@"parentType"];
+        [self exposeLocalKeyPathToREST:@"creationDate"];
+        [self exposeLocalKeyPathToREST:@"externalID" isSearchable:NO];
+        [self exposeLocalKeyPathToREST:@"ID" isSearchable:NO];
+        [self exposeLocalKeyPathToREST:@"owner" isSearchable:NO];
+        [self exposeLocalKeyPathToREST:@"parentID" isSearchable:NO];
+        [self exposeLocalKeyPathToREST:@"parentType" isSearchable:NO];
     }
 
     return self;
@@ -284,7 +284,7 @@ function _format_log_json(string)
 */
 - (void)exposeLocalKeyPath:(CPString)aKeyPath toRESTKeyPath:(CPString)aRestKeyPath
 {
-    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath isSearchable:NO choices:nil];
+    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath isSearchable:YES choices:nil];
 }
 
 /*! Same as exposeLocalKeyPath:toRESTKeyPath:. Difference is that the rest keypath
@@ -314,7 +314,7 @@ function _format_log_json(string)
 */
 - (void)exposeLocalKeyPathToREST:(CPString)aKeyPath
 {
-    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath isSearchable:NO choices:nil];
+    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath isSearchable:YES choices:nil];
 }
 
 /*! Expose some property that are bindable, but not from the model.

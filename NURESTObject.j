@@ -270,7 +270,7 @@ function _format_log_json(string)
 */
 - (void)exposeLocalKeyPath:(CPString)aKeyPath toRESTKeyPath:(CPString)aRestKeyPath choices:(CPArray)someChoices
 {
-    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath isSearchable:YES choices:someChoices];
+    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aRestKeyPath isSearchable:YES choices:someChoices];
 }
 
 /*! Exposes new attribute for REST managing
@@ -285,7 +285,7 @@ function _format_log_json(string)
 */
 - (void)exposeLocalKeyPath:(CPString)aKeyPath toRESTKeyPath:(CPString)aRestKeyPath isSearchable:(BOOL)aBool
 {
-    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath isSearchable:aBool choices:nil];
+    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aRestKeyPath isSearchable:aBool choices:nil];
 }
 
 /*! Exposes new attribute for REST managing
@@ -299,7 +299,7 @@ function _format_log_json(string)
 */
 - (void)exposeLocalKeyPath:(CPString)aKeyPath toRESTKeyPath:(CPString)aRestKeyPath
 {
-    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath isSearchable:YES choices:nil];
+    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aRestKeyPath isSearchable:YES choices:nil];
 }
 
 /*! Same as exposeLocalKeyPath:toRESTKeyPath:. Difference is that the rest keypath

@@ -26,7 +26,8 @@ NURESTObjectStatusTypeSuccess   = @"SUCCESS";
 NURESTObjectStatusTypeWarning   = @"WARNING";
 NURESTObjectStatusTypeFailed    = @"FAILED";
 
-NURESTObjectAttributeChoicesKey = @"allowedValues";
+NURESTObjectAttributeAllowedValuesKey   = @"allowedValues";
+NURESTObjectAttributeDisplayNameKey     = @"displayName";
 
 @class NURESTBasicUser
 @global NUDataTransferController
@@ -240,17 +241,23 @@ function _format_log_json(string)
         - [self exposeLocalKeyPath:@"name" toRESTKeyPath:@"basicattributes.name" allowedValues:[@"A", @"B", @"C", @"D"]];
     @param aKeyPath the local key path to expose
     @param aRestKeyPath the destination key path of the REST object
+    @param aName the name that should be used displayed to the end user
     @param searchable a bool saying wether or not the key path can be used for advanced search
     @param allowedValues a list of the valid allowed values for the rest API
 */
-- (void)exposeLocalKeyPath:(CPString)aKeyPath toRESTKeyPath:(CPString)aRestKeyPath searchable:(BOOL)aBool allowedValues:(CPArray)someChoices
+- (void)exposeLocalKeyPath:(CPString)aKeyPath toRESTKeyPath:(CPString)aRestKeyPath displayName:(CPString)aName searchable:(BOOL)aBool allowedValues:(CPArray)someChoices
 {
     if (aBool)
     {
         var attributeInfo = [CPDictionary dictionary];
 
         if (someChoices)
-            [attributeInfo setObject:someChoices forKey:NURESTObjectAttributeChoicesKey];
+            [attributeInfo setObject:someChoices forKey:NURESTObjectAttributeAllowedValuesKey];
+
+        if (!aName)
+            aName = aKeyPath;
+
+        [attributeInfo setObject:aName forKey:NURESTObjectAttributeDisplayNameKey];
 
         [_searchAttributes setObject:attributeInfo forKey:aKeyPath];
     }
@@ -270,7 +277,23 @@ function _format_log_json(string)
 */
 - (void)exposeLocalKeyPath:(CPString)aKeyPath toRESTKeyPath:(CPString)aRestKeyPath allowedValues:(CPArray)someChoices
 {
-    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aRestKeyPath searchable:YES allowedValues:someChoices];
+    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aRestKeyPath displayName:aKeyPath searchable:YES allowedValues:someChoices];
+}
+
+/*! Exposes new attribute for REST managing
+    for example, if subclass has an attribute "name" and you want to be able to save it
+    in REST data model, use
+        - [self exposeLocalKeyPath:@"name" toRESTKeyPath:@"name"];
+    You can also save the attribute to another leaf, like
+        - [self exposeLocalKeyPath:@"name" toRESTKeyPath:@"basicattributes.name"];
+    @param aKeyPath the local key path to expose
+    @param aRestKeyPath the destination key path of the REST object
+    @param aName the name that should be used displayed to the end user
+    @param allowedValues a list of the valid allowed values for the rest API
+*/
+- (void)exposeLocalKeyPath:(CPString)aKeyPath toRESTKeyPath:(CPString)aRestKeyPath displayName:(CPString)aName allowedValues:(CPArray)someChoices
+{
+    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aRestKeyPath displayName:aName searchable:YES allowedValues:someChoices];
 }
 
 /*! Exposes new attribute for REST managing
@@ -285,7 +308,7 @@ function _format_log_json(string)
 */
 - (void)exposeLocalKeyPath:(CPString)aKeyPath toRESTKeyPath:(CPString)aRestKeyPath searchable:(BOOL)aBool
 {
-    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aRestKeyPath searchable:aBool allowedValues:nil];
+    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aRestKeyPath displayName:aKeyPath searchable:aBool allowedValues:nil];
 }
 
 /*! Exposes new attribute for REST managing
@@ -299,7 +322,22 @@ function _format_log_json(string)
 */
 - (void)exposeLocalKeyPath:(CPString)aKeyPath toRESTKeyPath:(CPString)aRestKeyPath
 {
-    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aRestKeyPath searchable:YES allowedValues:nil];
+    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aRestKeyPath displayName:aKeyPath searchable:YES allowedValues:nil];
+}
+
+/*! Exposes new attribute for REST managing
+    for example, if subclass has an attribute "name" and you want to be able to save it
+    in REST data model, use
+        - [self exposeLocalKeyPath:@"name" toRESTKeyPath:@"name"];
+    You can also save the attribute to another leaf, like
+        - [self exposeLocalKeyPath:@"name" toRESTKeyPath:@"basicattributes.name"];
+    @param aKeyPath the local key path to expose
+    @param aRestKeyPath the destination key path of the REST object
+    @param aName the name that should be used displayed to the end user
+*/
+- (void)exposeLocalKeyPath:(CPString)aKeyPath toRESTKeyPath:(CPString)aRestKeyPath displayName:(CPString)aName
+{
+    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aRestKeyPath displayName:aName searchable:YES allowedValues:nil];
 }
 
 /*! Same as exposeLocalKeyPath:toRESTKeyPath:. Difference is that the rest keypath
@@ -309,7 +347,18 @@ function _format_log_json(string)
 */
 - (void)exposeLocalKeyPathToREST:(CPString)aKeyPath allowedValues:(CPArray)someChoices
 {
-    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath searchable:YES allowedValues:someChoices];
+    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath displayName:aKeyPath searchable:YES allowedValues:someChoices];
+}
+
+/*! Same as exposeLocalKeyPath:toRESTKeyPath:. Difference is that the rest keypath
+    will be the same than the local key path
+    @param aKeyPath the local key path to expose
+    @param aName the name that should be used displayed to the end user
+    @param allowedValues a list of the valid allowed values for the rest API
+*/
+- (void)exposeLocalKeyPathToREST:(CPString)aKeyPath displayName:(CPString)aName allowedValues:(CPArray)someChoices
+{
+    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath displayName:aName searchable:YES allowedValues:someChoices];
 }
 
 /*! Same as exposeLocalKeyPath:toRESTKeyPath:. Difference is that the rest keypath
@@ -319,7 +368,7 @@ function _format_log_json(string)
 */
 - (void)exposeLocalKeyPathToREST:(CPString)aKeyPath searchable:(BOOL)aBool
 {
-    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath searchable:aBool allowedValues:nil];
+    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath displayName:aKeyPath searchable:aBool allowedValues:nil];
 }
 
 /*! Same as exposeLocalKeyPath:toRESTKeyPath:. Difference is that the rest keypath
@@ -328,7 +377,17 @@ function _format_log_json(string)
 */
 - (void)exposeLocalKeyPathToREST:(CPString)aKeyPath
 {
-    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath searchable:YES allowedValues:nil];
+    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath displayName:aKeyPath searchable:YES allowedValues:nil];
+}
+
+/*! Same as exposeLocalKeyPath:toRESTKeyPath:. Difference is that the rest keypath
+    will be the same than the local key path
+    @param aKeyPath the local key path to expose
+    @param aName the name that should be used displayed to the end user
+*/
+- (void)exposeLocalKeyPathToREST:(CPString)aKeyPath displayName:(CPString)aName
+{
+    [self exposeLocalKeyPath:aKeyPath toRESTKeyPath:aKeyPath displayName:aName searchable:YES allowedValues:nil];
 }
 
 /*! Expose some property that are bindable, but not from the model.

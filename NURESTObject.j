@@ -435,9 +435,13 @@ function _format_log_json(string)
 
 - (BOOL)isEqual:(NURESTObject)anEntity
 {
+    if (![anEntity respondsToSelector:@selector(ID)])
+        return NO;
+
     if (_ID)
         return ([self ID] == [anEntity ID]);
-    else if (_localID)
+
+    if (_localID)
         return ([self localID] == [anEntity localID]);
 }
 

@@ -113,12 +113,12 @@
     }
 }
 
-- (void)fetchObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (CPString)fetchObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self fetchObjectsMatchingFilter:nil page:nil andCallSelector:aSelector ofObject:anObject];
+    return [self fetchObjectsMatchingFilter:nil page:nil andCallSelector:aSelector ofObject:anObject];
 }
 
-- (void)fetchObjectsMatchingFilter:(id)aFilter page:(CPNumber)aPage andCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (CPString)fetchObjectsMatchingFilter:(id)aFilter page:(CPNumber)aPage andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
     var request;
     if ([_entity isKindOfClass:NURESTBasicUser])

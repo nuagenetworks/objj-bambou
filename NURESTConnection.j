@@ -38,7 +38,8 @@ NURESTConnectionTimeout                         = 42;
 NURESTConnectionFailureNotification             = @"NURESTConnectionFailureNotification";
 NURESTConnectionIdleTimeoutNotification         = @"NURESTConnectionIdleTimeoutNotification";
 
-var NURESTObjectLastActionTimer,
+var NURESTConnectionLastActionTimer,
+    NURESTConnectionTimeout = 1200000,
     NURESTConnectionAutoConfirm = NO;
 
 
@@ -86,6 +87,11 @@ var NURESTObjectLastActionTimer,
 + (void)setAutoConfirm:(BOOL)isEnabled
 {
     NURESTConnectionAutoConfirm = isEnabled;
+}
+
++ (void)setTimeoutValue:(int)aValue
+{
+    NURESTConnectionTimeout = aValue;
 }
 
 + (BOOL)handleResponseForConnection:(NURESTConnection)aConnection postErrorMessage:(BOOL)shouldPost
@@ -203,15 +209,18 @@ var NURESTObjectLastActionTimer,
     _isCanceled = NO;
     _hasTimeouted = NO;
 
-    if (!_ignoreRequestIdle)
+    if (!_ignoreRequestIdle && NURESTConnectionTimeout)
     {
-        if (NURESTObjectLastActionTimer)
-            clearTimeout(NURESTObjectLastActionTimer);
+        if (NURESTConnectionLastActionTimer)
+            clearTimeout(NURESTConnectionLastActionTimer);
 
-        NURESTObjectLastActionTimer = setTimeout(function() {
+        NURESTConnectionLastActionTimer = setTimeout(function() {
+            if (!NURESTConnectionTimeout)
+                return;
+
             console.warn("Connection idle timer run off!")
             [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConnectionIdleTimeoutNotification object:nil userInfo:nil];
-        }, 1200000);
+        }, NURESTConnectionTimeout);
     }
 
     try

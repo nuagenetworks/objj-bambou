@@ -144,7 +144,7 @@ function _format_log_json(string)
         _restAttributes = [CPDictionary dictionary];
         _searchAttributes = [CPDictionary dictionary];
 
-        [self exposeLocalKeyPathToREST:@"creationDate"];
+        [self exposeLocalKeyPathToREST:@"creationDate" displayName:@"creation date"];
         [self exposeLocalKeyPathToREST:@"externalID" searchable:NO];
         [self exposeLocalKeyPathToREST:@"ID" searchable:NO];
         [self exposeLocalKeyPathToREST:@"owner" searchable:NO];

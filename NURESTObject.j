@@ -192,7 +192,10 @@ function _format_log_json(string)
 
 - (void)addChild:(NURESTObject)aChildObject
 {
-    [[self childrenListWithRESTName:[aChildObject RESTName]] addObject:aChildObject];
+    var childrenList = [self childrenListWithRESTName:[aChildObject RESTName]];
+
+    if (![childrenList containsObject:aChildObject])
+        [childrenList addObject:aChildObject];
 }
 
 - (void)removeChild:(NURESTObject)aChildObject

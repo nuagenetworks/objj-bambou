@@ -128,6 +128,11 @@ function _format_log_json(string)
     return NO
 }
 
++ (CPURL)RESTBaseURL
+{
+    return [[NURESTLoginController defaultController] URL];
+}
+
 
 #pragma mark -
 #pragma mark Initialization
@@ -222,6 +227,11 @@ function _format_log_json(string)
     return [[self class] RESTResourceName];
 }
 
+- (CPURL)RESTBaseURL
+{
+    return [[self class] RESTBaseURL];
+}
+
 /*! Builds the base query URL to manage this object
     this must be overiden by subclasses
     @return a CPURL representing the REST endpoint to manage this object
@@ -231,9 +241,9 @@ function _format_log_json(string)
     var queryName = [self RESTResourceName];
 
     if (!_ID)
-        return [CPURL URLWithString:queryName + @"/" relativeToURL:[[NURESTLoginController defaultController] URL]];
+        return [CPURL URLWithString:queryName + @"/" relativeToURL:[self RESTBaseURL]];
     else
-        return [CPURL URLWithString:queryName + @"/" + _ID + "/" relativeToURL:[[NURESTLoginController defaultController] URL]];
+        return [CPURL URLWithString:queryName + @"/" + _ID + "/" relativeToURL:[self RESTBaseURL]];
 }
 
 /*! Exposes new attribute for REST managing
@@ -743,7 +753,7 @@ function _format_log_json(string)
     // if we are adding stuff under a NURESTBasicUser, then consider this as root
     if ([self isKindOfClass:NURESTBasicUser])
     {
-        var rootURL = [[NURESTLoginController defaultController] URL];
+        var rootURL = [self RESTBaseURL];
         request = [CPURLRequest requestWithURL:aResource ? [CPURL URLWithString:aResource relativeToURL:rootURL] : rootURL];
     }
     else

@@ -20,6 +20,7 @@
 
 @global NURESTBasicUser
 @global NURESTLoginController
+@global NURESTConnectionMethodGet
 
 @implementation NURESTFetcher : CPObject
 {
@@ -30,7 +31,7 @@
     CPPredicate         _masterFilter           @accessors(property=masterFilter);
     CPPredicate         _masterOrder            @accessors(property=masterOrder);
     CPString            _destinationKeyPath     @accessors(property=destinationKeyPath);
-    CPString            _restName               @accessors(property=restName);
+    CPString            _queryString            @accessors(property=queryString);
     CPString            _transactionID          @accessors(property=transactionID);
     id                  _entity                 @accessors(property=entity);
     NURESTConnection    _lastConnection         @accessors(property=lastConnection);
@@ -47,6 +48,11 @@
     [CPException raise:CPInternalInconsistencyException reason:"NURESTFetcher subclasses must implement managedObjectClass"];
 }
 
++ (CPString)managedObjectRESTName
+{
+    return [[self managedObjectClass] RESTName];
+}
+
 + (NURESTFetcher)fetcherWithEntity:(NURESTObject)anEntity destinationKeyPath:(CPString)aDestinationKeyPath
 {
     var fetcher = [[self class] new];
@@ -54,7 +60,7 @@
     [fetcher setDestinationKeyPath:aDestinationKeyPath];
 
     [anEntity setValue:[] forKeyPath:aDestinationKeyPath];
-    [anEntity registerChildrenList:[anEntity valueForKeyPath:aDestinationKeyPath] forRESTName:[[[self class] managedObjectClass] RESTName]];
+    [anEntity registerChildrenList:[anEntity valueForKeyPath:aDestinationKeyPath] forRESTName:[self managedObjectRESTName]];
 
     return fetcher;
 }
@@ -62,16 +68,6 @@
 
 #pragma mark -
 #pragma mark Initialization
-
-- (id)init
-{
-    if (self = [super init])
-    {
-        _restName = [[[self class] managedObjectClass] RESTResourceName];
-    }
-
-    return self;
-}
 
 - (void)flush
 {
@@ -82,6 +78,19 @@
 {
     return [[[self class] managedObjectClass] new];
 }
+
+
+#pragma mark -
+#pragma mark Utiltities
+
+- (CPString)managedObjectClass
+{
+    return [[self class] managedObjectClass];
+}
+
+
+#pragma mark -
+#pragma mark Request Management
 
 - (void)_prepareHeadersForRequest:(CPURLRequest)aRequest withFilter:(id)aFilter page:(CPNumber)aPage
 {
@@ -113,6 +122,16 @@
     }
 }
 
+- (CPURL)_prepareURL
+{
+    var url = [_entity RESTResourceURLForChildrenClass:[self managedObjectClass]];
+
+    if (_queryString)
+        url = [CPURL URLWithString:[url absoluteString] + "?" + _queryString];
+
+    return url;
+}
+
 - (CPString)fetchObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
     return [self fetchObjectsMatchingFilter:nil page:nil andCallSelector:aSelector ofObject:anObject];
@@ -120,13 +139,8 @@
 
 - (CPString)fetchObjectsMatchingFilter:(id)aFilter page:(CPNumber)aPage andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    var request;
-    if ([_entity isKindOfClass:NURESTBasicUser])
-        request = [CPURLRequest requestWithURL:[CPURL URLWithString:_restName relativeToURL:[[NURESTLoginController defaultController] URL]]];
-    else
-        request = [CPURLRequest requestWithURL:[CPURL URLWithString:_restName relativeToURL:[_entity RESTResourceURL]]];
-
-    [request setHTTPMethod:@"GET"];
+    var request = [CPURLRequest requestWithURL:[self _prepareURL]];
+    [request setHTTPMethod:NURESTConnectionMethodGet];
 
     [self _prepareHeadersForRequest:request withFilter:aFilter page:aPage];
 
@@ -183,12 +197,7 @@
 
 - (void)countObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject matchingFilter:(CPPredicate)aFilter
 {
-    var request;
-    if ([_entity isKindOfClass:NURESTBasicUser])
-        request = [CPURLRequest requestWithURL:[CPURL URLWithString:_restName relativeToURL:[[NURESTLoginController defaultController] URL]]];
-    else
-        request = [CPURLRequest requestWithURL:[CPURL URLWithString:_restName relativeToURL:[_entity RESTResourceURL]]];
-
+    var request = [CPURLRequest requestWithURL:[self _prepareURL]];
     [request setHTTPMethod:@"HEAD"];
 
     [self _prepareHeadersForRequest:request withFilter:aFilter page:nil];

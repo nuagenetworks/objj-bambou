@@ -86,7 +86,7 @@ var NURESTBasicUserCurrent = nil;
     [[NURESTLoginController defaultController] setPassword:aPassword];
     [[NURESTLoginController defaultController] setAPIKey:nil];
 
-    [request setHTTPMethod:@"PUT"];
+    [request setHTTPMethod:NURESTConnectionMethodPut];
     [request setHTTPBody:updatedUserString];
     [self sendRESTCall:request performSelector:@selector(_didSave:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:someUserInfo];
 }

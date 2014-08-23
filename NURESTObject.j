@@ -30,22 +30,29 @@ NURESTObjectAttributeAllowedValuesKey   = @"allowedValues";
 NURESTObjectAttributeDisplayNameKey     = @"displayName";
 
 @class NURESTBasicUser
-@global NUDataTransferController
 @global CPCriticalAlertStyle
 @global CPWarningAlertStyle
+@global NUDataTransferController
 @global NURESTConnectionFailureNotification
-@global NURESTErrorNotification
-@global NURESTConnectionResponseCodeZero
-@global NURESTConnectionResponseCodeConflict
-@global NURESTConnectionResponseCodeUnauthorized
-@global NURESTConnectionResponseCodeMultipleChoices
-@global NURESTConnectionResponseCodeInternalServerError
+
+@global NURESTConnectionMethodDelete
+@global NURESTConnectionMethodGet
+@global NURESTConnectionMethodPost
+@global NURESTConnectionMethodPut
+
 @global NURESTConnectionResponseBadRequest
-@global NURESTConnectionResponseCodePreconditionFailed
-@global NURESTConnectionResponseCodeNotFound
+@global NURESTConnectionResponseCodeConflict
 @global NURESTConnectionResponseCodeCreated
-@global NURESTConnectionResponseCodeSuccess
 @global NURESTConnectionResponseCodeEmpty
+@global NURESTConnectionResponseCodeInternalServerError
+@global NURESTConnectionResponseCodeMultipleChoices
+@global NURESTConnectionResponseCodeNotFound
+@global NURESTConnectionResponseCodePreconditionFailed
+@global NURESTConnectionResponseCodeSuccess
+@global NURESTConnectionResponseCodeUnauthorized
+@global NURESTConnectionResponseCodeZero
+@global NURESTErrorNotification
+
 
 
 function _format_log_json(string)
@@ -89,12 +96,22 @@ function _format_log_json(string)
 #pragma mark -
 #pragma mark Class Methods
 
+/*! Returns the REST base URL.
+*/
++ (CPURL)RESTBaseURL
+{
+    return [[NURESTLoginController defaultController] URL];
+}
+
+/*! REST name of the object
+*/
 + (CPString)RESTName
 {
     [CPException raise:CPInternalInconsistencyException reason:"Subclasses of NURESTObject must implement + (CPString)RESTName"];
 }
 
-/*! Returns the REST query name.
+/*! REST resource name of the object.
+    It will compute the plural if needed
 */
 + (CPString)RESTResourceName
 {
@@ -123,14 +140,12 @@ function _format_log_json(string)
     return queryName;
 }
 
+/*! If overriden to return YES, RESTResourceName will not be called
+    to make the resource plural
+*/
 + (BOOL)RESTResourceNameFixed
 {
     return NO
-}
-
-+ (CPURL)RESTBaseURL
-{
-    return [[NURESTLoginController defaultController] URL];
 }
 
 
@@ -220,30 +235,18 @@ function _format_log_json(string)
 #pragma mark -
 #pragma mark REST configuration
 
-/*! Returns the REST query name.
-*/
-- (CPString)RESTResourceName
-{
-    return [[self class] RESTResourceName];
-}
-
-- (CPURL)RESTBaseURL
-{
-    return [[self class] RESTBaseURL];
-}
-
 /*! Builds the base query URL to manage this object
     this must be overiden by subclasses
     @return a CPURL representing the REST endpoint to manage this object
 */
 - (CPURL)RESTResourceURL
 {
-    var queryName = [self RESTResourceName];
+    return [CPURL URLWithString:[[self class] RESTResourceName] + @"/" + _ID + "/" relativeToURL:[[self class] RESTBaseURL]];
+}
 
-    if (!_ID)
-        return [CPURL URLWithString:queryName + @"/" relativeToURL:[self RESTBaseURL]];
-    else
-        return [CPURL URLWithString:queryName + @"/" + _ID + "/" relativeToURL:[self RESTBaseURL]];
+- (CPURL)RESTResourceURLForChildrenClass:(Class)aChildrenClass
+{
+    return [CPURL URLWithString:[aChildrenClass RESTResourceName] relativeToURL:[self RESTResourceURL]];
 }
 
 /*! Exposes new attribute for REST managing
@@ -687,21 +690,21 @@ function _format_log_json(string)
 */
 - (void)createAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self manageChildEntity:self resource:nil method:@"POST" andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didCreateObject:)];
+    [self _manageChildEntity:self method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didCreateObject:)];
 }
 
 /*! Delete object and call given selector
 */
 - (void)deleteAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self manageChildEntity:self resource:nil method:@"DELETE" andCallSelector:aSelector ofObject:anObject customConnectionHandler:nil];
+    [self _manageChildEntity:self method:NURESTConnectionMethodDelete andCallSelector:aSelector ofObject:anObject customConnectionHandler:nil];
 }
 
 /*! Update object and call given selector
 */
 - (void)saveAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self manageChildEntity:self resource:nil method:@"PUT" andCallSelector:aSelector ofObject:anObject customConnectionHandler:nil];
+    [self _manageChildEntity:self method:NURESTConnectionMethodPut andCallSelector:aSelector ofObject:anObject customConnectionHandler:nil];
 }
 
 
@@ -718,20 +721,7 @@ function _format_log_json(string)
 */
 - (void)addChildEntity:(NURESTObject)anEntity andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self manageChildEntity:anEntity resource:[anEntity RESTResourceName] method:@"POST" andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didAddChildObject:)];
-}
-
-/*! Remove given entity from given ressource of current object
-    for example, to remove a NUGroup into a NUEnterprise, you can call
-     [anEnterpriese removeChildEntity:aGroup andCallSelector:nil ofObject:nil]
-
-    @param anEntity the NURESTObject object of add
-    @param aSelector the selector to call when complete
-    @param anObject the target object
-*/
-- (void)removeChildEntity:(NURESTObject)anEntity andCallSelector:(SEL)aSelector ofObject:(id)anObject
-{
-    [self manageChildEntity:anEntity resource:[anEntity RESTResourceName] method:@"DELETE" andCallSelector:aSelector ofObject:anObject customConnectionHandler:nil];
+    [self _manageChildEntity:anEntity method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didAddChildObject:)];
 }
 
 /*! Low level child manegement. Send given HTTP method with given entity to given ressource of current object
@@ -739,26 +729,29 @@ function _format_log_json(string)
      [anEnterpriese removeChildEntity:aGroup method:NURESTObjectMethodDelete andCallSelector:nil ofObject:nil]
 
     @param anEntity the NURESTObject object of add
-    @param aResource the destination REST resource
     @param aMethod HTTP method
     @param aSelector the selector to call when complete
     @param anObject the target object
     @param aCustomHandler custom handler to call when complete
 */
-- (void)manageChildEntity:(NURESTObject)anEntity resource:(CPString)aResource method:(CPString)aMethod andCallSelector:(SEL)aSelector ofObject:(id)anObject customConnectionHandler:(SEL)aCustomHandler
+- (void)_manageChildEntity:(NURESTObject)anEntity method:(CPString)aMethod andCallSelector:(SEL)aSelector ofObject:(id)anObject customConnectionHandler:(SEL)aCustomHandler
 {
     var body = [anEntity objectToJSON],
-        request;
+        URL;
 
-    // if we are adding stuff under a NURESTBasicUser, then consider this as root
-    if ([self isKindOfClass:NURESTBasicUser])
+    switch (aMethod)
     {
-        var rootURL = [self RESTBaseURL];
-        request = [CPURLRequest requestWithURL:aResource ? [CPURL URLWithString:aResource relativeToURL:rootURL] : rootURL];
-    }
-    else
-        request = [CPURLRequest requestWithURL:aResource ? [CPURL URLWithString:aResource relativeToURL:[self RESTResourceURL]] : [self RESTResourceURL]];
+        case NURESTConnectionMethodPut:
+        case NURESTConnectionMethodDelete:
+            URL = [anEntity RESTResourceURL];
+            break;
 
+        case NURESTConnectionMethodPost:
+            URL = [self RESTResourceURLForChildrenClass:[anEntity class]];
+            break;
+    }
+
+    var request = [CPURLRequest requestWithURL:URL];
     [request setHTTPMethod:aMethod];
     [request setHTTPBody:body];
 
@@ -772,17 +765,17 @@ function _format_log_json(string)
     @param aSelector the selector to call when complete
     @param anObject the target object
 */
-- (void)setEntities:(CPArray)someEntities ofClass:(Class)aClass andCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (void)setEntities:(CPArray)someEntities ofClass:(Class)aChildrenClass andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
     var IDsList = [];
 
     for (var i = [someEntities count] - 1; i >= 0; i--)
         [IDsList addObject:[someEntities[i] ID]];
 
-    var request = [CPURLRequest requestWithURL:[CPURL URLWithString:[aClass RESTResourceName] relativeToURL:[self RESTResourceURL]]],
+    var request = [CPURLRequest requestWithURL:[self RESTResourceURLForChildrenClass:aChildrenClass]],
         body = JSON.stringify(IDsList, null, 4);
 
-    [request setHTTPMethod:@"PUT"];
+    [request setHTTPMethod:NURESTConnectionMethodPut];
     [request setHTTPBody:body];
 
     [self sendRESTCall:request performSelector:@selector(_didPerformStandardOperation:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:someEntities];
@@ -917,7 +910,7 @@ function _format_log_json(string)
     var URLRequest = [CPURLRequest requestWithURL:[self RESTResourceURL]],
         body = [self objectToJSON];
 
-    [URLRequest setHTTPMethod:@"PUT"];
+    [URLRequest setHTTPMethod:NURESTConnectionMethodPut];
     [URLRequest setHTTPBody:body];
 
     [self sendRESTCall:URLRequest performSelector:@selector(_didSaveAndCallFunction:) ofObject:self andPerformRemoteSelector:nil ofObject:nil userInfo:aFunction];
@@ -942,7 +935,7 @@ function _format_log_json(string)
     var URLRequest = [CPURLRequest requestWithURL:[self RESTResourceURL]],
         body = [self objectToJSON];
 
-    [URLRequest setHTTPMethod:@"POST"];
+    [URLRequest setHTTPMethod:NURESTConnectionMethodPost];
     [URLRequest setHTTPBody:body];
 
     [self sendRESTCall:URLRequest performSelector:@selector(_didCreateAndCallFunction:) ofObject:self andPerformRemoteSelector:nil ofObject:nil userInfo:aFunction];
@@ -965,7 +958,7 @@ function _format_log_json(string)
     var URLRequest = [CPURLRequest requestWithURL:[CPURL URLWithString:[aChildObject RESTName] + 's' relativeToURL:[self RESTResourceURL]]],
         body = [aChildObject objectToJSON];
 
-    [URLRequest setHTTPMethod:@"POST"];
+    [URLRequest setHTTPMethod:NURESTConnectionMethodPost];
     [URLRequest setHTTPBody:body];
 
     [self sendRESTCall:URLRequest performSelector:@selector(_didAddChildAndCallFunction:) ofObject:self andPerformRemoteSelector:nil ofObject:nil userInfo:{"function": aFunction, "child": aChildObject}];

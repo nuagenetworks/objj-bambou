@@ -35,6 +35,11 @@ NURESTConnectionResponseCodeUnauthorized        = 401;
 NURESTConnectionResponseCodeZero                = 0;
 NURESTConnectionTimeout                         = 42;
 
+NURESTConnectionMethodDelete                    = @"DELETE";
+NURESTConnectionMethodGet                       = @"GET";
+NURESTConnectionMethodPost                      = @"POST";
+NURESTConnectionMethodPut                       = @"PUT";
+
 NURESTConnectionFailureNotification             = @"NURESTConnectionFailureNotification";
 NURESTConnectionIdleTimeoutNotification         = @"NURESTConnectionIdleTimeoutNotification";
 

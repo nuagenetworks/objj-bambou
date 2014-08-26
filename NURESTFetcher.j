@@ -156,7 +156,7 @@
 {
     _lastConnection = aConnection;
 
-    if ([aConnection responseCode] != 200)
+    if ([aConnection responseCode] != 200) // @TODO: server sends 200, but if there is an empty list we should have the empty code...
     {
         _totalCount = 0;
         _pageSize = 0;
@@ -192,17 +192,21 @@
     // @EDIT: Actually, I'm not sure. This is used as datasource content, and removing stuff from datasource
     // will remove it from the RESTObject array, and that could cause some weird error. I need to deeply check
     // if it is safe or not to simply give the destination array... wait and see
+    // @EDIT: I think the second message is right. using pagination will completely screw up things.
     [self _sendContent:newlyFetchedObjects usingConnection:aConnection];
 }
 
-- (void)countObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject matchingFilter:(CPPredicate)aFilter
+- (CPString)countObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject matchingFilter:(CPPredicate)aFilter
 {
     var request = [CPURLRequest requestWithURL:[self _prepareURL]];
     [request setHTTPMethod:@"HEAD"];
 
     [self _prepareHeadersForRequest:request withFilter:aFilter page:nil];
 
+    _transactionID = [CPString UUID];
     [_entity sendRESTCall:request performSelector:@selector(_didCountObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:nil];
+
+    return _transactionID;
 }
 
 - (void)_didCountObjects:(NURESTConnection)aConnection

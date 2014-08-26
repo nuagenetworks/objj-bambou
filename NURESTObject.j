@@ -593,40 +593,6 @@ function _format_log_json(string)
 
 
 #pragma mark -
-#pragma mark Fetching
-
-/*! Fetchs object attributes. This requires that the Cappuccino object has a valid ID
-*/
-- (void)fetch
-{
-    [self fetchAndCallSelector:nil ofObject:nil];
-}
-
-/*! Fetchs object attributes. This requires that the Cappuccino object has a valid ID
-    @param aSelector the selector to use when fetching is ok
-    @param anObject the target to send the selector
-*/
-- (void)fetchAndCallSelector:(SEL)aSelector ofObject:(id)anObject
-{
-    var request = [CPURLRequest requestWithURL:[self RESTResourceURL]];
-
-    [self sendRESTCall:request performSelector:@selector(_didFetch:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:nil];
-}
-
-/*! @ignore
-*/
-- (void)_didFetch:(NURESTConnection)aConnection
-{
-    var JSONObject = [[aConnection responseData] JSONObject];
-
-    if (JSONObject)
-        try { [self objectFromJSON:JSONObject[0]]; } catch (e){}
-
-    [self _didPerformStandardOperation:aConnection];
-}
-
-
-#pragma mark -
 #pragma mark REST Low Level communication
 
 /*! Send a REST request and perform given selector of given object
@@ -672,19 +638,28 @@ function _format_log_json(string)
         localSelector  = [aConnection internalUserInfo]["localSelector"],
         remoteTarget   = [aConnection internalUserInfo]["remoteTarget"],
         remoteSelector = [aConnection internalUserInfo]["remoteSelector"],
-        hasHandlers    = (remoteTarget && remoteSelector);
+        hasHandlers    = !!(remoteTarget && remoteSelector);
 
     CPLog.trace("RESTCAPPUCCINO: <<<< Response for\n\n%@ %@ (%@):\n\n%@", HTTPMethod, url, responseCode, _format_log_json(rawString));
 
     var shouldProceed = [NURESTConnection handleResponseForConnection:aConnection postErrorMessage:!hasHandlers];
 
-    if (hasHandlers && shouldProceed)
+    if (shouldProceed)
         [localTarget performSelector:localSelector withObject:aConnection];
 }
 
 
 #pragma mark -
 #pragma mark REST CRUD Operations
+
+/*! Fetchs object attributes. This requires that the Cappuccino object has a valid ID
+    @param aSelector the selector to use when fetching is ok
+    @param anObject the target to send the selector
+*/
+- (void)fetchAndCallSelector:(SEL)aSelector ofObject:(id)anObject
+{
+    [self _manageChildEntity:self method:NURESTConnectionMethodGet andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didFetchObject:)];
+}
 
 /*! Create object and call given selector
 */
@@ -743,6 +718,7 @@ function _format_log_json(string)
     {
         case NURESTConnectionMethodPut:
         case NURESTConnectionMethodDelete:
+        case NURESTConnectionMethodGet:
             URL = [anEntity RESTResourceURL];
             break;
 
@@ -784,6 +760,18 @@ function _format_log_json(string)
 
 #pragma mark -
 #pragma mark REST Operation handlers
+
+- (void)_didFetchObject:(NURESTConnection)aConnection
+{
+    var JSONData = [[aConnection responseData] JSONObject],
+        target   = [aConnection internalUserInfo]["remoteTarget"],
+        selector = [aConnection internalUserInfo]["remoteSelector"];
+
+    try {[self objectFromJSON:JSONData[0]];} catch(e) {}
+
+    if (target && selector)
+        [target performSelector:selector withObjects:self, aConnection];
+}
 
 /*! Called as a custom handler when creating a new object
 */
@@ -896,83 +884,6 @@ function _format_log_json(string)
                 [aCoder encodeObject:[self valueForKeyPath:attr] forKey:key];
         }
     }
-}
-
-@end
-
-
-@implementation NURESTObject (EXPERIMENTAL)
-
-/*! Create object and call given function
-*/
-- (void)saveAndCallFunction:(function)aFunction
-{
-    var URLRequest = [CPURLRequest requestWithURL:[self RESTResourceURL]],
-        body = [self objectToJSON];
-
-    [URLRequest setHTTPMethod:NURESTConnectionMethodPut];
-    [URLRequest setHTTPBody:body];
-
-    [self sendRESTCall:URLRequest performSelector:@selector(_didSaveAndCallFunction:) ofObject:self andPerformRemoteSelector:nil ofObject:nil userInfo:aFunction];
-}
-
-- (void)_didSaveAndCallFunction:(NURESTConnection)aConnection
-{
-    var callback = [aConnection userInfo],
-        JSONData = [[aConnection responseData] JSONObject];
-
-    try {[self objectFromJSON:JSONData[0]];} catch(e) {}
-
-    callback(self);
-}
-
-
-
-/*! Create object and call given function
-*/
-- (void)createAndCallFunction:(function)aFunction
-{
-    var URLRequest = [CPURLRequest requestWithURL:[self RESTResourceURL]],
-        body = [self objectToJSON];
-
-    [URLRequest setHTTPMethod:NURESTConnectionMethodPost];
-    [URLRequest setHTTPBody:body];
-
-    [self sendRESTCall:URLRequest performSelector:@selector(_didCreateAndCallFunction:) ofObject:self andPerformRemoteSelector:nil ofObject:nil userInfo:aFunction];
-}
-
-- (void)_didCreateAndCallFunction:(NURESTConnection)aConnection
-{
-    var callback = [aConnection userInfo],
-        JSONData = [[aConnection responseData] JSONObject];
-
-    try {[self objectFromJSON:JSONData[0]];} catch(e) {}
-
-    callback(self);
-}
-
-/*! Create object and call given function
-*/
-- (void)addChild:(NURESTObject)aChildObject andCallFunction:(function)aFunction
-{
-    var URLRequest = [CPURLRequest requestWithURL:[CPURL URLWithString:[aChildObject RESTName] + 's' relativeToURL:[self RESTResourceURL]]],
-        body = [aChildObject objectToJSON];
-
-    [URLRequest setHTTPMethod:NURESTConnectionMethodPost];
-    [URLRequest setHTTPBody:body];
-
-    [self sendRESTCall:URLRequest performSelector:@selector(_didAddChildAndCallFunction:) ofObject:self andPerformRemoteSelector:nil ofObject:nil userInfo:{"function": aFunction, "child": aChildObject}];
-}
-
-- (void)_didAddChildAndCallFunction:(NURESTConnection)aConnection
-{
-    var callback = [aConnection userInfo]["function"],
-        child  = [aConnection userInfo]["child"],
-        JSONData = [[aConnection responseData] JSONObject];
-
-    try {[child objectFromJSON:JSONData[0]];} catch(e) {}
-
-    callback(child);
 }
 
 @end

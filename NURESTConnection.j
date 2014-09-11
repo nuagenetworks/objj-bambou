@@ -19,7 +19,7 @@
 
 @class NURESTLoginController
 
-NURESTConnectionResponseBadRequest              = 400;
+NURESTConnectionResponseCodeBadRequest          = 400;
 NURESTConnectionResponseCodeConflict            = 409;
 NURESTConnectionResponseCodeCreated             = 201;
 NURESTConnectionResponseCodeEmpty               = 204;
@@ -150,7 +150,6 @@ var NURESTConnectionLastActionTimer,
         case NURESTConnectionResponseCodeMethodNotAllowed:
         case NURESTConnectionResponseCodePreconditionFailed:
         case NURESTConnectionResponseCodeServiceUnavailable:
-        case NURESTConnectionResponseBadRequest:
 
             if (!shouldPost)
                 return YES;
@@ -159,8 +158,21 @@ var NURESTConnectionLastActionTimer,
 
             return NO;
 
+        case NURESTConnectionResponseCodeBadRequest:
+
+            if (!shouldPost)
+                return YES;
+
+            var errorName        = @"Bad Request",
+                errorDescription = @"This API call cannot be processed by the server. Please report this to the UI team";
+
+            [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
+
+            return NO;
+
 
         case NURESTConnectionResponseCodeInternalServerError:
+
             var errorName        = @"[CRITICAL] Internal Server Error",
                 errorDescription = @"Please check the log and report this error to the server team";
 

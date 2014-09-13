@@ -572,6 +572,44 @@ function _format_log_json(string)
     return nil;
 }
 
+- (BOOL)genealogicTypes
+{
+    var types = [],
+        parent = self;
+
+    while (parent)
+    {
+        [types addObject:[parent RESTName]];
+        parent = [parent parentObject];
+    }
+
+    return types;
+}
+
+- (BOOL)genealogicIDs
+{
+    var IDs = [],
+        parent = self;
+
+    while (parent)
+    {
+        [IDs addObject:[parent ID]];
+        parent = [parent parentObject];
+    }
+
+    return IDs;
+}
+
+- (BOOL)genealogyContainsType:(CPString)aType
+{
+    return [[self genealogicTypes] containsObject:aType];
+}
+
+- (BOOL)genealogyContainsID:(CPString)anID
+{
+    return [[self genealogicIDs] containsObject:anID];
+}
+
 
 #pragma mark -
 #pragma mark Custom accesors

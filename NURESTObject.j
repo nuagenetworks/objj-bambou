@@ -521,11 +521,13 @@ function _format_log_json(string)
     if (![anEntity respondsToSelector:@selector(ID)])
         return NO;
 
-    if (_ID)
-        return ([self ID] == [anEntity ID]);
+    var ID = [self ID];
+    if (ID)
+        return (ID == [anEntity ID]);
 
-    if (_localID)
-        return ([self localID] == [anEntity localID]);
+    var localID = [self localID];
+    if (localID)
+        return (localID == [anEntity localID]);
 }
 
 - (CPString)description

@@ -49,6 +49,14 @@ var NURESTBasicUserCurrent = nil;
     return NURESTBasicUserCurrent;
 }
 
++ (NURESTObject)RESTObjectWithID:(CPString)anID
+{
+    var newObject = [NURESTObject new];
+    [newObject setID:anID];
+
+    return newObject;
+}
+
 
 #pragma mark -
 #pragma mark Initialization

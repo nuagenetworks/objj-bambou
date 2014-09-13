@@ -148,6 +148,14 @@ function _format_log_json(string)
     return NO
 }
 
++ (NURESTObject)RESTObjectWithID:(CPString)anID
+{
+    var newObject = [NURESTObject new];
+    [newObject setID:anID];
+
+    return newObject;
+}
+
 
 #pragma mark -
 #pragma mark Initialization

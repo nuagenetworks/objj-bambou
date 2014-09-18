@@ -150,7 +150,7 @@ function _format_log_json(string)
 
 + (NURESTObject)RESTObjectWithID:(CPString)anID
 {
-    var newObject = [NURESTObject new];
+    var newObject = [self new];
     [newObject setID:anID];
 
     return newObject;

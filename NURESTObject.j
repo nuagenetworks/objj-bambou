@@ -791,18 +791,18 @@ function _format_log_json(string)
 
 /*! Uses this to reference given objects into the given resource of the actual object.
     @param someEntities CPArray containing any subclass of NURESTObject
-    @param aResource the destination REST resource
     @param aSelector the selector to call when complete
     @param anObject the target object
 */
-- (void)setEntities:(CPArray)someEntities ofClass:(Class)aChildrenClass andCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (void)assignEntities:(CPArray)someEntities andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    var IDsList = [];
+    var IDsList = [],
+        childrenClass = [[someEntities firstObject] class];
 
     for (var i = [someEntities count] - 1; i >= 0; i--)
         [IDsList addObject:[someEntities[i] ID]];
 
-    var request = [CPURLRequest requestWithURL:[self RESTResourceURLForChildrenClass:aChildrenClass]],
+    var request = [CPURLRequest requestWithURL:[self RESTResourceURLForChildrenClass:childrenClass]],
         body = JSON.stringify(IDsList, null, 4);
 
     [request setHTTPMethod:NURESTConnectionMethodPut];

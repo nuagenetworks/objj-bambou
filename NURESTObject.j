@@ -747,6 +747,12 @@ function _format_log_json(string)
     [self _manageChildEntity:anEntity method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didAddChildObject:)];
 }
 
+- (void)instantiateChildEntity:(NURESTObject)anEntity fromTemplate:(NURESTObject)aTemplate andCallSelector:(SEL)aSelector ofObject:(id)anObject
+{
+    [anEntity setTemplateID:[aTemplate ID]];
+    [self _manageChildEntity:anEntity method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didAddChildObject:)];
+}
+
 /*! Low level child manegement. Send given HTTP method with given entity to given ressource of current object
     for example, to remove a NUGroup into a NUEnterprise, you can call
      [anEnterpriese removeChildEntity:aGroup method:NURESTObjectMethodDelete andCallSelector:nil ofObject:nil]

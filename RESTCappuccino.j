@@ -15,11 +15,12 @@
 *
 */
 
+@import "NURESTBasicUser.j"
 @import "NURESTConfirmation.j"
 @import "NURESTConnection.j"
 @import "NURESTError.j"
 @import "NURESTFetcher.j"
 @import "NURESTLoginController.j"
+@import "NURESTModelController.j"
 @import "NURESTObject.j"
 @import "NURESTPushCenter.j"
-@import "NURESTBasicUser.j"

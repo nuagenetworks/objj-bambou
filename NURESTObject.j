@@ -17,10 +17,11 @@
 
 @import <Foundation/Foundation.j>
 
-@import "NURESTConnection.j"
-@import "NURESTLoginController.j"
-@import "NURESTError.j"
 @import "NURESTConfirmation.j"
+@import "NURESTConnection.j"
+@import "NURESTError.j"
+@import "NURESTLoginController.j"
+@import "NURESTModelController.j"
 
 NURESTObjectStatusTypeSuccess   = @"SUCCESS";
 NURESTObjectStatusTypeWarning   = @"WARNING";
@@ -76,8 +77,10 @@ function _format_log_json(string)
 @implementation NURESTObject : CPObject
 {
     CPDate          _creationDate                   @accessors(property=creationDate);
+    CPDate          _lastUpdatedDate                @accessors(property=lastUpdatedDate);
     CPString        _externalID                     @accessors(property=externalID);
     CPString        _ID                             @accessors(property=ID);
+    CPString        _lastUpdatedBy                  @accessors(property=lastUpdatedBy);
     CPString        _localID                        @accessors(property=localID);
     CPString        _owner                          @accessors(property=owner);
     CPString        _parentID                       @accessors(property=parentID);
@@ -156,6 +159,11 @@ function _format_log_json(string)
     return newObject;
 }
 
++ (CPImage)icon
+{
+    return CPImageInBundle("icon-" + [self RESTName] + ".png");
+}
+
 
 #pragma mark -
 #pragma mark Initialization
@@ -175,9 +183,13 @@ function _format_log_json(string)
         [self exposeLocalKeyPathToREST:@"creationDate" displayName:@"creation date"];
         [self exposeLocalKeyPathToREST:@"externalID" searchable:NO];
         [self exposeLocalKeyPathToREST:@"ID" searchable:NO];
+        [self exposeLocalKeyPathToREST:@"lastUpdatedBy" searchable:NO];
+        [self exposeLocalKeyPathToREST:@"lastUpdatedDate" displayName:@"last update date"];
         [self exposeLocalKeyPathToREST:@"owner" searchable:NO];
         [self exposeLocalKeyPathToREST:@"parentID" searchable:NO];
         [self exposeLocalKeyPathToREST:@"parentType" searchable:NO];
+
+        [[NURESTModelController defaultController] registerModelClass:[self class]];
     }
 
     return self;
@@ -445,6 +457,7 @@ function _format_log_json(string)
     // set the mandatory attributes first
     [self setID:aJSONObject.ID];
     [self setCreationDate:[CPDate dateWithTimeIntervalSince1970:(parseInt(aJSONObject.creationDate) / 1000)]];
+    [self setLastUpdatedDate:[CPDate dateWithTimeIntervalSince1970:(parseInt(aJSONObject.lastUpdatedDate) / 1000)]];
 
     // cleanup these keys
     [keys removeObject:@"ID"]
@@ -474,7 +487,7 @@ function _format_log_json(string)
             restPath = [_restAttributes objectForKey:attribute],
             value = [self valueForKeyPath:attribute];
 
-        if (attribute == "creationDate")
+        if (attribute == "creationDate" || attribute == "lastUpdatedDate")
             continue;
 
         json[restPath] = value;
@@ -498,7 +511,7 @@ function _format_log_json(string)
     {
         var attribute = attributes[i];
 
-        if (attribute == "creationDate")
+        if (attribute == "creationDate" || attribute == "lastUpdatedDate")
             continue;
 
         var localValue = [self valueForKeyPath:attribute],
@@ -617,6 +630,11 @@ function _format_log_json(string)
 - (CPString)formatedCreationDate
 {
     return _creationDate.format("mmm dd yyyy HH:MM:ss");
+}
+
+- (CPString)formatedLastUpdatedDate
+{
+    return _lastUpdatedDate.format("mmm dd yyyy HH:MM:ss");
 }
 
 

@@ -110,7 +110,7 @@ function _format_log_json(string)
 */
 + (CPString)RESTName
 {
-    [CPException raise:CPInternalInconsistencyException reason:"Subclasses of NURESTObject must implement + (CPString)RESTName"];
+    return "object";
 }
 
 /*! REST resource name of the object.
@@ -452,7 +452,7 @@ function _format_log_json(string)
 */
 - (void)objectFromJSON:(id)aJSONObject
 {
-    var keys = [_restAttributes allKeys];
+    var keys = [[_restAttributes allKeys] copy];
 
     // set the mandatory attributes first
     [self setID:aJSONObject.ID];
@@ -460,8 +460,9 @@ function _format_log_json(string)
     [self setLastUpdatedDate:[CPDate dateWithTimeIntervalSince1970:(parseInt(aJSONObject.lastUpdatedDate) / 1000)]];
 
     // cleanup these keys
-    [keys removeObject:@"ID"]
-    [keys removeObject:@"creationDate"]
+    [keys removeObject:@"ID"];
+    [keys removeObject:@"creationDate"];
+    [keys removeObject:@"lastUpdatedDate"];
 
     for (var i = [keys count] - 1; i >= 0; i--)
     {
@@ -627,9 +628,33 @@ function _format_log_json(string)
 #pragma mark -
 #pragma mark Custom accesors
 
+- (void)setCreationDate:(CPDate)aDate
+{
+    if ([aDate isEqual:_creationDate])
+        return;
+
+    [self willChangeValueForKey:@"creationDate"];
+    [self willChangeValueForKey:@"formatedCreationDate"];
+    _creationDate = aDate;
+    [self didChangeValueForKey:@"creationDate"];
+    [self didChangeValueForKey:@"formatedCreationDate"];
+}
+
 - (CPString)formatedCreationDate
 {
     return _creationDate.format("mmm dd yyyy HH:MM:ss");
+}
+
+- (void)setLastUpdatedDate:(CPDate)aDate
+{
+    if ([aDate isEqual:_lastUpdatedDate])
+        return;
+
+    [self willChangeValueForKey:@"lastUpdatedDate"];
+    [self willChangeValueForKey:@"formatedLastUpdatedDate"];
+    _lastUpdatedDate = aDate;
+    [self didChangeValueForKey:@"lastUpdatedDate"];
+    [self didChangeValueForKey:@"formatedLastUpdatedDate"];
 }
 
 - (CPString)formatedLastUpdatedDate

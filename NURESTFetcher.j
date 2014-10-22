@@ -74,7 +74,7 @@
     [[_entity valueForKeyPath:_destinationKeyPath] removeAllObjects];
 }
 
-- (id)newObject
+- (id)newManagedObject
 {
     return [[[self class] managedObjectClass] new];
 }
@@ -177,7 +177,7 @@
 
     for (var i = 0, c = [JSONObject count]; i < c; i++)
     {
-        var newObject = [self newObject];
+        var newObject = [self newManagedObject];
 
         [newObject objectFromJSON:JSONObject[i]];
         [newObject setParentObject:_entity];

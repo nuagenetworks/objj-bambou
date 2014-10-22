@@ -62,6 +62,10 @@ var NURESTModelControllerDefault;
         [[_modelRegistry objectForKey:[aClass RESTName]] addObject:aClass];
 }
 
+
+#pragma mark -
+#pragma mark Accessing Registred Classes
+
 - (Class)modelClassForRESTName:(CPString)aRESTName
 {
     return [[_modelRegistry objectForKey:aRESTName] firstObject]
@@ -70,6 +74,11 @@ var NURESTModelControllerDefault;
 - (CPArray)modelClassesForRESTName:(CPString)aRESTName
 {
     return [_modelRegistry objectForKey:aRESTName];
+}
+
+- (NURESTObject)newObjectWithRESTName:(CPString)aRESTName
+{
+    return [[self modelClassForRESTName:aRESTName] new];
 }
 
 @end

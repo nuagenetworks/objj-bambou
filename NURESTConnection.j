@@ -196,6 +196,25 @@ var NURESTConnectionLastActionTimer,
     }
 }
 
++ (void)resetIdleTimeout
+{
+    if (!NURESTConnectionTimeout)
+        return;
+
+    if (NURESTConnectionLastActionTimer)
+        clearTimeout(NURESTConnectionLastActionTimer);
+
+    var lastUserEventTimeStamp = [[CPApp currentEvent] timestamp];
+
+    NURESTConnectionLastActionTimer = setTimeout(function()
+    {
+        if (!NURESTConnectionTimeout)
+            return;
+
+        [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConnectionIdleTimeoutNotification object:self userInfo:lastUserEventTimeStamp];
+    }, NURESTConnectionTimeout);
+}
+
 
 #pragma mark -
 #pragma mark Initialization
@@ -219,6 +238,7 @@ var NURESTConnectionLastActionTimer,
     return self;
 }
 
+
 /*! Start the connection
 */
 - (void)start
@@ -226,19 +246,8 @@ var NURESTConnectionLastActionTimer,
     _isCanceled = NO;
     _hasTimeouted = NO;
 
-    if (!_ignoreRequestIdle && NURESTConnectionTimeout)
-    {
-        if (NURESTConnectionLastActionTimer)
-            clearTimeout(NURESTConnectionLastActionTimer);
-
-        NURESTConnectionLastActionTimer = setTimeout(function() {
-            if (!NURESTConnectionTimeout)
-                return;
-
-            console.warn("Connection idle timer run off!")
-            [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConnectionIdleTimeoutNotification object:nil userInfo:nil];
-        }, NURESTConnectionTimeout);
-    }
+    if (!_ignoreRequestIdle)
+        [[self class] resetIdleTimeout];
 
     try
     {

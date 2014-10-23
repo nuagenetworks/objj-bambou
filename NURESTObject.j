@@ -456,8 +456,12 @@ function _format_log_json(string)
 
     // set the mandatory attributes first
     [self setID:aJSONObject.ID];
-    [self setCreationDate:[CPDate dateWithTimeIntervalSince1970:(parseInt(aJSONObject.creationDate) / 1000)]];
-    [self setLastUpdatedDate:[CPDate dateWithTimeIntervalSince1970:(parseInt(aJSONObject.lastUpdatedDate) / 1000)]];
+
+    if (aJSONObject.creationDate)
+        [self setCreationDate:[CPDate dateWithTimeIntervalSince1970:(parseInt(aJSONObject.creationDate) / 1000)]];
+
+    if (aJSONObject.lastUpdatedDate)
+        [self setLastUpdatedDate:[CPDate dateWithTimeIntervalSince1970:(parseInt(aJSONObject.lastUpdatedDate) / 1000)]];
 
     // cleanup these keys
     [keys removeObject:@"ID"];
@@ -642,6 +646,9 @@ function _format_log_json(string)
 
 - (CPString)formatedCreationDate
 {
+    if (!_creationDate)
+        return "No date";
+
     return _creationDate.format("mmm dd yyyy HH:MM:ss");
 }
 
@@ -659,6 +666,9 @@ function _format_log_json(string)
 
 - (CPString)formatedLastUpdatedDate
 {
+    if (!_lastUpdatedDate)
+        return "No date";
+
     return _lastUpdatedDate.format("mmm dd yyyy HH:MM:ss");
 }
 

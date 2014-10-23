@@ -261,7 +261,7 @@ function _format_log_json(string)
 */
 - (CPURL)RESTResourceURL
 {
-    return [CPURL URLWithString:[[self class] RESTResourceName] + @"/" + _ID + "/" relativeToURL:[[self class] RESTBaseURL]];
+    return [CPURL URLWithString:[[self class] RESTResourceName] + @"/" + [self ID] + "/" relativeToURL:[[self class] RESTBaseURL]];
 }
 
 - (CPURL)RESTResourceURLForChildrenClass:(Class)aChildrenClass

@@ -182,11 +182,11 @@ function _format_log_json(string)
 
         [self exposeLocalKeyPathToREST:@"creationDate" displayName:@"creation date"];
         [self exposeLocalKeyPathToREST:@"externalID" searchable:NO];
-        [self exposeLocalKeyPathToREST:@"ID" searchable:NO];
-        [self exposeLocalKeyPathToREST:@"lastUpdatedBy" searchable:NO];
+        [self exposeLocalKeyPathToREST:@"ID"];
+        [self exposeLocalKeyPathToREST:@"lastUpdatedBy"];
         [self exposeLocalKeyPathToREST:@"lastUpdatedDate" displayName:@"last update date"];
         [self exposeLocalKeyPathToREST:@"owner" searchable:NO];
-        [self exposeLocalKeyPathToREST:@"parentID" searchable:NO];
+        [self exposeLocalKeyPathToREST:@"parentID"];
         [self exposeLocalKeyPathToREST:@"parentType" searchable:NO];
 
         [[NURESTModelController defaultController] registerModelClass:[self class]];
@@ -197,7 +197,7 @@ function _format_log_json(string)
 
 
 #pragma mark -
-#pragma mark  Memory Management
+#pragma mark Memory Management
 
 - (void)discard
 {
@@ -255,6 +255,13 @@ function _format_log_json(string)
 #pragma mark -
 #pragma mark REST configuration
 
+/*! Returns the RESTName name of the object (just wrapping + (CPString)RESTName)
+*/
+- (CPString)RESTName
+{
+    return [[self class] RESTName];
+}
+
 /*! Builds the base query URL to manage this object
     this must be overiden by subclasses
     @return a CPURL representing the REST endpoint to manage this object
@@ -264,6 +271,9 @@ function _format_log_json(string)
     return [CPURL URLWithString:[[self class] RESTResourceName] + @"/" + [self ID] + "/" relativeToURL:[[self class] RESTBaseURL]];
 }
 
+/*! Returns the base rest resource URL for accessing children
+    By default it uses the childrenClass RESTResourceName appeneded to the current RESTResourceURL
+*/
 - (CPURL)RESTResourceURLForChildrenClass:(Class)aChildrenClass
 {
     return [CPURL URLWithString:[aChildrenClass RESTResourceName] relativeToURL:[self RESTResourceURL]];
@@ -434,6 +444,8 @@ function _format_log_json(string)
     [_bindableAttributes addObject:aKeyPath];
 }
 
+/*! Returns the local key path according to the resgitered given REST attribute
+*/
 - (CPString)localKeyPathForRESTKeyPath:(CPString)aKeyPath
 {
     return [[_restAttributes allKeysForObject:aKeyPath] firstObject];
@@ -446,6 +458,22 @@ function _format_log_json(string)
 {
     return [[_restAttributes allKeys] arrayByAddingObjectsFromArray:_bindableAttributes];
 }
+
+/*! Return the type name of a given local key path
+*/
+- (CPString)typeOfLocalKeyPath:(CPString)aKeyPath
+{
+    var methodInfo = self.isa.method_dtable[aKeyPath];
+
+    if (!methodInfo)
+        [CPException raise:CPInvalidArgumentException reason:@"Cannot find method named " + aKeyPath];
+
+    return methodInfo.types[0];
+}
+
+
+#pragma mark -
+#pragma mark JSON Management
 
 /*! Build current object with given JSONObject
     @param aJSONObject the JSON structure to parse
@@ -548,25 +576,14 @@ function _format_log_json(string)
         return (localID == [anEntity localID]);
 }
 
-- (CPString)description
-{
-    return "<" + [self className] + "> " + [self ID];
-}
-
-- (CPString)alternativeDescription
-{
-    return [self description];
-}
-
-- (CPString)RESTName
-{
-    return [[self class] RESTName];
-}
-
 - (BOOL)isOwnedByCurrentUser
 {
     return _owner == [[NURESTBasicUser defaultUser] ID];
 }
+
+
+#pragma mark -
+#pragma mark Genealogy
 
 - (BOOL)isCurrentUserOwnerOfAnyParentMatchingTypes:(CPArray)someRESTNames
 {
@@ -630,7 +647,7 @@ function _format_log_json(string)
 
 
 #pragma mark -
-#pragma mark Custom accesors
+#pragma mark Custom accessors
 
 - (void)setCreationDate:(CPDate)aDate
 {
@@ -672,6 +689,16 @@ function _format_log_json(string)
     return _lastUpdatedDate.format("mmm dd yyyy HH:MM:ss");
 }
 
+- (CPString)description
+{
+    return "<" + [self className] + "> " + [self ID];
+}
+
+- (CPString)alternativeDescription
+{
+    return [self description];
+}
+
 
 #pragma mark -
 #pragma mark Key Value Coding
@@ -690,6 +717,35 @@ function _format_log_json(string)
     [self setID:nil];
     [self setParentID:nil];
     [self setLocalID:nil];
+}
+
+
+#pragma mark -
+#pragma mark Predicate Generation
+
+- (CPPredicate)fullTextSearchPredicate:(CPString)aString
+{
+    var attributes = [_searchAttributes allKeys],
+        subpredicates = [];
+
+    for (var i = [attributes count] - 1; i >= 0; i--)
+    {
+        var attribute = attributes[i],
+            info = [_searchAttributes objectForKey:attribute];
+
+        if ([info containsKey:NURESTObjectAttributeAllowedValuesKey])
+            [subpredicates addObject:[CPPredicate predicateWithFormat:attribute + " == %@", aString]];
+        else
+        {
+            var attrType = [self typeOfLocalKeyPath:attribute];
+            if (attrType == "CPString")
+                [subpredicates addObject:[CPPredicate predicateWithFormat:attribute + " contains %@", aString]];
+            else
+                [subpredicates addObject:[CPPredicate predicateWithFormat:attribute + " == %@", aString]];
+        }
+    }
+
+    return [[CPCompoundPredicate alloc] initWithType:CPOrPredicateType subpredicates:subpredicates];
 }
 
 

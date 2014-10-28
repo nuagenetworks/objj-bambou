@@ -88,18 +88,46 @@
     return [[self class] managedObjectClass];
 }
 
+- (id)_RESTFilterFromFilter:(id)aFilter
+{
+    // if no filter is set, return nil
+    if (!aFilter && !_masterFilter)
+        return nil;
+
+    // if no user user is set  but we have a master filter, return the master filter
+    if (!aFilter && _masterFilter)
+        return _masterFilter;
+
+    // if user filter is set, but no master filter, return the user filter as it is.
+    if (aFilter && !_masterFilter)
+        return aFilter;
+
+    if (aFilter && _masterFilter)
+    {
+        // try to make a predicate from the given filter
+        var userPredicate = [CPPredicate predicateWithFormat:aFilter];
+
+        // if it didn't work, create full text search predicate
+        if (!userPredicate)
+            userPredicate = [[self newManagedObject] fullTextSearchPredicate:aFilter];
+
+        return [[CPCompoundPredicate alloc] initWithType:CPAndPredicateType subpredicates:[_masterFilter, userPredicate]];
+    }
+
+    // we should never reach here
+    [CPException raise:CPInternalInconsistencyException reason:"NURESTFetcher cannot prepare filter"];
+}
+
 
 #pragma mark -
 #pragma mark Request Management
 
 - (void)_prepareHeadersForRequest:(CPURLRequest)aRequest withFilter:(id)aFilter page:(CPNumber)aPage
 {
-    if (_masterFilter)
-        [aRequest setValue:[_masterFilter predicateFormat] forHTTPHeaderField:@"X-Nuage-Filter"];
-    else if ([aFilter isKindOfClass:CPPredicate])
-        [aRequest setValue:[aFilter predicateFormat] forHTTPHeaderField:@"X-Nuage-Filter"];
-    else if ([aFilter isKindOfClass:CPString])
-        [aRequest setValue:aFilter forHTTPHeaderField:@"X-Nuage-Filter"];
+    var filter = [self _RESTFilterFromFilter:aFilter];
+
+    if (filter)
+        [aRequest setValue:[filter isKindOfClass:CPPredicate] ? [filter predicateFormat] : filter forHTTPHeaderField:@"X-Nuage-Filter"];
 
     if (_masterOrder)
         [aRequest setValue:_masterOrder forHTTPHeaderField:@"X-Nuage-OrderBy"];

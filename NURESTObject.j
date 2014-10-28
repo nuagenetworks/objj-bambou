@@ -175,11 +175,11 @@ function _format_log_json(string)
 {
     if (self = [super init])
     {
-        _bindableAttributes = [CPArray array];
-        _childrenRegistry = @{};
-        _localID = [CPString UUID];
-        _restAttributes = [CPDictionary dictionary];
-        _searchAttributes = [CPDictionary dictionary];
+        _bindableAttributes = [];
+        _childrenRegistry   = @{};
+        _localID            = [CPString UUID];
+        _restAttributes     = @{};
+        _searchAttributes   = @{};
 
         [self exposeLocalKeyPathToREST:@"creationDate" displayName:@"creation date"];
         [self exposeLocalKeyPathToREST:@"externalID" searchable:NO];

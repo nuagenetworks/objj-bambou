@@ -93,6 +93,7 @@ function _format_log_json(string)
     NURESTObject    _parentObject                   @accessors(property=parentObject);
 
     CPDictionary    _childrenRegistry;
+    CPString        _chachedFullTextPredicateFormat;
 }
 
 
@@ -182,11 +183,11 @@ function _format_log_json(string)
 
         [self exposeLocalKeyPathToREST:@"creationDate" displayName:@"creation date"];
         [self exposeLocalKeyPathToREST:@"externalID" searchable:NO];
-        [self exposeLocalKeyPathToREST:@"ID"];
-        [self exposeLocalKeyPathToREST:@"lastUpdatedBy"];
+        [self exposeLocalKeyPathToREST:@"ID" searchable:NO];
+        [self exposeLocalKeyPathToREST:@"lastUpdatedBy" searchable:NO];
         [self exposeLocalKeyPathToREST:@"lastUpdatedDate" displayName:@"last update date"];
         [self exposeLocalKeyPathToREST:@"owner" searchable:NO];
-        [self exposeLocalKeyPathToREST:@"parentID"];
+        [self exposeLocalKeyPathToREST:@"parentID" searchable:NO];
         [self exposeLocalKeyPathToREST:@"parentType" searchable:NO];
 
         [[NURESTModelController defaultController] registerModelClass:[self class]];
@@ -725,27 +726,36 @@ function _format_log_json(string)
 
 - (CPPredicate)fullTextSearchPredicate:(CPString)aString
 {
-    var attributes = [_searchAttributes allKeys],
-        subpredicates = [];
-
-    for (var i = [attributes count] - 1; i >= 0; i--)
+    if (!_chachedFullTextPredicateFormat)
     {
-        var attribute = attributes[i],
-            info = [_searchAttributes objectForKey:attribute];
+        var attributes = [_searchAttributes allKeys],
+            subpredicates = [];
 
-        if ([info containsKey:NURESTObjectAttributeAllowedValuesKey])
-            [subpredicates addObject:[CPPredicate predicateWithFormat:attribute + " == %@", aString]];
-        else
+        for (var i = [attributes count] - 1; i >= 0; i--)
         {
-            var attrType = [self typeOfLocalKeyPath:attribute];
-            if (attrType == "CPString")
-                [subpredicates addObject:[CPPredicate predicateWithFormat:attribute + " contains %@", aString]];
+            var attribute = attributes[i],
+                info = [_searchAttributes objectForKey:attribute],
+                allowedValues = [info objectForKey:NURESTObjectAttributeAllowedValuesKey],
+                RESTAttribute = [_restAttributes objectForKey:attribute];
+
+            if (allowedValues)
+            {
+                if (![allowedValues containsObject:aString])
+                    continue;
+
+                [subpredicates addObject:[CPPredicate predicateWithFormat:RESTAttribute + " == %@", @"--TOKEN--"]];
+            }
             else
-                [subpredicates addObject:[CPPredicate predicateWithFormat:attribute + " == %@", aString]];
+            {
+                if ([self typeOfLocalKeyPath:attribute] == "CPString")
+                    [subpredicates addObject:[CPPredicate predicateWithFormat:RESTAttribute + " contains %@", @"--TOKEN--"]];
+            }
         }
+
+        _chachedFullTextPredicateFormat = [[[CPCompoundPredicate alloc] initWithType:CPOrPredicateType subpredicates:subpredicates] predicateFormat];
     }
 
-    return [[CPCompoundPredicate alloc] initWithType:CPOrPredicateType subpredicates:subpredicates];
+    return [CPPredicate predicateWithFormat:_chachedFullTextPredicateFormat.replace(/--TOKEN--/g, aString)];
 }
 
 

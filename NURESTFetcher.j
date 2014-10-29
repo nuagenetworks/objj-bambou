@@ -28,7 +28,6 @@
     CPNumber            _latestLoadedPage       @accessors(property=latestLoadedPage);
     CPNumber            _pageSize               @accessors(property=pageSize);
     CPNumber            _totalCount             @accessors(property=totalCount);
-    CPPredicate         _masterFilter           @accessors(property=masterFilter);
     CPPredicate         _masterOrder            @accessors(property=masterOrder);
     CPString            _destinationKeyPath     @accessors(property=destinationKeyPath);
     CPString            _queryString            @accessors(property=queryString);
@@ -88,21 +87,21 @@
     return [[self class] managedObjectClass];
 }
 
-- (id)_RESTFilterFromFilter:(id)aFilter
+- (id)_RESTFilterFromFilter:(id)aFilter masterFilter:(id)aMasterFilter
 {
     // if no filter is set, return nil
-    if (!aFilter && !_masterFilter)
+    if (!aFilter && !aMasterFilter)
         return nil;
 
     // if no user user is set  but we have a master filter, return the master filter
-    if (!aFilter && _masterFilter)
-        return _masterFilter;
+    if (!aFilter && aMasterFilter)
+        return aMasterFilter;
 
     // if user filter is set, but no master filter, return the user filter as it is.
-    if (aFilter && !_masterFilter)
+    if (aFilter && !aMasterFilter)
         return aFilter;
 
-    if (aFilter && _masterFilter)
+    if (aFilter && aMasterFilter)
     {
         // try to make a predicate from the given filter
         var userPredicate = [CPPredicate predicateWithFormat:aFilter];
@@ -111,7 +110,7 @@
         if (!userPredicate)
             userPredicate = [[self newManagedObject] fullTextSearchPredicate:aFilter];
 
-        return [[CPCompoundPredicate alloc] initWithType:CPAndPredicateType subpredicates:[_masterFilter, userPredicate]];
+        return [[CPCompoundPredicate alloc] initWithType:CPAndPredicateType subpredicates:[aMasterFilter, userPredicate]];
     }
 
     // we should never reach here
@@ -122,9 +121,9 @@
 #pragma mark -
 #pragma mark Request Management
 
-- (void)_prepareHeadersForRequest:(CPURLRequest)aRequest withFilter:(id)aFilter page:(CPNumber)aPage
+- (void)_prepareHeadersForRequest:(CPURLRequest)aRequest withFilter:(id)aFilter masterFilter:(id)aMasterFilter page:(CPNumber)aPage
 {
-    var filter = [self _RESTFilterFromFilter:aFilter];
+    var filter = [self _RESTFilterFromFilter:aFilter masterFilter:aMasterFilter];
 
     if (filter)
         [aRequest setValue:[filter isKindOfClass:CPPredicate] ? [filter predicateFormat] : filter forHTTPHeaderField:@"X-Nuage-Filter"];
@@ -162,15 +161,15 @@
 
 - (CPString)fetchObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    return [self fetchObjectsMatchingFilter:nil page:nil andCallSelector:aSelector ofObject:anObject];
+    return [self fetchObjectsMatchingFilter:nil masterFilter:nil page:nil andCallSelector:aSelector ofObject:anObject];
 }
 
-- (CPString)fetchObjectsMatchingFilter:(id)aFilter page:(CPNumber)aPage andCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (CPString)fetchObjectsMatchingFilter:(id)aFilter masterFilter:(id)aMasterFilter page:(CPNumber)aPage andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
     var request = [CPURLRequest requestWithURL:[self _prepareURL]];
     [request setHTTPMethod:NURESTConnectionMethodGet];
 
-    [self _prepareHeadersForRequest:request withFilter:aFilter page:aPage];
+    [self _prepareHeadersForRequest:request withFilter:aFilter masterFilter:aMasterFilter page:aPage];
 
     _transactionID = [CPString UUID];
     [_entity sendRESTCall:request performSelector:@selector(_didFetchObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:nil];
@@ -229,7 +228,7 @@
     var request = [CPURLRequest requestWithURL:[self _prepareURL]];
     [request setHTTPMethod:@"HEAD"];
 
-    [self _prepareHeadersForRequest:request withFilter:aFilter page:nil];
+    [self _prepareHeadersForRequest:request withFilter:aFilter masterFilter:nil page:nil];
 
     _transactionID = [CPString UUID];
     [_entity sendRESTCall:request performSelector:@selector(_didCountObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:nil];

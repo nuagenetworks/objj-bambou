@@ -28,8 +28,8 @@
     CPNumber            _latestLoadedPage       @accessors(property=latestLoadedPage);
     CPNumber            _pageSize               @accessors(property=pageSize);
     CPNumber            _totalCount             @accessors(property=totalCount);
-    CPPredicate         _masterOrder            @accessors(property=masterOrder);
     CPString            _destinationKeyPath     @accessors(property=destinationKeyPath);
+    CPString            _masterOrder            @accessors(property=masterOrder);
     CPString            _queryString            @accessors(property=queryString);
     CPString            _transactionID          @accessors(property=transactionID);
     id                  _entity                 @accessors(property=entity);

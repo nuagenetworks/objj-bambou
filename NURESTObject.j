@@ -256,6 +256,13 @@ function _format_log_json(string)
 #pragma mark -
 #pragma mark REST configuration
 
+/*! Returns the class icon (just wrapping + (CPString)icon)
+*/
+- (CPImage)icon
+{
+    return [[self class] icon];
+}
+
 /*! Returns the RESTName name of the object (just wrapping + (CPString)RESTName)
 */
 - (CPString)RESTName

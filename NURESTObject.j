@@ -920,7 +920,7 @@ function _format_log_json(string)
     @param aSelector the selector to call when complete
     @param anObject the target object
 */
-- (void)assignEntities:(CPArray)someEntities andCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (void)assignEntities:(CPArray)someEntities ofClass:(Class)aClass andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
     var IDsList = [],
         childrenClass = [[someEntities firstObject] class];

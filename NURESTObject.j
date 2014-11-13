@@ -922,13 +922,12 @@ function _format_log_json(string)
 */
 - (void)assignEntities:(CPArray)someEntities ofClass:(Class)aClass andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    var IDsList = [],
-        childrenClass = [[someEntities firstObject] class];
+    var IDsList = [];
 
     for (var i = [someEntities count] - 1; i >= 0; i--)
         [IDsList addObject:[someEntities[i] ID]];
 
-    var request = [CPURLRequest requestWithURL:[self RESTResourceURLForChildrenClass:childrenClass]],
+    var request = [CPURLRequest requestWithURL:[self RESTResourceURLForChildrenClass:aClass]],
         body = JSON.stringify(IDsList, null, 4);
 
     [request setHTTPMethod:NURESTConnectionMethodPut];

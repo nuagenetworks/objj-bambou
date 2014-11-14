@@ -55,6 +55,7 @@ NURESTObjectAttributeDisplayNameKey     = @"displayName";
 @global NURESTErrorNotification
 
 
+var ICONS_CACHE = @{};
 
 function _format_log_json(string)
 {
@@ -162,7 +163,10 @@ function _format_log_json(string)
 
 + (CPImage)icon
 {
-    return CPImageInBundle("icon-" + [self RESTName] + ".png");
+    if (![ICONS_CACHE containsKey:[self RESTName]])
+        [ICONS_CACHE setObject:CPImageInBundle("icon-" + [self RESTName] + ".png") forKey:[self RESTName]];
+
+    return [ICONS_CACHE objectForKey:[self RESTName]];
 }
 
 

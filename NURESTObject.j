@@ -538,7 +538,7 @@ function _format_log_json(string)
         json[restPath] = value;
     }
 
-    return JSON.stringify(json, null, 4);
+    return json;
 }
 
 
@@ -895,7 +895,7 @@ function _format_log_json(string)
 */
 - (void)_manageChildEntity:(NURESTObject)anEntity method:(CPString)aMethod andCallSelector:(SEL)aSelector ofObject:(id)anObject customConnectionHandler:(SEL)aCustomHandler
 {
-    var body = [anEntity objectToJSON],
+    var body = JSON.stringify([anEntity objectToJSON]),
         URL;
 
     switch (aMethod)

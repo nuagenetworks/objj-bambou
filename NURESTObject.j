@@ -220,7 +220,7 @@ function _format_log_json(string)
     var childrenList = [_childrenListRegistry allValues];
 
     for (var i = [childrenList count] - 1; i >= 0; i--)
-        childrenList[i] = [];
+        [childrenList[i] removeAllObjects];
 }
 
 - (void)registerChildrenList:(CPArray)aList forRESTName:(CPString)aRESTName

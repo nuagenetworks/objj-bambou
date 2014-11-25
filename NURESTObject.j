@@ -86,7 +86,6 @@ function _format_log_json(string)
     CPString        _owner                          @accessors(property=owner);
     CPString        _parentID                       @accessors(property=parentID);
     CPString        _parentType                     @accessors(property=parentType);
-
     CPDictionary    _restAttributes                 @accessors(property=RESTAttributes);
     CPDictionary    _searchAttributes               @accessors(getter=searchAttributes);
     CPArray         _bindableAttributes             @accessors(property=bindableAttributes);
@@ -206,21 +205,31 @@ function _format_log_json(string)
 
 - (void)discard
 {
-    [self discardChildren];
-    _parentObject = nil;
-    _childrenListRegistry = nil;
-
     CPLog.debug("RESTCAPPUCCINO: discarding object " + [self ID] + " of type " + [self RESTName]);
+
+    [self discardAllChildrenLists];
+
+    _parentObject         = nil;
+    _childrenListRegistry = nil;
+    _ID                   = @"_DIRTY_";
+    _localID              = @"_DIRTY_";
 
     delete self;
 }
 
-- (void)discardChildren
+- (void)discardChildrenListWithRESTName:(CPString)aName
 {
-    var childrenList = [_childrenListRegistry allValues];
+    var list = [self childrenListWithRESTName:aName];
+    [list makeObjectsPerformSelector:@selector(discard)];
+    [list removeAllObjects];
+}
 
-    for (var i = [childrenList count] - 1; i >= 0; i--)
-        [childrenList[i] removeAllObjects];
+- (void)discardAllChildrenLists
+{
+    var RESTNames = [_childrenListRegistry allKeys];
+
+    for (var i = [RESTNames count] - 1; i >= 0; i--)
+        [self discardChildrenListWithRESTName:RESTNames[i]];
 }
 
 - (void)registerChildrenList:(CPArray)aList forRESTName:(CPString)aRESTName

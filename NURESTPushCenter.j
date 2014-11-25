@@ -147,6 +147,8 @@ _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ = 0;
         [[CPNotificationCenter defaultCenter] postNotificationName:NURESTPushCenterPushReceived object:self userInfo:JSONObject];
     }
 
+    _currentConnection = nil;
+
     if (_isRunning)
         [self _listenToNextEvent:JSONObject ? JSONObject.uuid : nil];
 }

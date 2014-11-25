@@ -93,7 +93,7 @@ function _format_log_json(string)
 
     NURESTObject    _parentObject                   @accessors(property=parentObject);
 
-    CPDictionary    _childrenRegistry;
+    CPDictionary    _childrenListRegistry;
     CPString        _chachedFullTextPredicateFormat;
 }
 
@@ -179,11 +179,11 @@ function _format_log_json(string)
 {
     if (self = [super init])
     {
-        _bindableAttributes = [];
-        _childrenRegistry   = @{};
-        _localID            = [CPString UUID];
-        _restAttributes     = @{};
-        _searchAttributes   = @{};
+        _bindableAttributes   = [];
+        _childrenListRegistry = @{};
+        _localID              = [CPString UUID];
+        _restAttributes       = @{};
+        _searchAttributes     = @{};
 
         [self exposeLocalKeyPathToREST:@"creationDate" displayName:@"creation date"];
         [self exposeLocalKeyPathToREST:@"externalID" searchable:NO];
@@ -208,9 +208,7 @@ function _format_log_json(string)
 {
     [self discardChildren];
     _parentObject = nil;
-
-    [_childrenRegistry removeAllObjects];
-    _childrenRegistry = nil;
+    _childrenListRegistry = nil;
 
     CPLog.debug("RESTCAPPUCCINO: discarding object " + [self ID] + " of type " + [self RESTName]);
 
@@ -219,20 +217,20 @@ function _format_log_json(string)
 
 - (void)discardChildren
 {
-    var children = [_childrenRegistry allValues];
+    var childrenList = [_childrenListRegistry allValues];
 
-    for (var i = [children count] - 1; i >= 0; i--)
-        [children[i] makeObjectsPerformSelector:@selector(discard)];
+    for (var i = [childrenList count] - 1; i >= 0; i--)
+        childrenList[i] = [];
 }
 
 - (void)registerChildrenList:(CPArray)aList forRESTName:(CPString)aRESTName
 {
-    [_childrenRegistry setObject:aList forKey:aRESTName];
+    [_childrenListRegistry setObject:aList forKey:aRESTName];
 }
 
 - (CPArray)childrenListWithRESTName:(CPString)aRESTName
 {
-    return [_childrenRegistry objectForKey:aRESTName];
+    return [_childrenListRegistry objectForKey:aRESTName];
 }
 
 - (void)addChild:(NURESTObject)aChildObject

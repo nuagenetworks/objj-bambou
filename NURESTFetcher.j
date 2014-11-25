@@ -184,24 +184,24 @@
 {
     _currentConnection = aConnection;
 
-    if ([aConnection responseCode] != 200) // @TODO: server sends 200, but if there is an empty list we should have the empty code...
+    if ([_currentConnection responseCode] != 200) // @TODO: server sends 200, but if there is an empty list we should have the empty code...
     {
         _totalCount = 0;
         _pageSize = 0;
         _latestLoadedPage = 0;
         _orderedBy = @"";
-        [self _sendContent:nil usingConnection:aConnection];
+        [self _sendContent:nil usingConnection:_currentConnection];
         return;
     }
 
-    var JSONObject = [[aConnection responseData] JSONObject],
+    var JSONObject = [[_currentConnection responseData] JSONObject],
         dest = [_entity valueForKey:_destinationKeyPath],
         newlyFetchedObjects = [CPArray array];
 
-    _totalCount = parseInt([aConnection nativeRequest].getResponseHeader("X-Nuage-Count"));
-    _pageSize = parseInt([aConnection nativeRequest].getResponseHeader("X-Nuage-PageSize"));
-    _latestLoadedPage = parseInt([aConnection nativeRequest].getResponseHeader("X-Nuage-Page"));
-    _orderedBy = [aConnection nativeRequest].getResponseHeader("X-Nuage-OrderBy");
+    _totalCount = parseInt([_currentConnection nativeRequest].getResponseHeader("X-Nuage-Count"));
+    _pageSize = parseInt([_currentConnection nativeRequest].getResponseHeader("X-Nuage-PageSize"));
+    _latestLoadedPage = parseInt([_currentConnection nativeRequest].getResponseHeader("X-Nuage-Page"));
+    _orderedBy = [_currentConnection nativeRequest].getResponseHeader("X-Nuage-OrderBy");
 
     for (var i = 0, c = [JSONObject count]; i < c; i++)
     {
@@ -221,7 +221,7 @@
     // will remove it from the RESTObject array, and that could cause some weird error. I need to deeply check
     // if it is safe or not to simply give the destination array... wait and see
     // @EDIT: I think the second message is right. using pagination will completely screw up things.
-    [self _sendContent:newlyFetchedObjects usingConnection:aConnection];
+    [self _sendContent:newlyFetchedObjects usingConnection:_currentConnection];
 }
 
 - (CPString)countObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject matchingFilter:(CPPredicate)aFilter
@@ -257,6 +257,7 @@
         // should be - (void)fetcher:ofObject:didCountContent: or something like that
         [target performSelector:selector withObjects:self, _entity, someContent];
 
+        [_currentConnection reset];
         _currentConnection = nil;
     }
 }

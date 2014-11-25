@@ -33,7 +33,7 @@
     CPString            _queryString            @accessors(property=queryString);
     CPString            _transactionID          @accessors(property=transactionID);
     id                  _entity                 @accessors(property=entity);
-    NURESTConnection    _lastConnection         @accessors(property=lastConnection);
+    NURESTConnection    _currentConnection      @accessors(property=currentConnection);
 
     CPString            _orderedBy;
 }
@@ -70,6 +70,7 @@
 
 - (void)flush
 {
+    _currentConnection = nil;
     [[_entity valueForKeyPath:_destinationKeyPath] removeAllObjects];
 }
 
@@ -181,7 +182,7 @@
 */
 - (void)_didFetchObjects:(NURESTConnection)aConnection
 {
-    _lastConnection = aConnection;
+    _currentConnection = aConnection;
 
     if ([aConnection responseCode] != 200) // @TODO: server sends 200, but if there is an empty list we should have the empty code...
     {
@@ -255,6 +256,8 @@
 
         // should be - (void)fetcher:ofObject:didCountContent: or something like that
         [target performSelector:selector withObjects:self, _entity, someContent];
+
+        _currentConnection = nil;
     }
 }
 

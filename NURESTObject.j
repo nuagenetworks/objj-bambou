@@ -205,7 +205,7 @@ function _format_log_json(string)
 
 - (void)discard
 {
-    CPLog.debug("RESTCAPPUCCINO: discarding object " + [self ID] + " of type " + [self RESTName]);
+    CPLog.debug("RESTCAPPUCCINO: discarding object " + _ID + " of type " + [self RESTName]);
 
     [self discardAllChildrenLists];
 
@@ -219,6 +219,8 @@ function _format_log_json(string)
 
 - (void)discardChildrenListWithRESTName:(CPString)aName
 {
+    CPLog.debug("RESTCAPPUCCINO: discarding children list " + aName);
+
     var list = [self childrenListWithRESTName:aName];
     [list makeObjectsPerformSelector:@selector(discard)];
     [list removeAllObjects];
@@ -1074,6 +1076,14 @@ function _format_log_json(string)
                 [aCoder encodeObject:[self valueForKeyPath:attr] forKey:key];
         }
     }
+}
+
+- (CPString)ID
+{
+    if (_ID == "_DIRTY_")
+        throw ("Trying to access a discarded object");
+
+    return _ID;
 }
 
 @end

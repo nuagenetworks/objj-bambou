@@ -219,7 +219,7 @@ function _format_log_json(string)
 
 - (void)discardChildrenListWithRESTName:(CPString)aName
 {
-    CPLog.debug("RESTCAPPUCCINO: discarding children list " + aName);
+    CPLog.debug("RESTCAPPUCCINO: object with ID " + _ID + " is discarding children list " + aName);
 
     var list = [self childrenListWithRESTName:aName];
     [list makeObjectsPerformSelector:@selector(discard)];

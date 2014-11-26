@@ -56,6 +56,7 @@ NURESTObjectAttributeDisplayNameKey     = @"displayName";
 
 
 NURESTOBJECT_ICONS_CACHE = @{};
+NURESTOBJECT_DIRTY = "__DIRTY__";
 
 function _format_log_json(string)
 {
@@ -205,14 +206,18 @@ function _format_log_json(string)
 
 - (void)discard
 {
+    // no need to go over another discard
+    if (_ID == NURESTOBJECT_DIRTY)
+        return;
+
     CPLog.debug("RESTCAPPUCCINO: discarding object " + _ID + " of type " + [self RESTName]);
 
     [self discardAllChildrenLists];
 
     _parentObject         = nil;
     _childrenListRegistry = nil;
-    _ID                   = @"_DIRTY_";
-    _localID              = @"_DIRTY_";
+    _ID                   = NURESTOBJECT_DIRTY;
+    _localID              = NURESTOBJECT_DIRTY;
 
     delete self;
 }
@@ -1080,7 +1085,7 @@ function _format_log_json(string)
 
 - (CPString)ID
 {
-    if (_ID == "_DIRTY_")
+    if (_ID == NURESTOBJECT_DIRTY)
         throw ("Trying to access a discarded object");
 
     return _ID;

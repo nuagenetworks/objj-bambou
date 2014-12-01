@@ -268,6 +268,11 @@ function _format_log_json(string)
     [children replaceObjectAtIndex:index withObject:aChildObject];
 }
 
+- (BOOL)isDirty
+{
+    return _ID == NURESTOBJECT_DIRTY;
+}
+
 
 #pragma mark -
 #pragma mark REST configuration
@@ -559,6 +564,9 @@ function _format_log_json(string)
 
 - (BOOL)isRESTEqual:(NURESTObject)anEntity
 {
+    if ([self isDirty])
+        return NO;
+
     if ([anEntity RESTName] != [self RESTName])
         return NO;
 
@@ -583,11 +591,15 @@ function _format_log_json(string)
         if (localValue != remoteValue)
             return NO;
     }
+
     return YES;
 }
 
 - (BOOL)isEqual:(NURESTObject)anEntity
 {
+    if ([self isDirty])
+        return NO;
+
     if (![anEntity respondsToSelector:@selector(ID)])
         return NO;
 
@@ -721,6 +733,14 @@ function _format_log_json(string)
 - (CPString)alternativeDescription
 {
     return [self description];
+}
+
+- (CPString)ID
+{
+    if ([self isDirty])
+        throw ("Trying to access a discarded object");
+
+    return _ID;
 }
 
 
@@ -1079,14 +1099,6 @@ function _format_log_json(string)
                 [aCoder encodeObject:[self valueForKeyPath:attr] forKey:key];
         }
     }
-}
-
-- (CPString)ID
-{
-    if (_ID == NURESTOBJECT_DIRTY)
-        throw ("Trying to access a discarded object");
-
-    return _ID;
 }
 
 @end

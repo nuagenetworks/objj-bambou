@@ -564,7 +564,7 @@ function _format_log_json(string)
 
 - (BOOL)isRESTEqual:(NURESTObject)anEntity
 {
-    if ([self isDirty])
+    if ([self isDirty] || [anEntity isDirty])
         return NO;
 
     if ([anEntity RESTName] != [self RESTName])
@@ -597,7 +597,7 @@ function _format_log_json(string)
 
 - (BOOL)isEqual:(NURESTObject)anEntity
 {
-    if ([self isDirty])
+    if ([self isDirty] || [anEntity isDirty])
         return NO;
 
     if (![anEntity respondsToSelector:@selector(ID)])

@@ -56,7 +56,6 @@ NURESTObjectAttributeDisplayNameKey     = @"displayName";
 
 
 NURESTOBJECT_ICONS_CACHE = @{};
-NURESTOBJECT_DIRTY = "__DIRTY__";
 
 function _format_log_json(string)
 {
@@ -78,8 +77,12 @@ function _format_log_json(string)
 */
 @implementation NURESTObject : CPObject
 {
+    BOOL            _dirty                          @accessors(getter=isDirty);
+    CPArray         _bindableAttributes             @accessors(property=bindableAttributes);
     CPDate          _creationDate                   @accessors(property=creationDate);
     CPDate          _lastUpdatedDate                @accessors(property=lastUpdatedDate);
+    CPDictionary    _restAttributes                 @accessors(property=RESTAttributes);
+    CPDictionary    _searchAttributes               @accessors(getter=searchAttributes);
     CPString        _externalID                     @accessors(property=externalID);
     CPString        _ID                             @accessors(property=ID);
     CPString        _lastUpdatedBy                  @accessors(property=lastUpdatedBy);
@@ -87,10 +90,6 @@ function _format_log_json(string)
     CPString        _owner                          @accessors(property=owner);
     CPString        _parentID                       @accessors(property=parentID);
     CPString        _parentType                     @accessors(property=parentType);
-    CPDictionary    _restAttributes                 @accessors(property=RESTAttributes);
-    CPDictionary    _searchAttributes               @accessors(getter=searchAttributes);
-    CPArray         _bindableAttributes             @accessors(property=bindableAttributes);
-
     NURESTObject    _parentObject                   @accessors(property=parentObject);
 
     CPDictionary    _childrenListRegistry;
@@ -207,8 +206,10 @@ function _format_log_json(string)
 - (void)discard
 {
     // no need to go over another discard
-    if (_ID == NURESTOBJECT_DIRTY)
+    if (_dirty)
         return;
+
+    _dirty = YES;
 
     CPLog.debug("RESTCAPPUCCINO: discarding object " + _ID + " of type " + [self RESTName]);
 
@@ -216,8 +217,6 @@ function _format_log_json(string)
 
     _parentObject         = nil;
     _childrenListRegistry = nil;
-    _ID                   = NURESTOBJECT_DIRTY;
-    _localID              = NURESTOBJECT_DIRTY;
 
     delete self;
 }
@@ -266,11 +265,6 @@ function _format_log_json(string)
         index = [children indexOfObject:aChildObject];
 
     [children replaceObjectAtIndex:index withObject:aChildObject];
-}
-
-- (BOOL)isDirty
-{
-    return _ID == NURESTOBJECT_DIRTY;
 }
 
 
@@ -564,9 +558,6 @@ function _format_log_json(string)
 
 - (BOOL)isRESTEqual:(NURESTObject)anEntity
 {
-    if ([self isDirty] || [anEntity isDirty])
-        return NO;
-
     if ([anEntity RESTName] != [self RESTName])
         return NO;
 
@@ -597,9 +588,6 @@ function _format_log_json(string)
 
 - (BOOL)isEqual:(NURESTObject)anEntity
 {
-    if ([self isDirty] || [anEntity isDirty])
-        return NO;
-
     if (![anEntity respondsToSelector:@selector(ID)])
         return NO;
 
@@ -733,14 +721,6 @@ function _format_log_json(string)
 - (CPString)alternativeDescription
 {
     return [self description];
-}
-
-- (CPString)ID
-{
-    if ([self isDirty])
-        throw ("Trying to access a discarded object");
-
-    return _ID;
 }
 
 

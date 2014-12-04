@@ -82,7 +82,7 @@ var NURESTBasicUserCurrent = nil;
     if (_desiredNewPassword)
         [self setPassword:Sha1.hash(_desiredNewPassword)];
 
-    var updatedUserString = [self objectToJSON];
+    var updatedUserString = JSON.stringify([self objectToJSON]);
     [[NURESTLoginController defaultController] setPassword:aPassword];
     [[NURESTLoginController defaultController] setAPIKey:nil];
 

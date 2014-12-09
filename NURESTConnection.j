@@ -145,19 +145,11 @@ var NURESTConnectionLastActionTimer,
 
             return NO;
 
-        case NURESTConnectionResponseCodeServiceUnavailable:
-
-            if (!shouldPost)
-                return YES;
-
-            var errorName        = @"Service unavailble",
-                errorDescription = @"Server responded with a malformed error message.";
-
-            [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
 
         case NURESTConnectionResponseCodeNotFound:
         case NURESTConnectionResponseCodeMethodNotAllowed:
         case NURESTConnectionResponseCodePreconditionFailed:
+        case NURESTConnectionResponseCodeServiceUnavailable:
 
             if (!shouldPost)
                 return YES;

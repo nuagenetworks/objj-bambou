@@ -104,8 +104,19 @@ var NURESTConnectionLastActionTimer,
     var responseObject   = [[aConnection responseData] JSONObject],
         responseCode     = [aConnection responseCode],
         containsInfo     = (responseObject && responseObject.errors),
-        errorName        = containsInfo ? responseObject.errors[0].descriptions[0].title : nil,
+        errorName,
+        errorDescription;
+
+    try
+    {
+        errorName        = containsInfo ? responseObject.errors[0].descriptions[0].title : nil;
         errorDescription = containsInfo ? responseObject.errors[0].descriptions[0].description : nil;
+    }
+    catch(e)
+    {
+        errorName = @"Malformed Server Error for code " + responseCode;
+        errorDescription = @"An error occured in VSD Server, but it was unable to correctly report what exactly happened.";
+    }
 
     switch (responseCode)
     {

@@ -103,7 +103,7 @@ var NURESTConnectionLastActionTimer,
 {
     var responseObject   = [[aConnection responseData] JSONObject],
         responseCode     = [aConnection responseCode],
-        containsInfo     = (responseObject && responseObject.errors),
+        containsInfo     = responseObject && responseObject.errors && responseObject.errors[0].descriptions,
         errorName        = containsInfo ? responseObject.errors[0].descriptions[0].title : nil,
         errorDescription = containsInfo ? responseObject.errors[0].descriptions[0].description : nil;
 

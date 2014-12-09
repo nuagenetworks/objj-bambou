@@ -104,8 +104,12 @@
 
     if (aFilter && aMasterFilter)
     {
+        var userPredicate;
         // try to make a predicate from the given filter
-        var userPredicate = [CPPredicate predicateWithFormat:aFilter];
+        if ([aFilter isKindOfClass:CPPredicate])
+            userPredicate = aFilter;
+        else
+            userPredicate = [CPPredicate predicateWithFormat:aFilter];
 
         // if it didn't work, create full text search predicate
         if (!userPredicate)

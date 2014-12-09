@@ -925,7 +925,9 @@ function _format_log_json(string)
 
     var request = [CPURLRequest requestWithURL:URL];
     [request setHTTPMethod:aMethod];
-    [request setHTTPBody:body];
+
+    if (aMethod == NURESTConnectionMethodPost || aMethod == NURESTConnectionMethodPut)
+        [request setHTTPBody:body];
 
     var handlerSelector = aCustomHandler || @selector(_didPerformStandardOperation:);
     [self sendRESTCall:request performSelector:handlerSelector ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:anEntity];

@@ -37,8 +37,8 @@ NURESTErrorNotification = @"NURESTErrorNotification";
 + (void)RESTErrorWithName:(CPString)aName description:(CPString)aDescription connection:(NURESTConnection)aConnection
 {
     var error = [[NURESTError alloc] init];
-    [error setName:aName];
-    [error setDescription:aDescription];
+    [error setName:aName || @"Server sent an error with no name"];
+    [error setDescription:aDescription || @"Server sent an error with no description"];
     [error setConnection:aConnection];
     [error setReceivedDate:new Date()];
 

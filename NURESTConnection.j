@@ -184,8 +184,8 @@ var NURESTConnectionLastActionTimer,
 
         case NURESTConnectionResponseCodeInternalServerError:
 
-            var errorName        = @"[CRITICAL] Internal Server Error",
-                errorDescription = @"Please check the log and report this error to the server team";
+            var errorName        = errorName || @"[CRITICAL] Internal Server Error",
+                errorDescription = errorDescription || @"Please check the log and report this error to the server team";
 
             [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
 

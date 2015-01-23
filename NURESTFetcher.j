@@ -22,14 +22,14 @@
 @global NURESTLoginController
 @global NURESTConnectionMethodGet
 
+NURESTFetcherPageSize = 50;
+
+
 @implementation NURESTFetcher : CPObject
 {
-    CPArray             _groupedBy              @accessors(property=groupedBy);
     CPNumber            _latestLoadedPage       @accessors(property=latestLoadedPage);
-    CPNumber            _pageSize               @accessors(property=pageSize);
     CPNumber            _totalCount             @accessors(property=totalCount);
     CPString            _destinationKeyPath     @accessors(property=destinationKeyPath);
-    CPString            _masterOrder            @accessors(property=masterOrder);
     CPString            _queryString            @accessors(property=queryString);
     CPString            _transactionID          @accessors(property=transactionID);
     id                  _entity                 @accessors(property=entity);
@@ -126,25 +126,28 @@
 #pragma mark -
 #pragma mark Request Management
 
-- (void)_prepareHeadersForRequest:(CPURLRequest)aRequest withFilter:(id)aFilter masterFilter:(id)aMasterFilter page:(CPNumber)aPage
+- (void)_prepareHeadersForRequest:(CPURLRequest)aRequest withFilter:(id)aFilter masterFilter:(id)aMasterFilter orderBy:(CPString)anOrder groupBy:(CPArray)aGrouping page:(CPNumber)aPage pageSize:(int)aPageSize
 {
     var filter = [self _RESTFilterFromFilter:aFilter masterFilter:aMasterFilter];
 
     if (filter)
         [aRequest setValue:[filter isKindOfClass:CPPredicate] ? [filter predicateFormat] : filter forHTTPHeaderField:@"X-Nuage-Filter"];
 
-    if (_masterOrder)
-        [aRequest setValue:_masterOrder forHTTPHeaderField:@"X-Nuage-OrderBy"];
-
     if (aPage !== nil)
         [aRequest setValue:aPage forHTTPHeaderField:@"X-Nuage-Page"];
 
-    if (_groupedBy)
+    if (aPageSize)
+        [aRequest setValue:aPageSize forHTTPHeaderField:@"X-Nuage-PageSize"];
+
+    if (anOrder)
+        [aRequest setValue:anOrder forHTTPHeaderField:@"X-Nuage-OrderBy"];
+
+    if (aGrouping)
     {
         var headerString = @"";
-        for (var i = 0, c = [_groupedBy count]; i < c; i++)
+        for (var i = 0, c = [aGrouping count]; i < c; i++)
         {
-            headerString += _groupedBy[i];
+            headerString += aGrouping[i];
             if (i + 1 < c)
                 headerString += @", ";
         }
@@ -166,15 +169,27 @@
 
 - (CPString)fetchObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    return [self fetchObjectsMatchingFilter:nil masterFilter:nil page:nil andCallSelector:aSelector ofObject:anObject];
+    return [self fetchObjectsMatchingFilter:nil
+                               masterFilter:nil
+                                  orderedBy:nil
+                                  groupedBy:nil
+                                       page:nil
+                                   pageSize:nil
+                            andCallSelector:aSelector
+                                   ofObject:anObject];
 }
 
-- (CPString)fetchObjectsMatchingFilter:(id)aFilter masterFilter:(id)aMasterFilter page:(CPNumber)aPage andCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (CPString)fetchObjectsMatchingFilter:(id)aFilter masterFilter:(id)aMasterFilter orderedBy:(CPString)anOrder
+                             groupedBy:(CPArray)aGrouping
+                                  page:(CPNumber)aPage
+                              pageSize:(CPNumber)aPageSize
+                       andCallSelector:(SEL)aSelector
+                              ofObject:(id)anObject
 {
     var request = [CPURLRequest requestWithURL:[self _prepareURL]];
     [request setHTTPMethod:NURESTConnectionMethodGet];
 
-    [self _prepareHeadersForRequest:request withFilter:aFilter masterFilter:aMasterFilter page:aPage];
+    [self _prepareHeadersForRequest:request withFilter:aFilter masterFilter:aMasterFilter orderBy:anOrder groupBy:aGrouping page:aPage pageSize:aPageSize];
 
     _transactionID = [CPString UUID];
     [_entity sendRESTCall:request performSelector:@selector(_didFetchObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:nil];
@@ -191,7 +206,6 @@
     if ([_currentConnection responseCode] != 200) // @TODO: server sends 200, but if there is an empty list we should have the empty code...
     {
         _totalCount = 0;
-        _pageSize = 0;
         _latestLoadedPage = 0;
         _orderedBy = @"";
         [self _sendContent:nil usingConnection:_currentConnection];
@@ -203,7 +217,6 @@
         newlyFetchedObjects = [CPArray array];
 
     _totalCount = parseInt([_currentConnection nativeRequest].getResponseHeader("X-Nuage-Count"));
-    _pageSize = parseInt([_currentConnection nativeRequest].getResponseHeader("X-Nuage-PageSize"));
     _latestLoadedPage = parseInt([_currentConnection nativeRequest].getResponseHeader("X-Nuage-Page"));
     _orderedBy = [_currentConnection nativeRequest].getResponseHeader("X-Nuage-OrderBy");
 
@@ -228,12 +241,25 @@
     [self _sendContent:newlyFetchedObjects usingConnection:_currentConnection];
 }
 
-- (CPString)countObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject matchingFilter:(CPPredicate)aFilter
+- (void)countObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject
+{
+    [self countObjectsMatchingFilter:nil
+                        masterFilter:nil
+                           groupedBy:nil
+                     andCallSelector:aSelector
+                            ofObject:anObject];
+}
+
+- (CPString)countObjectsMatchingFilter:(CPPredicate)aFilter
+                          masterFilter:(CPPredicate)aMasterFilter
+                             groupedBy:(CPArray)aGrouping
+                       andCallSelector:(SEL)aSelector
+                              ofObject:(id)anObject
 {
     var request = [CPURLRequest requestWithURL:[self _prepareURL]];
     [request setHTTPMethod:@"HEAD"];
 
-    [self _prepareHeadersForRequest:request withFilter:aFilter masterFilter:nil page:nil];
+    [self _prepareHeadersForRequest:request withFilter:aFilter masterFilter:aMasterFilter orderBy:nil groupBy:aGrouping page:nil pageSize:nil];
 
     _transactionID = [CPString UUID];
     [_entity sendRESTCall:request performSelector:@selector(_didCountObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:nil];
@@ -285,11 +311,6 @@
     }
 
     return descriptors;
-}
-
-- (void)countObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject
-{
-    [self countObjectsAndCallSelector:aSelector ofObject:anObject matchingFilter:nil];
 }
 
 @end

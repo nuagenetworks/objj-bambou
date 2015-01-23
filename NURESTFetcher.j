@@ -175,16 +175,34 @@ NURESTFetcherPageSize = 50;
                                   groupedBy:nil
                                        page:nil
                                    pageSize:nil
+                                     commit:YES
                             andCallSelector:aSelector
-                                   ofObject:anObject];
+                                   ofObject:anObject
+                                      block:nil];
+}
+
+- (CPString)fetchObjectsAndCallBlock:(Function)aFunction
+{
+    return [self fetchObjectsMatchingFilter:nil
+                               masterFilter:nil
+                                  orderedBy:nil
+                                  groupedBy:nil
+                                       page:nil
+                                   pageSize:nil
+                                     commit:YES
+                            andCallSelector:nil
+                                   ofObject:nil
+                                      block:aFunction];
 }
 
 - (CPString)fetchObjectsMatchingFilter:(id)aFilter masterFilter:(id)aMasterFilter orderedBy:(CPString)anOrder
                              groupedBy:(CPArray)aGrouping
                                   page:(CPNumber)aPage
                               pageSize:(CPNumber)aPageSize
+                                commit:(BOOL)shouldCommit
                        andCallSelector:(SEL)aSelector
                               ofObject:(id)anObject
+                                 block:(Function)aFunction
 {
     var request = [CPURLRequest requestWithURL:[self _prepareURL]];
     [request setHTTPMethod:NURESTConnectionMethodGet];
@@ -192,7 +210,7 @@ NURESTFetcherPageSize = 50;
     [self _prepareHeadersForRequest:request withFilter:aFilter masterFilter:aMasterFilter orderBy:anOrder groupBy:aGrouping page:aPage pageSize:aPageSize];
 
     _transactionID = [CPString UUID];
-    [_entity sendRESTCall:request performSelector:@selector(_didFetchObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:nil];
+    [_entity sendRESTCall:request performSelector:@selector(_didFetchObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:@{@"commit": shouldCommit, "block": aFunction}];
 
     return _transactionID;
 }
@@ -203,22 +221,32 @@ NURESTFetcherPageSize = 50;
 {
     _currentConnection = aConnection;
 
+    var commitInfo = [[aConnection userInfo] objectForKey:@"commit"],
+        shouldCommit = commitInfo === nil || commitInfo === YES;
+
     if ([_currentConnection responseCode] != 200) // @TODO: server sends 200, but if there is an empty list we should have the empty code...
     {
-        _totalCount = 0;
-        _latestLoadedPage = 0;
-        _orderedBy = @"";
+        if (shouldCommit)
+        {
+            _totalCount       = 0;
+            _latestLoadedPage = 0;
+            _orderedBy        = @"";
+        }
+
         [self _sendContent:nil usingConnection:_currentConnection];
         return;
     }
 
-    var JSONObject = [[_currentConnection responseData] JSONObject],
-        dest = [_entity valueForKey:_destinationKeyPath],
-        newlyFetchedObjects = [CPArray array];
+    var JSONObject     = [[_currentConnection responseData] JSONObject],
+        dest           = [_entity valueForKey:_destinationKeyPath],
+        fetchedObjects = [];
 
-    _totalCount = parseInt([_currentConnection nativeRequest].getResponseHeader("X-Nuage-Count"));
-    _latestLoadedPage = parseInt([_currentConnection nativeRequest].getResponseHeader("X-Nuage-Page"));
-    _orderedBy = [_currentConnection nativeRequest].getResponseHeader("X-Nuage-OrderBy");
+    if (shouldCommit)
+    {
+        _totalCount       = parseInt([_currentConnection nativeRequest].getResponseHeader("X-Nuage-Count"));
+        _latestLoadedPage = parseInt([_currentConnection nativeRequest].getResponseHeader("X-Nuage-Page"));
+        _orderedBy        = [_currentConnection nativeRequest].getResponseHeader("X-Nuage-OrderBy");
+    }
 
     for (var i = 0, c = [JSONObject count]; i < c; i++)
     {
@@ -227,10 +255,13 @@ NURESTFetcherPageSize = 50;
         [newObject objectFromJSON:JSONObject[i]];
         [newObject setParentObject:_entity];
 
+        [fetchedObjects addObject:newObject];
+
+        if (!shouldCommit)
+            continue;
+
         if (![dest containsObject:newObject])
             [dest addObject:newObject];
-
-        [newlyFetchedObjects addObject:newObject];
     }
 
     // @TODO: wy sending a copy? I should be better to directly pass the dest. It should be working by now.
@@ -238,7 +269,7 @@ NURESTFetcherPageSize = 50;
     // will remove it from the RESTObject array, and that could cause some weird error. I need to deeply check
     // if it is safe or not to simply give the destination array... wait and see
     // @EDIT: I think the second message is right. using pagination will completely screw up things.
-    [self _sendContent:newlyFetchedObjects usingConnection:_currentConnection];
+    [self _sendContent:fetchedObjects usingConnection:_currentConnection];
 }
 
 - (void)countObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject
@@ -247,7 +278,18 @@ NURESTFetcherPageSize = 50;
                         masterFilter:nil
                            groupedBy:nil
                      andCallSelector:aSelector
-                            ofObject:anObject];
+                            ofObject:anObject
+                               block:nil];
+}
+
+- (void)countObjectsAndCallBlock:(Function)aFunction
+{
+    [self countObjectsMatchingFilter:nil
+                        masterFilter:nil
+                           groupedBy:nil
+                     andCallSelector:nil
+                            ofObject:nil
+                               block:aFunction];
 }
 
 - (CPString)countObjectsMatchingFilter:(CPPredicate)aFilter
@@ -255,6 +297,7 @@ NURESTFetcherPageSize = 50;
                              groupedBy:(CPArray)aGrouping
                        andCallSelector:(SEL)aSelector
                               ofObject:(id)anObject
+                                 block:(Function)aFunction
 {
     var request = [CPURLRequest requestWithURL:[self _prepareURL]];
     [request setHTTPMethod:@"HEAD"];
@@ -262,34 +305,46 @@ NURESTFetcherPageSize = 50;
     [self _prepareHeadersForRequest:request withFilter:aFilter masterFilter:aMasterFilter orderBy:nil groupBy:aGrouping page:nil pageSize:nil];
 
     _transactionID = [CPString UUID];
-    [_entity sendRESTCall:request performSelector:@selector(_didCountObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:nil];
+    [_entity sendRESTCall:request performSelector:@selector(_didCountObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:@{"block": aFunction}];
 
     return _transactionID;
 }
 
 - (void)_didCountObjects:(NURESTConnection)aConnection
 {
+    if (!aConnection)
+        return;
+
     var count = parseInt([aConnection nativeRequest].getResponseHeader("X-Nuage-Count")),
         target = [aConnection internalUserInfo]["remoteTarget"],
-        selector = [aConnection internalUserInfo]["remoteSelector"];
+        selector = [aConnection internalUserInfo]["remoteSelector"],
+        block = [[aConnection userInfo] objectForKey:"block"];
 
-    // should be - (void)fetcher:ofObject:didCountContent: or something like that
+    if (block)
+        block(self, _entity, count);
+
     [target performSelector:selector withObjects:self, _entity, count];
+
+    [_currentConnection reset];
+    _currentConnection = nil;
 }
 
 - (void)_sendContent:(CPArray)someContent usingConnection:(NURESTConnection)aConnection
 {
-    if (aConnection)
-    {
-        var target = [aConnection internalUserInfo]["remoteTarget"],
-            selector = [aConnection internalUserInfo]["remoteSelector"];
+    if (!aConnection)
+        return;
 
-        // should be - (void)fetcher:ofObject:didCountContent: or something like that
-        [target performSelector:selector withObjects:self, _entity, someContent];
+    var target = [aConnection internalUserInfo]["remoteTarget"],
+        selector = [aConnection internalUserInfo]["remoteSelector"],
+        block = [[aConnection userInfo] objectForKey:"block"];
 
-        [_currentConnection reset];
-        _currentConnection = nil;
-    }
+    [target performSelector:selector withObjects:self, _entity, someContent];
+
+    if (block)
+        block(self, _entity, someContent);
+
+    [_currentConnection reset];
+    _currentConnection = nil;
 }
 
 - (CPArray)latestSortDescriptors

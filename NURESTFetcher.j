@@ -210,7 +210,7 @@ NURESTFetcherPageSize = 50;
     [self _prepareHeadersForRequest:request withFilter:aFilter masterFilter:aMasterFilter orderBy:anOrder groupBy:aGrouping page:aPage pageSize:aPageSize];
 
     _transactionID = [CPString UUID];
-    [_entity sendRESTCall:request performSelector:@selector(_didFetchObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:@{@"commit": shouldCommit, "block": aFunction}];
+    [_entity sendRESTCall:request performSelector:@selector(_didFetchObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:{"commit": shouldCommit, "block": aFunction}];
 
     return _transactionID;
 }
@@ -221,7 +221,7 @@ NURESTFetcherPageSize = 50;
 {
     _currentConnection = aConnection;
 
-    var commitInfo = [[aConnection userInfo] objectForKey:@"commit"],
+    var commitInfo = [aConnection userInfo]["commit"],
         shouldCommit = commitInfo === nil || commitInfo === YES;
 
     if ([_currentConnection responseCode] != 200) // @TODO: server sends 200, but if there is an empty list we should have the empty code...
@@ -305,7 +305,7 @@ NURESTFetcherPageSize = 50;
     [self _prepareHeadersForRequest:request withFilter:aFilter masterFilter:aMasterFilter orderBy:nil groupBy:aGrouping page:nil pageSize:nil];
 
     _transactionID = [CPString UUID];
-    [_entity sendRESTCall:request performSelector:@selector(_didCountObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:@{"block": aFunction}];
+    [_entity sendRESTCall:request performSelector:@selector(_didCountObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:{"block": aFunction}];
 
     return _transactionID;
 }
@@ -318,7 +318,7 @@ NURESTFetcherPageSize = 50;
     var count = parseInt([aConnection nativeRequest].getResponseHeader("X-Nuage-Count")),
         target = [aConnection internalUserInfo]["remoteTarget"],
         selector = [aConnection internalUserInfo]["remoteSelector"],
-        block = [[aConnection userInfo] objectForKey:"block"];
+        block = [aConnection userInfo]["block"];
 
     if (block)
         block(self, _entity, count);
@@ -336,7 +336,7 @@ NURESTFetcherPageSize = 50;
 
     var target = [aConnection internalUserInfo]["remoteTarget"],
         selector = [aConnection internalUserInfo]["remoteSelector"],
-        block = [[aConnection userInfo] objectForKey:"block"];
+        block = [aConnection userInfo]["block"];
 
     [target performSelector:selector withObjects:self, _entity, someContent];
 

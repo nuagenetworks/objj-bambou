@@ -99,6 +99,34 @@ var NURESTConnectionLastActionTimer,
     NURESTConnectionTimeout = aValue;
 }
 
++ (BOOL)isConnectionSuccess:(NURESTConnection)aConnection
+{
+    switch ([aConnection responseCode])
+    {
+        case NURESTConnectionResponseCodeEmpty:
+        case NURESTConnectionResponseCodeSuccess:
+        case NURESTConnectionResponseCodeCreated:
+        case NURESTConnectionResponseCodeMultipleChoices:
+            return YES;
+
+        case NURESTConnectionResponseCodeConflict:
+        case NURESTConnectionResponseCodePermissionDenied:
+        case NURESTConnectionResponseCodeUnauthorized:
+        case NURESTConnectionResponseCodeNotFound:
+        case NURESTConnectionResponseCodeMethodNotAllowed:
+        case NURESTConnectionResponseCodePreconditionFailed:
+        case NURESTConnectionResponseCodeServiceUnavailable:
+        case NURESTConnectionResponseCodeInternalServerError:
+        case NURESTConnectionResponseCodeBadRequest:
+        case NURESTConnectionResponseCodeInternalServerError:
+        case NURESTConnectionResponseCodeZero:
+            return NO;
+
+        default:
+            [CPException raise:CPInvalidArgumentException reason:@"Error code " + [aConnection responseCode] + " is unknown."];
+    }
+}
+
 + (BOOL)handleResponseForConnection:(NURESTConnection)aConnection postErrorMessage:(BOOL)shouldPost
 {
     var responseObject   = [[aConnection responseData] JSONObject],

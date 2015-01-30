@@ -202,7 +202,7 @@ NURESTFetcherPageSize = 50;
                                   page:(CPNumber)aPage
                               pageSize:(CPNumber)aPageSize
                                 commit:(BOOL)shouldCommit
-                                 andCallblock:(Function)aFunction
+                                 andCallBlock:(Function)aFunction
 {
     return [self fetchObjectsMatchingFilter:aFilter
                                masterFilter:aMasterFilter

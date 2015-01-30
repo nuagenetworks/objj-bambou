@@ -195,7 +195,31 @@ NURESTFetcherPageSize = 50;
                                       block:aFunction];
 }
 
-- (CPString)fetchObjectsMatchingFilter:(id)aFilter masterFilter:(id)aMasterFilter orderedBy:(CPString)anOrder
+- (CPString)fetchObjectsMatchingFilter:(id)aFilter
+                          masterFilter:(id)aMasterFilter
+                             orderedBy:(CPString)anOrder
+                             groupedBy:(CPArray)aGrouping
+                                  page:(CPNumber)aPage
+                              pageSize:(CPNumber)aPageSize
+                                commit:(BOOL)shouldCommit
+                                 andCallblock:(Function)aFunction
+{
+    return [self fetchObjectsMatchingFilter:aFilter
+                               masterFilter:aMasterFilter
+                                  orderedBy:anOrder
+                                  groupedBy:aGrouping
+                                       page:aPage
+                                   pageSize:aPageSize
+                                     commit:shouldCommit
+                            andCallSelector:nil
+                                   ofObject:nil
+                                      block:aFunction];
+}
+
+
+- (CPString)fetchObjectsMatchingFilter:(id)aFilter
+                          masterFilter:(id)aMasterFilter
+                             orderedBy:(CPString)anOrder
                              groupedBy:(CPArray)aGrouping
                                   page:(CPNumber)aPage
                               pageSize:(CPNumber)aPageSize

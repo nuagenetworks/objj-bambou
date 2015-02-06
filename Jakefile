@@ -30,8 +30,8 @@ var ENV = require("system").env,
 
 framework ("RESTCappuccino", function(task)
 {
-    task.setBuildIntermediatesPath(FILE.join("Build", "RESTCappuccino.build", configuration));
-    task.setBuildPath(FILE.join("Build", configuration));
+    task.setBuildIntermediatesPath(FILE.join(ENV["CAPP_BUILD"], "RESTCappuccino.build", configuration));
+    task.setBuildPath(FILE.join(ENV["CAPP_BUILD"], configuration));
 
     task.setProductName("RESTCappuccino");
     task.setIdentifier("org.archipelproject.RESTCappuccino");

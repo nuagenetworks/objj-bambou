@@ -42,10 +42,11 @@ NURESTConnectionMethodPut                       = @"PUT";
 
 NURESTConnectionFailureNotification             = @"NURESTConnectionFailureNotification";
 NURESTConnectionIdleTimeoutNotification         = @"NURESTConnectionIdleTimeoutNotification";
+NURESTConnectionAutoConfirmAPIIdentifiers       = @"NURESTConnectionAutoConfirmAPIIdentifiers";
 
 var NURESTConnectionLastActionTimer,
     NURESTConnectionTimeout = 1200000,
-    NURESTConnectionAutoConfirm = NO;
+    NURESTConnectionGeneralAutoConfirm = NO;
 
 
 /*! Enhanced version of CPURLConnection
@@ -73,6 +74,11 @@ var NURESTConnectionLastActionTimer,
 #pragma mark -
 #pragma mark Class Methods
 
++ (void)initialize
+{
+    [[CPUserDefaults standardUserDefaults] registerDefaults:@{NURESTConnectionAutoConfirmAPIIdentifiers: []}];
+}
+
 /*! Initialize a new NURESTConnection
     @param aRequest the CPURLRequest to send
     @param anObject a random object that is the target of the result events
@@ -91,7 +97,7 @@ var NURESTConnectionLastActionTimer,
 
 + (void)setAutoConfirm:(BOOL)isEnabled
 {
-    NURESTConnectionAutoConfirm = isEnabled;
+    NURESTConnectionGeneralAutoConfirm = isEnabled;
 }
 
 + (void)setTimeoutValue:(int)aValue
@@ -154,7 +160,7 @@ var NURESTConnectionLastActionTimer,
             return YES;
 
         case NURESTConnectionResponseCodeMultipleChoices:
-            if (NURESTConnectionAutoConfirm)
+            if ([aConnection _isAutoConfirm])
                 [[NURESTConfirmation RESTConfirmationWithName:errorName description:errorDescription choices:responseObject.choices connection:aConnection] confirm];
             else
                 [NURESTConfirmation postRESTConfirmationWithName:errorName description:errorDescription choices:responseObject.choices connection:aConnection];
@@ -331,6 +337,8 @@ var NURESTConnectionLastActionTimer,
     try { _HTTPRequest.abort(); } catch (e) {}
 }
 
+/*! Reset the connection
+*/
 - (void)reset
 {
     _HTTPRequest  = new CFHTTPRequest();
@@ -355,6 +363,8 @@ var NURESTConnectionLastActionTimer,
     }
 }
 
+/*! @ignore
+*/
 - (void)_XHRDidTimeout
 {
     _hasTimeouted = YES;
@@ -363,6 +373,48 @@ var NURESTConnectionLastActionTimer,
         [_target performSelector:_selector withObject:self];
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+}
+
+
+#pragma mark -
+#pragma mark Auto Confirmation
+
+/*! Register or unregister the API Identifier to be auto confirm
+    for the current API Identifier
+*/
+- (void)enableAutoConfirm:(BOOL)shouldEnable
+{
+    var ignoredAPIs = [[CPUserDefaults standardUserDefaults] objectForKey:NURESTConnectionAutoConfirmAPIIdentifiers],
+        identifier  = [self _APIIdentifier],
+        registered  = [ignoredAPIs containsObject:identifier];
+
+    if ((shouldEnable && registered) || (!shouldEnable && !registered))
+        return;
+
+    if (shouldEnable)
+        [ignoredAPIs addObject:identifier];
+    else
+        [ignoredAPIs removeObject:identifier];
+
+    [[CPUserDefaults standardUserDefaults] setObject:ignoredAPIs forKey:NURESTConnectionAutoConfirmAPIIdentifiers];
+}
+
+/*! @ignore
+    Returns if the current connection is marked
+    as auto confirm
+*/
+- (BOOL)_isAutoConfirm
+{
+    return NURESTConnectionGeneralAutoConfirm || [[[CPUserDefaults standardUserDefaults] objectForKey:NURESTConnectionAutoConfirmAPIIdentifiers] containsObject:[self _APIIdentifier]];
+}
+
+/*! @ignore
+    Returns an unique identifier for an API.
+    This will basically removes UUID from the URL
+*/
+- (CPString)_APIIdentifier
+{
+    return [[_request URL] absoluteString].split("?")[0].replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g, "UUID");
 }
 
 @end

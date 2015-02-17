@@ -93,6 +93,7 @@ function _format_log_json(string)
     NURESTObject    _parentObject                   @accessors(property=parentObject);
 
     CPDictionary    _childrenListRegistry;
+    CPDictionary    _fetchersRegistry;
     CPString        _chachedFullTextPredicateFormat;
 }
 
@@ -183,6 +184,7 @@ function _format_log_json(string)
         _localID              = [CPString UUID];
         _restAttributes       = @{};
         _searchAttributes     = @{};
+        _fetchersRegistry     = @{};
 
         [self exposeLocalKeyPathToREST:@"creationDate" displayName:@"creation date"];
         [self exposeLocalKeyPathToREST:@"externalID" searchable:NO];
@@ -197,6 +199,60 @@ function _format_log_json(string)
     }
 
     return self;
+}
+
+
+#pragma mark -
+#pragma mark Children Registry
+
+/*! @ignore
+    Register a children list for given RESTName. You must not call this by yourself
+    This will be done when creating a fetcher in [self init]
+*/
+- (void)registerChildrenList:(CPArray)aList forRESTName:(CPString)aRESTName
+{
+    [_childrenListRegistry setObject:aList forKey:aRESTName];
+}
+
+/*! Return the current children list according to the given RESTName
+*/
+- (CPArray)childrenListWithRESTName:(CPString)aRESTName
+{
+    return [_childrenListRegistry objectForKey:aRESTName];
+}
+
+/*! Return the list of all registered children RESTNames
+*/
+- (CPArray)registeredChildrenRESTNames
+{
+    return [_childrenListRegistry allKeys];
+}
+
+
+#pragma mark -
+#pragma mark Fetchers Registry
+
+/*! @ignore
+    Register a fetcher for a given RESTName. You must not call this by yourself
+    This will be done when creating a fetcher in [self init]
+*/
+- (void)registerChildrenFetcher:(NURESTFetcher)aFetcher forRESTName:(CPString)aRESTName
+{
+    [_fetchersRegistry setObject:aFetcher forKey:aRESTName];
+}
+
+/*! Return the children fetcher for the given RESTName
+*/
+- (NURESTFetcher)childrenFetcherForRESTName:(CPString)aRESTName
+{
+    return [_fetchersRegistry objectForKey:aRESTName];
+}
+
+/*! Return the list of all registered childen fetchers
+*/
+- (CPArray)registeredChildrenFetchers
+{
+    return [_fetchersRegistry allValues];
 }
 
 
@@ -217,6 +273,7 @@ function _format_log_json(string)
 
     _parentObject         = nil;
     _childrenListRegistry = nil;
+    _fetchersRegistry     = nil;
 
     delete self;
 }
@@ -234,16 +291,6 @@ function _format_log_json(string)
 
     for (var i = [RESTNames count] - 1; i >= 0; i--)
         [self discardChildrenListWithRESTName:RESTNames[i]];
-}
-
-- (void)registerChildrenList:(CPArray)aList forRESTName:(CPString)aRESTName
-{
-    [_childrenListRegistry setObject:aList forKey:aRESTName];
-}
-
-- (CPArray)childrenListWithRESTName:(CPString)aRESTName
-{
-    return [_childrenListRegistry objectForKey:aRESTName];
 }
 
 - (void)addChild:(NURESTObject)aChildObject

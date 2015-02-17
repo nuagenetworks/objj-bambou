@@ -58,8 +58,10 @@ NURESTFetcherPageSize = 50;
     [fetcher setEntity:anEntity];
     [fetcher setDestinationKeyPath:aDestinationKeyPath];
 
+    var RESTName = [self managedObjectRESTName];
     [anEntity setValue:[] forKeyPath:aDestinationKeyPath];
-    [anEntity registerChildrenList:[anEntity valueForKeyPath:aDestinationKeyPath] forRESTName:[self managedObjectRESTName]];
+    [anEntity registerChildrenList:[anEntity valueForKeyPath:aDestinationKeyPath] forRESTName:RESTName];
+    [anEntity registerChildrenFetcher:self forRESTName:RESTName];
 
     return fetcher;
 }

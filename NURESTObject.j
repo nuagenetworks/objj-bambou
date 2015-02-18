@@ -92,8 +92,8 @@ function _format_log_json(string)
     CPString        _parentType                     @accessors(property=parentType);
     NURESTObject    _parentObject                   @accessors(property=parentObject);
 
-    CPDictionary    _childrenListRegistry;
-    CPDictionary    _fetchersRegistry;
+    CPDictionary    _childrenListsRegistry;
+    CPDictionary    _childrenFetchersRegistry;
     CPString        _chachedFullTextPredicateFormat;
 }
 
@@ -179,12 +179,12 @@ function _format_log_json(string)
 {
     if (self = [super init])
     {
-        _bindableAttributes   = [];
-        _childrenListRegistry = @{};
-        _localID              = [CPString UUID];
-        _restAttributes       = @{};
-        _searchAttributes     = @{};
-        _fetchersRegistry     = @{};
+        _bindableAttributes       = [];
+        _childrenFetchersRegistry = @{};
+        _childrenListsRegistry    = @{};
+        _localID                  = [CPString UUID];
+        _restAttributes           = @{};
+        _searchAttributes         = @{};
 
         [self exposeLocalKeyPathToREST:@"creationDate" displayName:@"creation date"];
         [self exposeLocalKeyPathToREST:@"externalID" searchable:NO];
@@ -211,21 +211,28 @@ function _format_log_json(string)
 */
 - (void)registerChildrenList:(CPArray)aList forRESTName:(CPString)aRESTName
 {
-    [_childrenListRegistry setObject:aList forKey:aRESTName];
+    [_childrenListsRegistry setObject:aList forKey:aRESTName];
 }
 
 /*! Return the current children list according to the given RESTName
 */
-- (CPArray)childrenListWithRESTName:(CPString)aRESTName
+- (CPArray)childrenForRESTName:(CPString)aRESTName
 {
-    return [_childrenListRegistry objectForKey:aRESTName];
+    return [_childrenListsRegistry objectForKey:aRESTName];
+}
+
+/*! Returns an array of all children list
+*/
+- (CPArray)childrenLists:(CPString)aRESTName
+{
+    return [_childrenListsRegistry allValues];
 }
 
 /*! Return the list of all registered children RESTNames
 */
-- (CPArray)registeredChildrenRESTNames
+- (CPArray)childrenRESTNames
 {
-    return [_childrenListRegistry allKeys];
+    return [_childrenListsRegistry allKeys];
 }
 
 
@@ -238,21 +245,21 @@ function _format_log_json(string)
 */
 - (void)registerChildrenFetcher:(NURESTFetcher)aFetcher forRESTName:(CPString)aRESTName
 {
-    [_fetchersRegistry setObject:aFetcher forKey:aRESTName];
+    [_childrenFetchersRegistry setObject:aFetcher forKey:aRESTName];
 }
 
 /*! Return the children fetcher for the given RESTName
 */
-- (NURESTFetcher)childrenFetcherForRESTName:(CPString)aRESTName
+- (NURESTFetcher)fetcherForRESTName:(CPString)aRESTName
 {
-    return [_fetchersRegistry objectForKey:aRESTName];
+    return [_childrenFetchersRegistry objectForKey:aRESTName];
 }
 
 /*! Return the list of all registered childen fetchers
 */
-- (CPArray)registeredChildrenFetchers
+- (CPArray)fetchers
 {
-    return [_fetchersRegistry allValues];
+    return [_childrenFetchersRegistry allValues];
 }
 
 
@@ -272,8 +279,8 @@ function _format_log_json(string)
     [self discardAllChildrenLists];
 
     _parentObject         = nil;
-    _childrenListRegistry = nil;
-    _fetchersRegistry     = nil;
+    _childrenListsRegistry = nil;
+    _childrenFetchersRegistry     = nil;
 
     delete self;
 }
@@ -282,12 +289,12 @@ function _format_log_json(string)
 {
     CPLog.debug("RESTCAPPUCCINO: " + [self RESTName] + " with ID " + _ID + " is discarding children list " + aName);
 
-    [[self childrenListWithRESTName:aName] removeAllObjects];
+    [[self childrenForRESTName:aName] removeAllObjects];
 }
 
 - (void)discardAllChildrenLists
 {
-    var RESTNames = [_childrenListRegistry allKeys];
+    var RESTNames = [_childrenListsRegistry allKeys];
 
     for (var i = [RESTNames count] - 1; i >= 0; i--)
         [self discardChildrenListWithRESTName:RESTNames[i]];
@@ -295,7 +302,7 @@ function _format_log_json(string)
 
 - (void)addChild:(NURESTObject)aChildObject
 {
-    var childrenList = [self childrenListWithRESTName:[aChildObject RESTName]];
+    var childrenList = [self childrenForRESTName:[aChildObject RESTName]];
 
     if (![childrenList containsObject:aChildObject])
         [childrenList addObject:aChildObject];
@@ -303,12 +310,12 @@ function _format_log_json(string)
 
 - (void)removeChild:(NURESTObject)aChildObject
 {
-    [[self childrenListWithRESTName:[aChildObject RESTName]] removeObject:aChildObject];
+    [[self childrenForRESTName:[aChildObject RESTName]] removeObject:aChildObject];
 }
 
 - (void)updateChild:(NURESTObject)aChildObject
 {
-    var children = [self childrenListWithRESTName:[aChildObject RESTName]],
+    var children = [self childrenForRESTName:[aChildObject RESTName]],
         index = [children indexOfObject:aChildObject];
 
     [children replaceObjectAtIndex:index withObject:aChildObject];

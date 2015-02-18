@@ -610,9 +610,9 @@ function _format_log_json(string)
 #pragma mark -
 #pragma mark Comparison
 
-- (BOOL)isRESTEqual:(NURESTObject)anEntity
+- (BOOL)isRESTEqual:(NURESTObject)anObject
 {
-    if ([anEntity RESTName] != [self RESTName])
+    if ([anObject RESTName] != [self RESTName])
         return NO;
 
     var attributes = [[self RESTAttributes] allKeys];
@@ -625,7 +625,7 @@ function _format_log_json(string)
             continue;
 
         var localValue = [self valueForKeyPath:attribute],
-            remoteValue = [anEntity valueForKeyPath:attribute];
+            remoteValue = [anObject valueForKeyPath:attribute];
 
         if ([localValue isKindOfClass:CPString] && ![localValue length])
             localValue = nil;
@@ -640,18 +640,18 @@ function _format_log_json(string)
     return YES;
 }
 
-- (BOOL)isEqual:(NURESTObject)anEntity
+- (BOOL)isEqual:(NURESTObject)anObject
 {
-    if (![anEntity respondsToSelector:@selector(ID)])
+    if (![anObject respondsToSelector:@selector(ID)])
         return NO;
 
     var ID = [self ID];
     if (ID)
-        return (ID == [anEntity ID]);
+        return (ID == [anObject ID]);
 
     var localID = [self localID];
     if (localID)
-        return (localID == [anEntity localID]);
+        return (localID == [anObject localID]);
 }
 
 - (BOOL)isOwnedByCurrentUser
@@ -934,34 +934,34 @@ function _format_log_json(string)
     for example, to add a NUGroup into a NUEnterprise, you can call
      [anEnterpriese addChildObject:aGroup resource:@"groups" andCallSelector:nil ofObject:nil]
 
-    @param anEntity the NURESTObject object of add
+    @param anObject the NURESTObject object of add
     @param aSelector the selector to call when complete
     @param anObject the target object
 */
-- (void)addChildObject:(NURESTObject)anEntity andCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (void)addChildObject:(NURESTObject)anObject andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self _manageChildObject:anEntity method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didAddChildObject:)];
+    [self _manageChildObject:anObject method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didAddChildObject:)];
 }
 
-- (void)instantiateChildObject:(NURESTObject)anEntity fromTemplate:(NURESTObject)aTemplate andCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (void)instantiateChildObject:(NURESTObject)anObject fromTemplate:(NURESTObject)aTemplate andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [anEntity setTemplateID:[aTemplate ID]];
-    [self _manageChildObject:anEntity method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didAddChildObject:)];
+    [anObject setTemplateID:[aTemplate ID]];
+    [self _manageChildObject:anObject method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didAddChildObject:)];
 }
 
 /*! Low level child manegement. Send given HTTP method with given object to given ressource of current object
     for example, to remove a NUGroup into a NUEnterprise, you can call
      [anEnterpriese removeChildEntity:aGroup method:NURESTObjectMethodDelete andCallSelector:nil ofObject:nil]
 
-    @param anEntity the NURESTObject object of add
+    @param anObject the NURESTObject object of add
     @param aMethod HTTP method
     @param aSelector the selector to call when complete
     @param anObject the target object
     @param aCustomHandler custom handler to call when complete
 */
-- (void)_manageChildObject:(NURESTObject)anEntity method:(CPString)aMethod andCallSelector:(SEL)aSelector ofObject:(id)anObject customConnectionHandler:(SEL)aCustomHandler
+- (void)_manageChildObject:(NURESTObject)anObject method:(CPString)aMethod andCallSelector:(SEL)aSelector ofObject:(id)anObject customConnectionHandler:(SEL)aCustomHandler
 {
-    var body = JSON.stringify([anEntity objectToJSON]),
+    var body = JSON.stringify([anObject objectToJSON]),
         URL;
 
     switch (aMethod)
@@ -969,11 +969,11 @@ function _format_log_json(string)
         case NURESTConnectionMethodPut:
         case NURESTConnectionMethodDelete:
         case NURESTConnectionMethodGet:
-            URL = [anEntity RESTResourceURL];
+            URL = [anObject RESTResourceURL];
             break;
 
         case NURESTConnectionMethodPost:
-            URL = [self RESTResourceURLForChildrenClass:[anEntity class]];
+            URL = [self RESTResourceURLForChildrenClass:[anObject class]];
             break;
     }
 
@@ -984,7 +984,7 @@ function _format_log_json(string)
         [request setHTTPBody:body];
 
     var handlerSelector = aCustomHandler || @selector(_didPerformStandardOperation:);
-    [self sendRESTCall:request performSelector:handlerSelector ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:anEntity];
+    [self sendRESTCall:request performSelector:handlerSelector ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:anObject];
 }
 
 /*! Uses this to reference given objects into the given resource of the actual object.

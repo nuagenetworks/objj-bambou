@@ -52,16 +52,16 @@ NURESTFetcherPageSize = 50;
     return [[self managedObjectClass] RESTName];
 }
 
-+ (NURESTFetcher)fetcherWithEntity:(NURESTObject)anEntity destinationKeyPath:(CPString)aDestinationKeyPath
++ (NURESTFetcher)fetcherWithParentObject:(NURESTObject)aParentObject destinationKeyPath:(CPString)aDestinationKeyPath
 {
     var fetcher = [[self class] new];
-    [fetcher setParentObject:anEntity];
+    [fetcher setParentObject:aParentObject];
     [fetcher setDestinationKeyPath:aDestinationKeyPath];
 
     var RESTName = [self managedObjectRESTName];
-    [anEntity setValue:[] forKeyPath:aDestinationKeyPath];
-    [anEntity registerChildrenList:[anEntity valueForKeyPath:aDestinationKeyPath] forRESTName:RESTName];
-    [anEntity registerChildrenFetcher:self forRESTName:RESTName];
+    [aParentObject setValue:[] forKeyPath:aDestinationKeyPath];
+    [aParentObject registerChildrenList:[aParentObject valueForKeyPath:aDestinationKeyPath] forRESTName:RESTName];
+    [aParentObject registerChildrenFetcher:self forRESTName:RESTName];
 
     return fetcher;
 }

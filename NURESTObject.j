@@ -250,14 +250,14 @@ function _format_log_json(string)
 
 /*! Return the children fetcher for the given RESTName
 */
-- (NURESTFetcher)fetcherForRESTName:(CPString)aRESTName
+- (NURESTFetcher)childrenFetcherForRESTName:(CPString)aRESTName
 {
     return [_childrenFetchersRegistry objectForKey:aRESTName];
 }
 
 /*! Return the list of all registered childen fetchers
 */
-- (CPArray)fetchers
+- (CPArray)childrenFetchers
 {
     return [_childrenFetchersRegistry allValues];
 }
@@ -902,54 +902,54 @@ function _format_log_json(string)
 */
 - (void)fetchAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self _manageChildEntity:self method:NURESTConnectionMethodGet andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didFetchObject:)];
+    [self _manageChildObject:self method:NURESTConnectionMethodGet andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didFetchObject:)];
 }
 
 /*! Create object and call given selector
 */
 - (void)createAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self _manageChildEntity:self method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didCreateObject:)];
+    [self _manageChildObject:self method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didCreateObject:)];
 }
 
 /*! Delete object and call given selector
 */
 - (void)deleteAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self _manageChildEntity:self method:NURESTConnectionMethodDelete andCallSelector:aSelector ofObject:anObject customConnectionHandler:nil];
+    [self _manageChildObject:self method:NURESTConnectionMethodDelete andCallSelector:aSelector ofObject:anObject customConnectionHandler:nil];
 }
 
 /*! Update object and call given selector
 */
 - (void)saveAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self _manageChildEntity:self method:NURESTConnectionMethodPut andCallSelector:aSelector ofObject:anObject customConnectionHandler:nil];
+    [self _manageChildObject:self method:NURESTConnectionMethodPut andCallSelector:aSelector ofObject:anObject customConnectionHandler:nil];
 }
 
 
 #pragma mark -
 #pragma mark Advanced REST Operations
 
-/*! Add given entity into given ressource of current object
+/*! Add given object into given ressource of current object
     for example, to add a NUGroup into a NUEnterprise, you can call
-     [anEnterpriese addChildEntity:aGroup resource:@"groups" andCallSelector:nil ofObject:nil]
+     [anEnterpriese addChildObject:aGroup resource:@"groups" andCallSelector:nil ofObject:nil]
 
     @param anEntity the NURESTObject object of add
     @param aSelector the selector to call when complete
     @param anObject the target object
 */
-- (void)addChildEntity:(NURESTObject)anEntity andCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (void)addChildObject:(NURESTObject)anEntity andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self _manageChildEntity:anEntity method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didAddChildObject:)];
+    [self _manageChildObject:anEntity method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didAddChildObject:)];
 }
 
-- (void)instantiateChildEntity:(NURESTObject)anEntity fromTemplate:(NURESTObject)aTemplate andCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (void)instantiateChildObject:(NURESTObject)anEntity fromTemplate:(NURESTObject)aTemplate andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
     [anEntity setTemplateID:[aTemplate ID]];
-    [self _manageChildEntity:anEntity method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didAddChildObject:)];
+    [self _manageChildObject:anEntity method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didAddChildObject:)];
 }
 
-/*! Low level child manegement. Send given HTTP method with given entity to given ressource of current object
+/*! Low level child manegement. Send given HTTP method with given object to given ressource of current object
     for example, to remove a NUGroup into a NUEnterprise, you can call
      [anEnterpriese removeChildEntity:aGroup method:NURESTObjectMethodDelete andCallSelector:nil ofObject:nil]
 
@@ -959,7 +959,7 @@ function _format_log_json(string)
     @param anObject the target object
     @param aCustomHandler custom handler to call when complete
 */
-- (void)_manageChildEntity:(NURESTObject)anEntity method:(CPString)aMethod andCallSelector:(SEL)aSelector ofObject:(id)anObject customConnectionHandler:(SEL)aCustomHandler
+- (void)_manageChildObject:(NURESTObject)anEntity method:(CPString)aMethod andCallSelector:(SEL)aSelector ofObject:(id)anObject customConnectionHandler:(SEL)aCustomHandler
 {
     var body = JSON.stringify([anEntity objectToJSON]),
         URL;

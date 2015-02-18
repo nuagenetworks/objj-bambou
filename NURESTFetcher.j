@@ -32,7 +32,7 @@ NURESTFetcherPageSize = 50;
     CPString            _destinationKeyPath     @accessors(property=destinationKeyPath);
     CPString            _queryString            @accessors(property=queryString);
     CPString            _transactionID          @accessors(property=transactionID);
-    id                  _entity                 @accessors(property=entity);
+    id                  _parentObject           @accessors(property=parentObject);
     NURESTConnection    _currentConnection      @accessors(property=currentConnection);
 
     CPString            _orderedBy;
@@ -55,7 +55,7 @@ NURESTFetcherPageSize = 50;
 + (NURESTFetcher)fetcherWithEntity:(NURESTObject)anEntity destinationKeyPath:(CPString)aDestinationKeyPath
 {
     var fetcher = [[self class] new];
-    [fetcher setEntity:anEntity];
+    [fetcher setParentObject:anEntity];
     [fetcher setDestinationKeyPath:aDestinationKeyPath];
 
     var RESTName = [self managedObjectRESTName];
@@ -73,7 +73,7 @@ NURESTFetcherPageSize = 50;
 - (void)flush
 {
     _currentConnection = nil;
-    [[_entity valueForKeyPath:_destinationKeyPath] removeAllObjects];
+    [[_parentObject valueForKeyPath:_destinationKeyPath] removeAllObjects];
 }
 
 - (id)newManagedObject
@@ -161,7 +161,7 @@ NURESTFetcherPageSize = 50;
 
 - (CPURL)_prepareURL
 {
-    var url = [_entity RESTResourceURLForChildrenClass:[self managedObjectClass]];
+    var url = [_parentObject RESTResourceURLForChildrenClass:[self managedObjectClass]];
 
     if (_queryString)
         url = [CPURL URLWithString:[url absoluteString] + "?" + _queryString];
@@ -236,7 +236,7 @@ NURESTFetcherPageSize = 50;
     [self _prepareHeadersForRequest:request withFilter:aFilter masterFilter:aMasterFilter orderBy:anOrder groupBy:aGrouping page:aPage pageSize:aPageSize];
 
     _transactionID = [CPString UUID];
-    [_entity sendRESTCall:request performSelector:@selector(_didFetchObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:{"commit": shouldCommit, "block": aFunction}];
+    [_parentObject sendRESTCall:request performSelector:@selector(_didFetchObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:{"commit": shouldCommit, "block": aFunction}];
 
     return _transactionID;
 }
@@ -264,7 +264,7 @@ NURESTFetcherPageSize = 50;
     }
 
     var JSONObject     = [[_currentConnection responseData] JSONObject],
-        dest           = [_entity valueForKey:_destinationKeyPath],
+        dest           = [_parentObject valueForKey:_destinationKeyPath],
         fetchedObjects = [];
 
     if (shouldCommit)
@@ -279,7 +279,7 @@ NURESTFetcherPageSize = 50;
         var newObject = [self newManagedObject];
 
         [newObject objectFromJSON:JSONObject[i]];
-        [newObject setParentObject:_entity];
+        [newObject setParentObject:_parentObject];
 
         [fetchedObjects addObject:newObject];
 
@@ -331,7 +331,7 @@ NURESTFetcherPageSize = 50;
     [self _prepareHeadersForRequest:request withFilter:aFilter masterFilter:aMasterFilter orderBy:nil groupBy:aGrouping page:nil pageSize:nil];
 
     _transactionID = [CPString UUID];
-    [_entity sendRESTCall:request performSelector:@selector(_didCountObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:{"block": aFunction}];
+    [_parentObject sendRESTCall:request performSelector:@selector(_didCountObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:{"block": aFunction}];
 
     return _transactionID;
 }
@@ -347,9 +347,9 @@ NURESTFetcherPageSize = 50;
         block = [aConnection userInfo]["block"];
 
     if (block)
-        block(self, _entity, count);
+        block(self, _parentObject, count);
 
-    [target performSelector:selector withObjects:self, _entity, count];
+    [target performSelector:selector withObjects:self, _parentObject, count];
 
     [_currentConnection reset];
     _currentConnection = nil;
@@ -364,10 +364,10 @@ NURESTFetcherPageSize = 50;
         selector = [aConnection internalUserInfo]["remoteSelector"],
         block = [aConnection userInfo]["block"];
 
-    [target performSelector:selector withObjects:self, _entity, someContent];
+    [target performSelector:selector withObjects:self, _parentObject, someContent];
 
     if (block)
-        block(self, _entity, someContent);
+        block(self, _parentObject, someContent);
 
     [_currentConnection reset];
     _currentConnection = nil;

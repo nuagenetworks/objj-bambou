@@ -938,15 +938,15 @@ function _format_log_json(string)
     @param aSelector the selector to call when complete
     @param anObject the target object
 */
-- (void)addChildObject:(NURESTObject)anObject andCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (void)addChildObject:(NURESTObject)aChildObject andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self _manageChildObject:anObject method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didAddChildObject:)];
+    [self _manageChildObject:aChildObject method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didAddChildObject:)];
 }
 
-- (void)instantiateChildObject:(NURESTObject)anObject fromTemplate:(NURESTObject)aTemplate andCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (void)instantiateChildObject:(NURESTObject)aChildObject fromTemplate:(NURESTObject)aTemplate andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [anObject setTemplateID:[aTemplate ID]];
-    [self _manageChildObject:anObject method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didAddChildObject:)];
+    [aChildObject setTemplateID:[aTemplate ID]];
+    [self _manageChildObject:aChildObject method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didAddChildObject:)];
 }
 
 /*! Low level child manegement. Send given HTTP method with given object to given ressource of current object
@@ -959,9 +959,9 @@ function _format_log_json(string)
     @param anObject the target object
     @param aCustomHandler custom handler to call when complete
 */
-- (void)_manageChildObject:(NURESTObject)anObject method:(CPString)aMethod andCallSelector:(SEL)aSelector ofObject:(id)anObject customConnectionHandler:(SEL)aCustomHandler
+- (void)_manageChildObject:(NURESTObject)aChildObject method:(CPString)aMethod andCallSelector:(SEL)aSelector ofObject:(id)anObject customConnectionHandler:(SEL)aCustomHandler
 {
-    var body = JSON.stringify([anObject objectToJSON]),
+    var body = JSON.stringify([aChildObject objectToJSON]),
         URL;
 
     switch (aMethod)
@@ -969,11 +969,11 @@ function _format_log_json(string)
         case NURESTConnectionMethodPut:
         case NURESTConnectionMethodDelete:
         case NURESTConnectionMethodGet:
-            URL = [anObject RESTResourceURL];
+            URL = [aChildObject RESTResourceURL];
             break;
 
         case NURESTConnectionMethodPost:
-            URL = [self RESTResourceURLForChildrenClass:[anObject class]];
+            URL = [self RESTResourceURLForChildrenClass:[aChildObject class]];
             break;
     }
 

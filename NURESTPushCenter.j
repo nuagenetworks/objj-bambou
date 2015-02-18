@@ -17,6 +17,7 @@
 
 @import <Foundation/Foundation.j>
 @import "NURESTConnection.j"
+@import "NURESTLoginController.j"
 
 @global CPApp
 @global _format_log_json;

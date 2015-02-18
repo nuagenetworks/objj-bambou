@@ -41,8 +41,6 @@ _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ = 0;
 */
 @implementation NURESTPushCenter : CPObject
 {
-    CPURL               _URL                @accessors(property=URL);
-
     BOOL                _isRunning;
     NURESTConnection    _currentConnection;
 }
@@ -100,11 +98,13 @@ _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ = 0;
 */
 - (void)_listenToNextEvent:(CPString)anUUID
 {
-    if (!_URL)
-        [CPException raise:CPInternalInconsistencyException reason:@"NURESTPushCenter needs to have a valid URL. please use setURL: before starting it."];
+    var URL = [[NURESTLoginController defaultController] URL];
+
+    if (!URL)
+        [CPException raise:CPInternalInconsistencyException reason:@"NURESTPushCenter needs to have a valid URL set in the default NURESTLoginController"];
 
     var eventURL =  anUUID ? @"events?uuid=" + anUUID : @"events",
-        request = [CPURLRequest requestWithURL:[CPURL URLWithString:eventURL relativeToURL:_URL]];
+        request = [CPURLRequest requestWithURL:[CPURL URLWithString:eventURL relativeToURL:URL]];
 
     _currentConnection = [NURESTConnection connectionWithRequest:request target:self selector:@selector(_didReceiveEvent:)];
     [_currentConnection setTimeout:0];
@@ -124,7 +124,7 @@ _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ = 0;
 
     if ([aConnection responseCode] !== 200)
     {
-        CPLog.error("RESTCAPPUCCINO PUSHCENTER: Connection failure URL %s. Error Code: %s, (%s) ", _URL, [aConnection responseCode], [aConnection errorMessage]);
+        CPLog.error("RESTCAPPUCCINO PUSHCENTER: Connection failure URL %s. Error Code: %s, (%s) ", [[NURESTLoginController defaultCenter] URL], [aConnection responseCode], [aConnection errorMessage]);
 
         [[CPNotificationCenter defaultCenter] postNotificationName:NURESTPushCenterServerUnreachable
                                                             object:self

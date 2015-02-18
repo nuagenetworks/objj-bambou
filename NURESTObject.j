@@ -932,21 +932,21 @@ function _format_log_json(string)
 
 /*! Add given object into given ressource of current object
     for example, to add a NUGroup into a NUEnterprise, you can call
-     [anEnterpriese addChildObject:aGroup resource:@"groups" andCallSelector:nil ofObject:nil]
+     [anObject createChildObject:aGroup resource:@"groups" andCallSelector:nil ofObject:nil]
 
     @param anObject the NURESTObject object of add
     @param aSelector the selector to call when complete
     @param anObject the target object
 */
-- (void)addChildObject:(NURESTObject)aChildObject andCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (void)createChildObject:(NURESTObject)aChildObject andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self _manageChildObject:aChildObject method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didAddChildObject:)];
+    [self _manageChildObject:aChildObject method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didcreateChildObject:)];
 }
 
 - (void)instantiateChildObject:(NURESTObject)aChildObject fromTemplate:(NURESTObject)aTemplate andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
     [aChildObject setTemplateID:[aTemplate ID]];
-    [self _manageChildObject:aChildObject method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didAddChildObject:)];
+    [self _manageChildObject:aChildObject method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didcreateChildObject:)];
 }
 
 /*! Low level child manegement. Send given HTTP method with given object to given ressource of current object
@@ -1037,7 +1037,7 @@ function _format_log_json(string)
 
 /*! Called as a custom handler when creating a child object
 */
-- (void)_didAddChildObject:(NURESTConnection)aConnection
+- (void)_didcreateChildObject:(NURESTConnection)aConnection
 {
     var JSONData = [[aConnection responseData] JSONObject];
 

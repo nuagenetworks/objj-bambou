@@ -61,7 +61,7 @@ NURESTFetcherPageSize = 50;
     var RESTName = [self managedObjectRESTName];
     [aParentObject setValue:[] forKeyPath:aDestinationKeyPath];
     [aParentObject registerChildrenList:[aParentObject valueForKeyPath:aDestinationKeyPath] forRESTName:RESTName];
-    [aParentObject registerChildrenFetcher:self forRESTName:RESTName];
+    [aParentObject registerChildrenFetcher:fetcher forRESTName:RESTName];
 
     return fetcher;
 }

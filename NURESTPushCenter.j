@@ -125,7 +125,7 @@ _DEBUG_NUMBER_OF_RECEIVED_PUSH_SESSION_ = 0;
 
     if ([aConnection responseCode] !== 200)
     {
-        CPLog.error("RESTCAPPUCCINO PUSHCENTER: Connection failure URL %s. Error Code: %s, (%s) ", [[NURESTLoginController defaultCenter] URL], [aConnection responseCode], [aConnection errorMessage]);
+        CPLog.error("RESTCAPPUCCINO PUSHCENTER: Connection failure URL %s. Error Code: %s, (%s) ", [[NURESTLoginController defaultController] URL], [aConnection responseCode], [aConnection errorMessage]);
 
         [[CPNotificationCenter defaultCenter] postNotificationName:NURESTPushCenterServerUnreachable
                                                             object:self

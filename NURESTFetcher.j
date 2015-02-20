@@ -169,66 +169,66 @@ NURESTFetcherPageSize = 50;
     return url;
 }
 
-- (CPString)retrieveObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (CPString)fetchObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    return [self retrieveObjectsMatchingFilter:nil
-                                  masterFilter:nil
-                                     orderedBy:nil
-                                     groupedBy:nil
-                                          page:nil
-                                      pageSize:nil
-                                        commit:YES
-                               andCallSelector:aSelector
-                                      ofObject:anObject
-                                         block:nil];
+    return [self fetchObjectsMatchingFilter:nil
+                               masterFilter:nil
+                                  orderedBy:nil
+                                  groupedBy:nil
+                                       page:nil
+                                   pageSize:nil
+                                     commit:YES
+                            andCallSelector:aSelector
+                                   ofObject:anObject
+                                      block:nil];
 }
 
-- (CPString)retrieveObjectsAndCallBlock:(Function)aFunction
+- (CPString)fetchObjectsAndCallBlock:(Function)aFunction
 {
-    return [self retrieveObjectsMatchingFilter:nil
-                                  masterFilter:nil
-                                     orderedBy:nil
-                                     groupedBy:nil
-                                          page:nil
-                                      pageSize:nil
-                                        commit:YES
-                               andCallSelector:nil
-                                      ofObject:nil
-                                         block:aFunction];
+    return [self fetchObjectsMatchingFilter:nil
+                               masterFilter:nil
+                                  orderedBy:nil
+                                  groupedBy:nil
+                                       page:nil
+                                   pageSize:nil
+                                     commit:YES
+                            andCallSelector:nil
+                                   ofObject:nil
+                                      block:aFunction];
 }
 
-- (CPString)retrieveObjectsMatchingFilter:(id)aFilter
-                             masterFilter:(id)aMasterFilter
-                                orderedBy:(CPString)anOrder
-                                groupedBy:(CPArray)aGrouping
-                                     page:(CPNumber)aPage
-                                 pageSize:(CPNumber)aPageSize
-                                   commit:(BOOL)shouldCommit
-                                    andCallBlock:(Function)aFunction
+- (CPString)fetchObjectsMatchingFilter:(id)aFilter
+                          masterFilter:(id)aMasterFilter
+                             orderedBy:(CPString)anOrder
+                             groupedBy:(CPArray)aGrouping
+                                  page:(CPNumber)aPage
+                              pageSize:(CPNumber)aPageSize
+                                commit:(BOOL)shouldCommit
+                                 andCallBlock:(Function)aFunction
 {
-    return [self retrieveObjectsMatchingFilter:aFilter
-                                  masterFilter:aMasterFilter
-                                     orderedBy:anOrder
-                                     groupedBy:aGrouping
-                                          page:aPage
-                                      pageSize:aPageSize
-                                        commit:shouldCommit
-                               andCallSelector:nil
-                                      ofObject:nil
-                                         block:aFunction];
+    return [self fetchObjectsMatchingFilter:aFilter
+                               masterFilter:aMasterFilter
+                                  orderedBy:anOrder
+                                  groupedBy:aGrouping
+                                       page:aPage
+                                   pageSize:aPageSize
+                                     commit:shouldCommit
+                            andCallSelector:nil
+                                   ofObject:nil
+                                      block:aFunction];
 }
 
 
-- (CPString)retrieveObjectsMatchingFilter:(id)aFilter
-                             masterFilter:(id)aMasterFilter
-                                orderedBy:(CPString)anOrder
-                                groupedBy:(CPArray)aGrouping
-                                     page:(CPNumber)aPage
-                                 pageSize:(CPNumber)aPageSize
-                                   commit:(BOOL)shouldCommit
-                          andCallSelector:(SEL)aSelector
-                                 ofObject:(id)anObject
-                                    block:(Function)aFunction
+- (CPString)fetchObjectsMatchingFilter:(id)aFilter
+                          masterFilter:(id)aMasterFilter
+                             orderedBy:(CPString)anOrder
+                             groupedBy:(CPArray)aGrouping
+                                  page:(CPNumber)aPage
+                              pageSize:(CPNumber)aPageSize
+                                commit:(BOOL)shouldCommit
+                       andCallSelector:(SEL)aSelector
+                              ofObject:(id)anObject
+                                 block:(Function)aFunction
 {
     var request = [CPURLRequest requestWithURL:[self _prepareURL]];
     [request setHTTPMethod:NURESTConnectionMethodGet];
@@ -236,14 +236,14 @@ NURESTFetcherPageSize = 50;
     [self _prepareHeadersForRequest:request withFilter:aFilter masterFilter:aMasterFilter orderBy:anOrder groupBy:aGrouping page:aPage pageSize:aPageSize];
 
     _transactionID = [CPString UUID];
-    [_parentObject sendRESTCall:request performSelector:@selector(_didRetrieveObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:{"commit": shouldCommit, "block": aFunction}];
+    [_parentObject sendRESTCall:request performSelector:@selector(_didFetchObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:{"commit": shouldCommit, "block": aFunction}];
 
     return _transactionID;
 }
 
 /*! @ignore
 */
-- (void)_didRetrieveObjects:(NURESTConnection)aConnection
+- (void)_didFetchObjects:(NURESTConnection)aConnection
 {
     _currentConnection = aConnection;
 
@@ -265,7 +265,7 @@ NURESTFetcherPageSize = 50;
 
     var JSONObject     = [[_currentConnection responseData] JSONObject],
         dest           = [_parentObject valueForKey:_destinationKeyPath],
-        retrievedObjects = [];
+        fetchedObjects = [];
 
     if (shouldCommit)
     {
@@ -281,7 +281,7 @@ NURESTFetcherPageSize = 50;
         [newObject objectFromJSON:JSONObject[i]];
         [newObject setParentObject:_parentObject];
 
-        [retrievedObjects addObject:newObject];
+        [fetchedObjects addObject:newObject];
 
         if (!shouldCommit)
             continue;
@@ -295,7 +295,7 @@ NURESTFetcherPageSize = 50;
     // will remove it from the RESTObject array, and that could cause some weird error. I need to deeply check
     // if it is safe or not to simply give the destination array... wait and see
     // @EDIT: I think the second message is right. using pagination will completely screw up things.
-    [self _sendContent:retrievedObjects usingConnection:_currentConnection];
+    [self _sendContent:fetchedObjects usingConnection:_currentConnection];
 }
 
 - (void)countObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject

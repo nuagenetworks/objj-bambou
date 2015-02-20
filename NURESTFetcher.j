@@ -193,66 +193,66 @@ NURESTFetcherPageSize = 50;
     return url;
 }
 
-- (CPString)fetchObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (CPString)fetchAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    return [self fetchObjectsMatchingFilter:nil
-                               masterFilter:nil
-                                  orderedBy:nil
-                                  groupedBy:nil
-                                       page:nil
-                                   pageSize:nil
-                                     commit:YES
-                            andCallSelector:aSelector
-                                   ofObject:anObject
-                                      block:nil];
+    return [self fetchWithMatchingFilter:nil
+                            masterFilter:nil
+                               orderedBy:nil
+                               groupedBy:nil
+                                    page:nil
+                                pageSize:nil
+                                  commit:YES
+                         andCallSelector:aSelector
+                                ofObject:anObject
+                                   block:nil];
 }
 
-- (CPString)fetchObjectsAndCallBlock:(Function)aFunction
+- (CPString)fetchAndCallBlock:(Function)aFunction
 {
-    return [self fetchObjectsMatchingFilter:nil
-                               masterFilter:nil
-                                  orderedBy:nil
-                                  groupedBy:nil
-                                       page:nil
-                                   pageSize:nil
-                                     commit:YES
-                            andCallSelector:nil
-                                   ofObject:nil
-                                      block:aFunction];
+    return [self fetchWithMatchingFilter:nil
+                            masterFilter:nil
+                               orderedBy:nil
+                               groupedBy:nil
+                                    page:nil
+                                pageSize:nil
+                                  commit:YES
+                         andCallSelector:nil
+                                ofObject:nil
+                                   block:aFunction];
 }
 
-- (CPString)fetchObjectsMatchingFilter:(id)aFilter
-                          masterFilter:(id)aMasterFilter
-                             orderedBy:(CPString)anOrder
-                             groupedBy:(CPArray)aGrouping
-                                  page:(CPNumber)aPage
-                              pageSize:(CPNumber)aPageSize
-                                commit:(BOOL)shouldCommit
-                                 andCallBlock:(Function)aFunction
+- (CPString)fetchWithMatchingFilter:(id)aFilter
+                       masterFilter:(id)aMasterFilter
+                          orderedBy:(CPString)anOrder
+                          groupedBy:(CPArray)aGrouping
+                               page:(CPNumber)aPage
+                           pageSize:(CPNumber)aPageSize
+                             commit:(BOOL)shouldCommit
+                              andCallBlock:(Function)aFunction
 {
-    return [self fetchObjectsMatchingFilter:aFilter
-                               masterFilter:aMasterFilter
-                                  orderedBy:anOrder
-                                  groupedBy:aGrouping
-                                       page:aPage
-                                   pageSize:aPageSize
-                                     commit:shouldCommit
-                            andCallSelector:nil
-                                   ofObject:nil
-                                      block:aFunction];
+    return [self fetchWithMatchingFilter:aFilter
+                            masterFilter:aMasterFilter
+                               orderedBy:anOrder
+                               groupedBy:aGrouping
+                                    page:aPage
+                                pageSize:aPageSize
+                                  commit:shouldCommit
+                         andCallSelector:nil
+                                ofObject:nil
+                                   block:aFunction];
 }
 
 
-- (CPString)fetchObjectsMatchingFilter:(id)aFilter
-                          masterFilter:(id)aMasterFilter
-                             orderedBy:(CPString)anOrder
-                             groupedBy:(CPArray)aGrouping
-                                  page:(CPNumber)aPage
-                              pageSize:(CPNumber)aPageSize
-                                commit:(BOOL)shouldCommit
-                       andCallSelector:(SEL)aSelector
-                              ofObject:(id)anObject
-                                 block:(Function)aFunction
+- (CPString)fetchWithMatchingFilter:(id)aFilter
+                       masterFilter:(id)aMasterFilter
+                          orderedBy:(CPString)anOrder
+                          groupedBy:(CPArray)aGrouping
+                               page:(CPNumber)aPage
+                           pageSize:(CPNumber)aPageSize
+                             commit:(BOOL)shouldCommit
+                    andCallSelector:(SEL)aSelector
+                           ofObject:(id)anObject
+                              block:(Function)aFunction
 {
     var request = [CPURLRequest requestWithURL:[self _prepareURL]];
     [request setHTTPMethod:NURESTConnectionMethodGet];
@@ -318,32 +318,32 @@ NURESTFetcherPageSize = 50;
     [self _sendContent:fetchedObjects usingConnection:_currentConnection];
 }
 
-- (void)countObjectsAndCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (void)countAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self countObjectsMatchingFilter:nil
-                        masterFilter:nil
-                           groupedBy:nil
-                     andCallSelector:aSelector
-                            ofObject:anObject
-                               block:nil];
+    [self countWithMatchingFilter:nil
+                     masterFilter:nil
+                        groupedBy:nil
+                  andCallSelector:aSelector
+                         ofObject:anObject
+                            block:nil];
 }
 
 - (void)countObjectsAndCallBlock:(Function)aFunction
 {
-    [self countObjectsMatchingFilter:nil
-                        masterFilter:nil
-                           groupedBy:nil
-                     andCallSelector:nil
-                            ofObject:nil
-                               block:aFunction];
+    [self countWithMatchingFilter:nil
+                     masterFilter:nil
+                        groupedBy:nil
+                  andCallSelector:nil
+                         ofObject:nil
+                            block:aFunction];
 }
 
-- (CPString)countObjectsMatchingFilter:(CPPredicate)aFilter
-                          masterFilter:(CPPredicate)aMasterFilter
-                             groupedBy:(CPArray)aGrouping
-                       andCallSelector:(SEL)aSelector
-                              ofObject:(id)anObject
-                                 block:(Function)aFunction
+- (CPString)countWithMatchingFilter:(CPPredicate)aFilter
+                       masterFilter:(CPPredicate)aMasterFilter
+                          groupedBy:(CPArray)aGrouping
+                    andCallSelector:(SEL)aSelector
+                           ofObject:(id)anObject
+                              block:(Function)aFunction
 {
     var request = [CPURLRequest requestWithURL:[self _prepareURL]];
     [request setHTTPMethod:@"HEAD"];

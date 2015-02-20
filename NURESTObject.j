@@ -92,8 +92,7 @@ function _format_log_json(string)
     CPString        _parentType                     @accessors(property=parentType);
     NURESTObject    _parentObject                   @accessors(property=parentObject);
 
-    CPDictionary    _childrenListsRegistry;
-    CPDictionary    _childrenFetchersRegistry;
+    CPDictionary    _fetchersRegistry;
     CPString        _chachedFullTextPredicateFormat;
 }
 
@@ -180,8 +179,7 @@ function _format_log_json(string)
     if (self = [super init])
     {
         _bindableAttributes       = [];
-        _childrenFetchersRegistry = @{};
-        _childrenListsRegistry    = @{};
+        _fetchersRegistry         = @{};
         _localID                  = [CPString UUID];
         _restAttributes           = @{};
         _searchAttributes         = @{};
@@ -203,63 +201,46 @@ function _format_log_json(string)
 
 
 #pragma mark -
-#pragma mark Children Registry
-
-/*! @ignore
-    Register a children list for given RESTName. You must not call this by yourself
-    This will be done when creating a fetcher in [self init]
-*/
-- (void)registerChildrenList:(CPArray)aList forRESTName:(CPString)aRESTName
-{
-    [_childrenListsRegistry setObject:aList forKey:aRESTName];
-}
-
-/*! Return the current children list according to the given RESTName
-*/
-- (CPArray)childrenForRESTName:(CPString)aRESTName
-{
-    return [_childrenListsRegistry objectForKey:aRESTName];
-}
-
-/*! Returns an array of all children list
-*/
-- (CPArray)childrenLists:(CPString)aRESTName
-{
-    return [_childrenListsRegistry allValues];
-}
-
-/*! Return the list of all registered children RESTNames
-*/
-- (CPArray)childrenRESTNames
-{
-    return [_childrenListsRegistry allKeys];
-}
-
-
-#pragma mark -
 #pragma mark Fetchers Registry
 
 /*! @ignore
     Register a fetcher for a given RESTName. You must not call this by yourself
     This will be done when creating a fetcher in [self init]
 */
-- (void)registerChildrenFetcher:(NURESTFetcher)aFetcher forRESTName:(CPString)aRESTName
+- (void)registerFetcher:(NURESTFetcher)aFetcher forRESTName:(CPString)aRESTName
 {
-    [_childrenFetchersRegistry setObject:aFetcher forKey:aRESTName];
+    [_fetchersRegistry setObject:aFetcher forKey:aRESTName];
 }
 
 /*! Return the children fetcher for the given RESTName
 */
-- (NURESTFetcher)childrenFetcherForRESTName:(CPString)aRESTName
+- (NURESTFetcher)fetcherForRESTName:(CPString)aRESTName
 {
-    return [_childrenFetchersRegistry objectForKey:aRESTName];
+    return [_fetchersRegistry objectForKey:aRESTName];
 }
 
 /*! Return the list of all registered childen fetchers
 */
-- (CPArray)childrenFetchers
+- (CPArray)fetchers
 {
-    return [_childrenFetchersRegistry allValues];
+    return [[_fetchersRegistry allValues] copy];
+}
+
+
+#pragma mark -
+#pragma mark Children Registry
+
+/*! Return the list of all registered children RESTNames
+*/
+- (CPArray)childrenRESTNames
+{
+    var names = [],
+        fetchers = [self fetchers];
+
+    for (var i = [fetchers count] - 1; i >= 0; i--)
+        [names addObject:[[fetchers[i] class] managedObjectRESTName]];
+
+    return names;
 }
 
 
@@ -274,51 +255,67 @@ function _format_log_json(string)
 
     _dirty = YES;
 
+    [self willDiscard];
+
     CPLog.debug("RESTCAPPUCCINO: discarding object " + _ID + " of type " + [self RESTName]);
 
     [self discardAllChildrenLists];
 
-    _parentObject         = nil;
-    _childrenListsRegistry = nil;
-    _childrenFetchersRegistry     = nil;
+    _parentObject       = nil;
+    _fetchersRegistry   = nil;
 
     delete self;
 }
 
-- (void)discardChildrenListWithRESTName:(CPString)aName
+- (void)willDiscard
 {
-    CPLog.debug("RESTCAPPUCCINO: " + [self RESTName] + " with ID " + _ID + " is discarding children list " + aName);
 
-    [[self childrenForRESTName:aName] removeAllObjects];
+}
+
+- (void)discardChildrenListWithRESTName:(CPString)aRESTName
+{
+    CPLog.debug("RESTCAPPUCCINO: " + [self RESTName] + " with ID " + _ID + " is discarding children list " + aRESTName);
+
+    [[self fetcherForRESTName:aRESTName] flush];
 }
 
 - (void)discardAllChildrenLists
 {
-    var RESTNames = [_childrenListsRegistry allKeys];
+    var names = [self childrenRESTNames];
 
-    for (var i = [RESTNames count] - 1; i >= 0; i--)
-        [self discardChildrenListWithRESTName:RESTNames[i]];
+    for (var i = [names count] - 1; i >= 0; i--)
+        [self discardChildrenListWithRESTName:names[i]];
 }
 
 - (void)addChild:(NURESTObject)aChildObject
 {
-    var childrenList = [self childrenForRESTName:[aChildObject RESTName]];
+    var fetcher = [self fetcherForRESTName:[aChildObject RESTName]];
 
-    if (![childrenList containsObject:aChildObject])
-        [childrenList addObject:aChildObject];
+    if (!fetcher)
+        [CPException raise:CPInternalInconsistencyException reason:@"Cannot insert object with REST Name " + [aChildObject RESTName] + " in any local fetcher."];
+
+    if (![fetcher containsObject:aChildObject])
+        [fetcher addObject:aChildObject];
 }
 
 - (void)removeChild:(NURESTObject)aChildObject
 {
-    [[self childrenForRESTName:[aChildObject RESTName]] removeObject:aChildObject];
+    var fetcher = [self fetcherForRESTName:[aChildObject RESTName]];
+
+    if (!fetcher)
+        [CPException raise:CPInternalInconsistencyException reason:@"Cannot remove object with REST Name " + [aChildObject RESTName] + " from any local fetcher."];
+
+    [fetcher removeObject:aChildObject];
 }
 
 - (void)updateChild:(NURESTObject)aChildObject
 {
-    var children = [self childrenForRESTName:[aChildObject RESTName]],
-        index = [children indexOfObject:aChildObject];
+    var fetcher = [self fetcherForRESTName:[aChildObject RESTName]];
 
-    [children replaceObjectAtIndex:index withObject:aChildObject];
+    if (!fetcher)
+        [CPException raise:CPInternalInconsistencyException reason:@"Cannot update object with REST Name " + [aChildObject RESTName] + " from any local fetcher."];
+
+    [fetcher replaceObjectAtIndex:[fetcher indexOfObject:aChildObject] withObject:aChildObject];
 }
 
 
@@ -984,7 +981,7 @@ function _format_log_json(string)
         [request setHTTPBody:body];
 
     var handlerSelector = aCustomHandler || @selector(_didPerformStandardOperation:);
-    [self sendRESTCall:request performSelector:handlerSelector ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:anObject];
+    [self sendRESTCall:request performSelector:handlerSelector ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:aChildObject];
 }
 
 /*! Uses this to reference given objects into the given resource of the actual object.

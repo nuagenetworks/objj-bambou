@@ -29,12 +29,12 @@ NURESTFetcherPageSize = 50;
 {
     CPNumber            _latestLoadedPage       @accessors(property=latestLoadedPage);
     CPNumber            _totalCount             @accessors(property=totalCount);
-    CPString            _destinationKeyPath     @accessors(property=destinationKeyPath);
     CPString            _queryString            @accessors(property=queryString);
     CPString            _transactionID          @accessors(property=transactionID);
     id                  _parentObject           @accessors(property=parentObject);
     NURESTConnection    _currentConnection      @accessors(property=currentConnection);
 
+    CPArray             _contents;
     CPString            _orderedBy;
 }
 
@@ -52,16 +52,13 @@ NURESTFetcherPageSize = 50;
     return [[self managedObjectClass] RESTName];
 }
 
-+ (NURESTFetcher)fetcherWithParentObject:(NURESTObject)aParentObject destinationKeyPath:(CPString)aDestinationKeyPath
++ (NURESTFetcher)fetcherWithParentObject:(NURESTObject)aParentObject
 {
-    var fetcher = [[self class] new];
-    [fetcher setParentObject:aParentObject];
-    [fetcher setDestinationKeyPath:aDestinationKeyPath];
+    var fetcher = [self new];
 
-    var RESTName = [self managedObjectRESTName];
-    [aParentObject setValue:[] forKeyPath:aDestinationKeyPath];
-    [aParentObject registerChildrenList:[aParentObject valueForKeyPath:aDestinationKeyPath] forRESTName:RESTName];
-    [aParentObject registerChildrenFetcher:fetcher forRESTName:RESTName];
+    [fetcher setParentObject:aParentObject];
+
+    [aParentObject registerFetcher:fetcher forRESTName:[self managedObjectRESTName]];
 
     return fetcher;
 }
@@ -70,15 +67,42 @@ NURESTFetcherPageSize = 50;
 #pragma mark -
 #pragma mark Initialization
 
+- (id)init
+{
+    if (self = [super init])
+    {
+        _contents = [];
+    }
+
+    return self;
+}
+
 - (void)flush
 {
     _currentConnection = nil;
-    [[_parentObject valueForKeyPath:_destinationKeyPath] removeAllObjects];
+    [_contents removeAllObjects];
 }
 
 - (id)newManagedObject
 {
     return [[[self class] managedObjectClass] new];
+}
+
+
+#pragma mark -
+#pragma mark Message Forwarding
+
+- (CPMethodSignature)methodSignatureForSelector:(SEL)aSelector
+{
+    return YES;
+}
+
+- (void)forwardInvocation:(CPInvocation)anInvocation
+{
+    if ([_contents respondsToSelector:[anInvocation selector]])
+        [anInvocation invokeWithTarget:_contents];
+    else
+        [super forwardInvocation:anInvocation];
 }
 
 
@@ -264,7 +288,6 @@ NURESTFetcherPageSize = 50;
     }
 
     var JSONObject     = [[_currentConnection responseData] JSONObject],
-        dest           = [_parentObject valueForKey:_destinationKeyPath],
         fetchedObjects = [];
 
     if (shouldCommit)
@@ -283,11 +306,8 @@ NURESTFetcherPageSize = 50;
 
         [fetchedObjects addObject:newObject];
 
-        if (!shouldCommit)
-            continue;
-
-        if (![dest containsObject:newObject])
-            [dest addObject:newObject];
+        if (shouldCommit && ![_contents containsObject:newObject])
+            [_contents addObject:newObject];
     }
 
     // @TODO: wy sending a copy? I should be better to directly pass the dest. It should be working by now.

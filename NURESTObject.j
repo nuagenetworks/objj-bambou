@@ -259,7 +259,7 @@ function _format_log_json(string)
 
     CPLog.debug("RESTCAPPUCCINO: discarding object " + _ID + " of type " + [self RESTName]);
 
-    [self discardAllChildrenLists];
+    [self discardAllFetchers];
 
     _parentObject       = nil;
     _fetchersRegistry   = nil;
@@ -272,19 +272,19 @@ function _format_log_json(string)
 
 }
 
-- (void)discardChildrenListWithRESTName:(CPString)aRESTName
+- (void)discardFetcherWithRESTName:(CPString)aRESTName
 {
     CPLog.debug("RESTCAPPUCCINO: " + [self RESTName] + " with ID " + _ID + " is discarding children list " + aRESTName);
 
     [[self fetcherForRESTName:aRESTName] flush];
 }
 
-- (void)discardAllChildrenLists
+- (void)discardAllFetchers
 {
     var names = [self childrenRESTNames];
 
     for (var i = [names count] - 1; i >= 0; i--)
-        [self discardChildrenListWithRESTName:names[i]];
+        [self discardFetcherWithRESTName:names[i]];
 }
 
 - (void)addChild:(NURESTObject)aChildObject

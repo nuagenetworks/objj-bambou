@@ -272,7 +272,7 @@ function _format_log_json(string)
 
 }
 
-- (void)discardFetcherWithRESTName:(CPString)aRESTName
+- (void)discardFetcherForRESTName:(CPString)aRESTName
 {
     CPLog.debug("RESTCAPPUCCINO: " + [self RESTName] + " with ID " + _ID + " is discarding children list " + aRESTName);
 
@@ -284,7 +284,7 @@ function _format_log_json(string)
     var names = [self childrenRESTNames];
 
     for (var i = [names count] - 1; i >= 0; i--)
-        [self discardFetcherWithRESTName:names[i]];
+        [self discardFetcherForRESTName:names[i]];
 }
 
 - (void)addChild:(NURESTObject)aChildObject
@@ -671,7 +671,7 @@ function _format_log_json(string)
     return NO;
 }
 
-- (NURESTObject)parentWithRESTNameMatching:(CPArray)someRESTNames
+- (NURESTObject)parentForMatchingRESTName:(CPArray)someRESTNames
 {
     var parent = self;
 

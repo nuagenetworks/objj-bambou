@@ -105,6 +105,13 @@ NURESTFetcherPageSize = 50;
         [super forwardInvocation:anInvocation];
 }
 
+- (CPString)transationID
+{
+    if (!_currentConnection)
+        [CPException raise:CPInternalInconsistencyException reason:"NURESTConnection: trying to access the current transation ID, but there is no current connection"];
+
+    return [_currentConnection transationID];
+}
 
 #pragma mark -
 #pragma mark Utiltities
@@ -259,10 +266,7 @@ NURESTFetcherPageSize = 50;
 
     [self _prepareHeadersForRequest:request withFilter:aFilter masterFilter:aMasterFilter orderBy:anOrder groupBy:aGrouping page:aPage pageSize:aPageSize];
 
-    _transactionID = [CPString UUID];
-    [_parentObject sendRESTCall:request performSelector:@selector(_didFetchObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:{"commit": shouldCommit, "block": aFunction}];
-
-    return _transactionID;
+    return [_parentObject sendRESTCall:request performSelector:@selector(_didFetchObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:{"commit": shouldCommit, "block": aFunction}];
 }
 
 /*! @ignore
@@ -350,10 +354,7 @@ NURESTFetcherPageSize = 50;
 
     [self _prepareHeadersForRequest:request withFilter:aFilter masterFilter:aMasterFilter orderBy:nil groupBy:aGrouping page:nil pageSize:nil];
 
-    _transactionID = [CPString UUID];
-    [_parentObject sendRESTCall:request performSelector:@selector(_didCountObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:{"block": aFunction}];
-
-    return _transactionID;
+    return [_parentObject sendRESTCall:request performSelector:@selector(_didCountObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:{"block": aFunction}];
 }
 
 - (void)_didCountObjects:(NURESTConnection)aConnection

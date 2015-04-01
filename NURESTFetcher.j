@@ -105,12 +105,12 @@ NURESTFetcherPageSize = 50;
         [super forwardInvocation:anInvocation];
 }
 
-- (CPString)transationID
+- (CPString)transactionID
 {
     if (!_currentConnection)
         [CPException raise:CPInternalInconsistencyException reason:"NURESTConnection: trying to access the current transation ID, but there is no current connection"];
 
-    return [_currentConnection transationID];
+    return [_currentConnection transactionID];
 }
 
 #pragma mark -

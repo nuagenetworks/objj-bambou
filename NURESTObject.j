@@ -843,8 +843,9 @@ function _format_log_json(string)
     @param aRequest random CPURLRequest
     @param aSelector the selector to execute when complete
     @param anObject the target object
+    @return a unique transaction ID
 */
-- (void)sendRESTCall:(CPURLRequest)aRequest performSelector:(SEL)aSelector ofObject:(id)aLocalObject andPerformRemoteSelector:(SEL)aRemoteSelector ofObject:(id)anObject userInfo:(id)someUserInfo
+- (CPString)sendRESTCall:(CPURLRequest)aRequest performSelector:(SEL)aSelector ofObject:(id)aLocalObject andPerformRemoteSelector:(SEL)aRemoteSelector ofObject:(id)anObject userInfo:(id)someUserInfo
 {
     // be sure to set the content-type as application/json
     [aRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
@@ -861,6 +862,8 @@ function _format_log_json(string)
     CPLog.trace("RESTCAPPUCCINO: >>>> Sending\n\n%@ %@:\n\n%@", [aRequest HTTPMethod], [aRequest URL], _format_log_json([aRequest HTTPBody]));
 
     [connection start];
+
+    return [connection transactionID];
 }
 
 /*! @ignore
@@ -899,31 +902,41 @@ function _format_log_json(string)
 /*! Fetchs object attributes. This requires that the Cappuccino object has a valid ID
     @param aSelector the selector to use when fetching is ok
     @param anObject the target to send the selector
+    @return a unique transaction ID
 */
-- (void)fetchAndCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (CPString)fetchAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self _manageChildObject:self method:NURESTConnectionMethodGet andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didFetchObject:)];
+    return [self _manageChildObject:self method:NURESTConnectionMethodGet andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didFetchObject:)];
 }
 
 /*! Create object and call given selector
+    @param aSelector the creation is complete
+    @param anObject the target to send the selector
+    @return a unique transaction ID
 */
-- (void)createAndCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (CPString)createAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self _manageChildObject:self method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didCreateObject:)];
+    return [self _manageChildObject:self method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didCreateObject:)];
 }
 
 /*! Delete object and call given selector
+    @param aSelector the deletion is complete
+    @param anObject the target to send the selector
+    @return a unique transaction ID
 */
-- (void)deleteAndCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (CPString)deleteAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self _manageChildObject:self method:NURESTConnectionMethodDelete andCallSelector:aSelector ofObject:anObject customConnectionHandler:nil];
+    return [self _manageChildObject:self method:NURESTConnectionMethodDelete andCallSelector:aSelector ofObject:anObject customConnectionHandler:nil];
 }
 
 /*! Update object and call given selector
+    @param aSelector the saving is complete
+    @param anObject the target to send the selector
+    @return a unique transaction ID
 */
-- (void)saveAndCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (CPString)saveAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self _manageChildObject:self method:NURESTConnectionMethodPut andCallSelector:aSelector ofObject:anObject customConnectionHandler:nil];
+    return [self _manageChildObject:self method:NURESTConnectionMethodPut andCallSelector:aSelector ofObject:anObject customConnectionHandler:nil];
 }
 
 
@@ -934,19 +947,28 @@ function _format_log_json(string)
     for example, to add a NUGroup into a NUEnterprise, you can call
      [anObject createChildObject:aGroup resource:@"groups" andCallSelector:nil ofObject:nil]
 
-    @param anObject the NURESTObject object of add
+    @param anChildObject the NURESTObject object of add
     @param aSelector the selector to call when complete
     @param anObject the target object
+    @return a unique transaction ID
 */
-- (void)createChildObject:(NURESTObject)aChildObject andCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (CPString)createChildObject:(NURESTObject)aChildObject andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self _manageChildObject:aChildObject method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didcreateChildObject:)];
+    return [self _manageChildObject:aChildObject method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didcreateChildObject:)];
 }
 
-- (void)instantiateChildObject:(NURESTObject)aChildObject fromTemplate:(NURESTObject)aTemplate andCallSelector:(SEL)aSelector ofObject:(id)anObject
+/*! Instantiate a given object from a given template
+    @param anChildObject the NURESTObject object of add
+    @param aTemplate the original template
+    @param aSelector the selector to call when complete
+    @param anObject the target object
+    @return a unique transaction ID
+*/
+- (CPString)instantiateChildObject:(NURESTObject)aChildObject fromTemplate:(NURESTObject)aTemplate andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
     [aChildObject setTemplateID:[aTemplate ID]];
-    [self _manageChildObject:aChildObject method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didcreateChildObject:)];
+
+    return [self _manageChildObject:aChildObject method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didcreateChildObject:)];
 }
 
 /*! Low level child manegement. Send given HTTP method with given object to given ressource of current object
@@ -958,8 +980,9 @@ function _format_log_json(string)
     @param aSelector the selector to call when complete
     @param anObject the target object
     @param aCustomHandler custom handler to call when complete
+    @return a unique transaction ID
 */
-- (void)_manageChildObject:(NURESTObject)aChildObject method:(CPString)aMethod andCallSelector:(SEL)aSelector ofObject:(id)anObject customConnectionHandler:(SEL)aCustomHandler
+- (CPString)_manageChildObject:(NURESTObject)aChildObject method:(CPString)aMethod andCallSelector:(SEL)aSelector ofObject:(id)anObject customConnectionHandler:(SEL)aCustomHandler
 {
     var body = JSON.stringify([aChildObject objectToJSON]),
         URL;
@@ -984,7 +1007,8 @@ function _format_log_json(string)
         [request setHTTPBody:body];
 
     var handlerSelector = aCustomHandler || @selector(_didPerformStandardOperation:);
-    [self sendRESTCall:request performSelector:handlerSelector ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:aChildObject];
+
+    return [self sendRESTCall:request performSelector:handlerSelector ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:aChildObject];
 }
 
 /*! Uses this to reference given objects into the given resource of the actual object.
@@ -992,7 +1016,7 @@ function _format_log_json(string)
     @param aSelector the selector to call when complete
     @param anObject the target object
 */
-- (void)assignEntities:(CPArray)someEntities ofClass:(Class)aClass andCallSelector:(SEL)aSelector ofObject:(id)anObject
+- (CPString)assignEntities:(CPArray)someEntities ofClass:(Class)aClass andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
     var IDsList = [];
 
@@ -1005,7 +1029,7 @@ function _format_log_json(string)
     [request setHTTPMethod:NURESTConnectionMethodPut];
     [request setHTTPBody:body];
 
-    [self sendRESTCall:request performSelector:@selector(_didPerformStandardOperation:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:someEntities];
+    return [self sendRESTCall:request performSelector:@selector(_didPerformStandardOperation:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:someEntities];
 }
 
 

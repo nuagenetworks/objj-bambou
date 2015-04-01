@@ -949,7 +949,7 @@ function _format_log_json(string)
 
     @param anChildObject the NURESTObject object of add
     @param aSelector the selector to call when complete
-    @param anObject the target object
+    @param aChildObject the target object
     @return a unique transaction ID
 */
 - (CPString)createChildObject:(NURESTObject)aChildObject andCallSelector:(SEL)aSelector ofObject:(id)anObject
@@ -961,7 +961,7 @@ function _format_log_json(string)
     @param anChildObject the NURESTObject object of add
     @param aTemplate the original template
     @param aSelector the selector to call when complete
-    @param anObject the target object
+    @param aChildObject the target object
     @return a unique transaction ID
 */
 - (CPString)instantiateChildObject:(NURESTObject)aChildObject fromTemplate:(NURESTObject)aTemplate andCallSelector:(SEL)aSelector ofObject:(id)anObject
@@ -975,7 +975,7 @@ function _format_log_json(string)
     for example, to remove a NUGroup into a NUEnterprise, you can call
      [anEnterpriese removeChildEntity:aGroup method:NURESTObjectMethodDelete andCallSelector:nil ofObject:nil]
 
-    @param anObject the NURESTObject object of add
+    @param aChildObject the NURESTObject object of add
     @param aMethod HTTP method
     @param aSelector the selector to call when complete
     @param anObject the target object

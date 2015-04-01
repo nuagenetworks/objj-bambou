@@ -53,19 +53,20 @@ var NURESTConnectionLastActionTimer,
 */
 @implementation NURESTConnection : CPObject
 {
-    BOOL            _usesAuthentication     @accessors(property=usesAuthentication);
     BOOL            _hasTimeouted           @accessors(getter=hasTimeouted);
     BOOL            _ignoreRequestIdle      @accessors(property=ignoreRequestIdle);
+    BOOL            _usesAuthentication     @accessors(property=usesAuthentication);
     CPData          _responseData           @accessors(getter=responseData);
     CPString        _errorMessage           @accessors(property=errorMessage);
+    CPString        _transactionID          @accessors(getter=transactionID);
     CPURLRequest    _request                @accessors(property=request);
     HTTPRequest     _HTTPRequest            @accessors(getter=nativeRequest);
     id              _internalUserInfo       @accessors(property=internalUserInfo);
     id              _target                 @accessors(property=target);
     id              _userInfo               @accessors(property=userInfo);
     int             _responseCode           @accessors(getter=responseCode);
-    SEL             _selector               @accessors(property=selector);
     int             _XHRTimeout             @accessors(property=timeout);
+    SEL             _selector               @accessors(property=selector);
 
     BOOL            _isCanceled;
 }
@@ -271,13 +272,14 @@ var NURESTConnectionLastActionTimer,
 {
     if (self = [super init])
     {
-        _request = aRequest;
-        _isCanceled = NO;
-        _hasTimeouted = NO;
+        _hasTimeouted       = NO;
+        _HTTPRequest        = new CFHTTPRequest();
+        _ignoreRequestIdle  = NO;
+        _isCanceled         = NO;
+        _request            = aRequest;
+        _transactionID      = [CPString UUID];
         _usesAuthentication = YES;
-        _XHRTimeout = 300000;
-        _ignoreRequestIdle = NO;
-        _HTTPRequest = new CFHTTPRequest();
+        _XHRTimeout         = 300000;
     }
 
     return self;
@@ -341,10 +343,11 @@ var NURESTConnectionLastActionTimer,
 */
 - (void)reset
 {
-    _HTTPRequest  = new CFHTTPRequest();
-    _responseData = nil;
-    _responseCode = nil;
-    _errorMessage = nil;
+    _errorMessage  = nil;
+    _HTTPRequest   = new CFHTTPRequest();
+    _responseCode  = nil;
+    _responseData  = nil;
+    _transactionID = [CPString UUID];
 }
 
 /*! @ignore

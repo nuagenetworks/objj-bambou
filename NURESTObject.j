@@ -192,8 +192,6 @@ function _format_log_json(string)
         [self exposeLocalKeyPathToREST:@"owner" searchable:NO];
         [self exposeLocalKeyPathToREST:@"parentID" searchable:NO];
         [self exposeLocalKeyPathToREST:@"parentType" searchable:NO];
-
-        [[NURESTModelController defaultController] registerModelClass:[self class]];
     }
 
     return self;

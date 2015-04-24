@@ -18,10 +18,6 @@
 @import <Foundation/Foundation.j>
 @import "NURESTConnection.j"
 
-@global NURESTBasicUser
-@global NURESTLoginController
-@global NURESTConnectionMethodGet
-
 NURESTFetcherPageSize = 50;
 
 

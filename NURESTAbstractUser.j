@@ -1,5 +1,5 @@
 /*
-*   Filename:         RNURESTBasicUser.j
+*   Filename:         RNURESTAbstractUser.j
 *   Created:          Thu May  9 14:41:33 PDT 2013
 *   Author:           Antoine Mercadal <antoine.mercadal@alcatel-lucent.com>
 *   Description:      VSA
@@ -21,10 +21,10 @@
 
 @global Sha1
 
-var NURESTBasicUserCurrent = nil;
+var NURESTAbstractUserCurrent = nil;
 
 
-@implementation NURESTBasicUser : NURESTObject
+@implementation NURESTAbstractUser : NURESTObject
 {
     CPString    _APIKey                 @accessors(property=APIKey);
     CPString    _password               @accessors(property=password);
@@ -40,15 +40,15 @@ var NURESTBasicUserCurrent = nil;
 
 + (id)defaultUser
 {
-    if (!NURESTBasicUserCurrent)
-        NURESTBasicUserCurrent = [[[self class] alloc] init];
+    if (!NURESTAbstractUserCurrent)
+        NURESTAbstractUserCurrent = [[[self class] alloc] init];
 
-    return NURESTBasicUserCurrent;
+    return NURESTAbstractUserCurrent;
 }
 
 + (CPString)RESTName
 {
-    [CPException raise:CPUnsupportedMethodException reason:"The NURESTBasicUser subclass must implement : '+ (CPString)RESTName'"];
+    [CPException raise:CPUnsupportedMethodException reason:"The NURESTAbstractUser subclass must implement : '+ (CPString)RESTName'"];
 }
 
 + (BOOL)RESTResourceNameFixed

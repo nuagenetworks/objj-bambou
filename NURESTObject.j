@@ -30,7 +30,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 NURESTObjectAttributeAllowedValuesKey   = @"allowedValues";
 NURESTObjectAttributeDisplayNameKey     = @"displayName";
 
-@class NURESTBasicUser
+@class NURESTAbstractUser
 @global CPCriticalAlertStyle
 @global CPWarningAlertStyle
 @global NUDataTransferController
@@ -654,7 +654,7 @@ function _format_log_json(string)
 
 - (BOOL)isOwnedByCurrentUser
 {
-    return _owner == [[NURESTBasicUser defaultUser] ID];
+    return _owner == [[NURESTAbstractUser defaultUser] ID];
 }
 
 

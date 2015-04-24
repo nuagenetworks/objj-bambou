@@ -23,23 +23,20 @@
 
 var NURESTBasicUserCurrent = nil;
 
+
 @implementation NURESTBasicUser : NURESTObject
 {
-    CPString    _APIKey     @accessors(property=APIKey);
-    CPString    _password   @accessors(property=password);
-    CPString    _userName   @accessors(property=userName);
+    CPString    _APIKey                 @accessors(property=APIKey);
+    CPString    _password               @accessors(property=password);
+    CPString    _role                   @accessors(property=role);
+    CPString    _userName               @accessors(property=userName);
 
     CPString    _desiredNewPassword;
 }
 
 
 #pragma mark -
-#pragma mark Class Method
-
-+ (CPString)RESTName
-{
-    [CPException raise:CPUnsupportedMethodException reason:"The NURESTBasicUser subclass must implement : '+ (CPString)RESTName'"];
-}
+#pragma mark Initialization
 
 + (id)defaultUser
 {
@@ -47,6 +44,26 @@ var NURESTBasicUserCurrent = nil;
         NURESTBasicUserCurrent = [[[self class] alloc] init];
 
     return NURESTBasicUserCurrent;
+}
+
++ (CPString)RESTName
+{
+    [CPException raise:CPUnsupportedMethodException reason:"The NURESTBasicUser subclass must implement : '+ (CPString)RESTName'"];
+}
+
++ (BOOL)RESTResourceNameFixed
+{
+    return YES;
+}
+
+- (CPURL)RESTResourceURL
+{
+    return [CPURL URLWithString:[self RESTName] + @"/" relativeToURL:[[self class] RESTBaseURL]];
+}
+
+- (CPURL)RESTResourceURLForChildrenClass:(Class)aChildrenClass
+{
+    return [CPURL URLWithString:[aChildrenClass RESTResourceName] + @"/" relativeToURL:[[self class] RESTBaseURL]];
 }
 
 
@@ -57,9 +74,10 @@ var NURESTBasicUserCurrent = nil;
 {
     if (self = [super init])
     {
-        [self exposeLocalKeyPathToREST:@"password"];
-        [self exposeLocalKeyPathToREST:@"userName"];
         [self exposeLocalKeyPathToREST:@"APIKey"];
+        [self exposeLocalKeyPathToREST:@"password"];
+        [self exposeLocalKeyPathToREST:@"role"];
+        [self exposeLocalKeyPathToREST:@"userName"];
     }
 
     return self;
@@ -67,12 +85,16 @@ var NURESTBasicUserCurrent = nil;
 
 
 #pragma mark -
-#pragma mark Rest
+#pragma mark Utilties
 
-- (void)prepareUpdatePassword:(CPString)aNewPassword
+- (void)hasRoles:(CPArray)someRoles
 {
-    _desiredNewPassword = aNewPassword;
+    return [someRoles containsObject:_role];
 }
+
+
+#pragma mark -
+#pragma mark Overrides
 
 - (void)saveAndCallSelector:(SEL)aSelector ofObject:(id)anObject password:(CPString)aPassword
 {
@@ -94,33 +116,6 @@ var NURESTBasicUserCurrent = nil;
     [[NURESTLoginController defaultController] setAPIKey:_APIKey];
 
     [self _didPerformStandardOperation:aConnection];
-}
-
-
-#pragma mark -
-#pragma mark CPCoding Compliance
-
-- (id)initWithCoder:(CPCoder)aCoder
-{
-    if (self = [super initWithCoder:aCoder])
-    {
-        _APIKey         = [aCoder decodeObjectForKey:@"_APIKey"];
-        _password       = [aCoder decodeObjectForKey:@"_password"];
-        _userName       = [aCoder decodeObjectForKey:@"_userName"];
-    }
-
-    return self;
-}
-
-/*! CPCoder compliance
-*/
-- (void)encodeWithCoder:(CPCoder)aCoder
-{
-    [super encodeWithCoder:aCoder];
-
-    [aCoder encodeObject:_APIKey forKey:@"_APIKey"];
-    [aCoder encodeObject:_password forKey:@"_password"];
-    [aCoder encodeObject:_userName forKey:@"_userName"];
 }
 
 @end

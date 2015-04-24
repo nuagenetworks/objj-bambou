@@ -88,17 +88,17 @@ var NURESTBasicUserCurrent = nil;
 
     [request setHTTPMethod:NURESTConnectionMethodPut];
     [request setHTTPBody:updatedUserString];
-    [self sendRESTCall:request performSelector:@selector(_didSave:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:someUserInfo];
+    [self sendRESTCall:request performSelector:@selector(_didReceiveRESTUserSaveReply:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:someUserInfo];
 }
 
-- (void)_didSave:(NURESTConnection)aConnection
+- (void)_didReceiveRESTUserSaveReply:(NURESTConnection)aConnection
 {
     [[NURESTLoginController defaultController] setPassword:nil];
     [[NURESTLoginController defaultController] setAPIKey:_APIKey];
 
-    if ([aConnection userInfo])
-        [[aConnection userInfo][0] performSelector:[aConnection userInfo][1] withObjects:self, aConnection];
+    [self _didPerformStandardOperation:aConnection];
 }
+
 
 #pragma mark -
 #pragma mark CPCoding Compliance

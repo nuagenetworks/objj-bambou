@@ -28,10 +28,11 @@ var NURESTAbstractUserCurrent = nil;
 {
     CPString    _APIKey                 @accessors(property=APIKey);
     CPString    _password               @accessors(property=password);
+    CPString    _passwordConfirm        @accessors(property=passwordConfirm);
     CPString    _role                   @accessors(property=role);
     CPString    _userName               @accessors(property=userName);
 
-    CPString    _desiredNewPassword;
+    CPString    _newPassword            @accessors(property=newPassword);
 }
 
 
@@ -66,10 +67,6 @@ var NURESTAbstractUserCurrent = nil;
     return [CPURL URLWithString:[aChildrenClass RESTResourceName] + @"/" relativeToURL:[[self class] RESTBaseURL]];
 }
 
-
-#pragma mark -
-#pragma mark Initialization
-
 - (id)init
 {
     if (self = [super init])
@@ -78,6 +75,9 @@ var NURESTAbstractUserCurrent = nil;
         [self exposeLocalKeyPathToREST:@"password"];
         [self exposeLocalKeyPathToREST:@"role"];
         [self exposeLocalKeyPathToREST:@"userName"];
+
+        [self exposeBindableAttribute:@"newPassword"];
+        [self exposeBindableAttribute:@"passwordConfirm"];
     }
 
     return self;
@@ -100,20 +100,28 @@ var NURESTAbstractUserCurrent = nil;
 {
     var RESTUserCopy = [self duplicate];
 
-    [RESTUserCopy setPassword:_desiredNewPassword ? Sha1.hash(_desiredNewPassword) : nil];
+    [RESTUserCopy setPassword:_newPassword ? Sha1.hash(_newPassword) : nil];
 
     // reset the login controller for this call as it needs to use password, and not API Key
-    [[NURESTLoginController defaultController] setPassword:aPassword];
+    [[NURESTLoginController defaultController] setPassword:[self password]];
     [[NURESTLoginController defaultController] setAPIKey:nil];
 
     [self _manageChildObject:RESTUserCopy method:NURESTConnectionMethodPut andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didUpdateRESTUser:)];
+
+    [RESTUserCopy setNewPassword:nil];
+    [RESTUserCopy setPasswordConfirm:nil];
+    [RESTUserCopy setPasswordConfirm:nil];
 }
 
 - (void)_didUpdateRESTUser:(NURESTConnection)aConnection
 {
     // then we restore the login controller API Key.
     [[NURESTLoginController defaultController] setPassword:nil];
-    [[NURESTLoginController defaultController] setAPIKey:_APIKey];
+    [[NURESTLoginController defaultController] setAPIKey:[self APIKey]];
+
+    [self setNewPassword:nil];
+    [self setPasswordConfirm:nil];
+    [self setPasswordConfirm:nil];
 
     [self _didPerformStandardOperation:aConnection];
 }

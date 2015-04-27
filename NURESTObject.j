@@ -952,7 +952,7 @@ function _format_log_json(string)
 */
 - (CPString)createChildObject:(NURESTObject)aChildObject andCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    return [self _manageChildObject:aChildObject method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didcreateChildObject:)];
+    return [self _manageChildObject:aChildObject method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didCreateChildObject:)];
 }
 
 /*! Instantiate a given object from a given template
@@ -966,7 +966,7 @@ function _format_log_json(string)
 {
     [aChildObject setTemplateID:[aTemplate ID]];
 
-    return [self _manageChildObject:aChildObject method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didcreateChildObject:)];
+    return [self _manageChildObject:aChildObject method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didCreateChildObject:)];
 }
 
 /*! Low level child manegement. Send given HTTP method with given object to given ressource of current object
@@ -1059,7 +1059,7 @@ function _format_log_json(string)
 
 /*! Called as a custom handler when creating a child object
 */
-- (void)_didcreateChildObject:(NURESTConnection)aConnection
+- (void)_didCreateChildObject:(NURESTConnection)aConnection
 {
     var JSONData = [[aConnection responseData] JSONObject];
 
@@ -1072,7 +1072,7 @@ function _format_log_json(string)
 */
 - (void)_didPerformStandardOperation:(NURESTConnection)aConnection
 {
-    var target = [aConnection internalUserInfo]["remoteTarget"],
+    var target   = [aConnection internalUserInfo]["remoteTarget"],
         selector = [aConnection internalUserInfo]["remoteSelector"],
         userInfo = [aConnection userInfo];
 

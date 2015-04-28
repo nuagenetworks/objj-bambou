@@ -75,9 +75,8 @@ var NURESTAbstractUserCurrent = nil;
         [self exposeLocalKeyPathToREST:@"password"];
         [self exposeLocalKeyPathToREST:@"role"];
         [self exposeLocalKeyPathToREST:@"userName"];
-
-        [self exposeBindableAttribute:@"newPassword"];
-        [self exposeBindableAttribute:@"passwordConfirm"];
+        [self exposeLocalKeyPathToREST:@"newPassword"];
+        [self exposeLocalKeyPathToREST:@"passwordConfirm"];
     }
 
     return self;

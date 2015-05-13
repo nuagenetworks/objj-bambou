@@ -112,6 +112,11 @@ NURESTFetcherPageSize = 50;
 #pragma mark -
 #pragma mark Utiltities
 
+- (CPArray)array
+{
+    return _contents;
+}
+
 - (CPString)managedObjectClass
 {
     return [[self class] managedObjectClass];

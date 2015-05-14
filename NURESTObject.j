@@ -595,8 +595,8 @@ function _format_log_json(string)
         if (attribute == "creationDate" || attribute == "lastUpdatedDate")
             continue;
 
-        if (typeof(value) == "string" && value.length  == 0)
-            value = nil;
+        // if (typeof(value) == "string" && value.length  == 0)
+        //     value = nil;
 
         json[restPath] = value;
     }

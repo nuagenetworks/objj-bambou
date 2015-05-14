@@ -20,6 +20,7 @@
 @class NURESTConnection;
 
 NURESTConfirmationNotification = @"NURESTConfirmationNotification";
+NURESTConfirmationCancelNotification = @"NURESTConfirmationCancelNotification";
 
 
 @implementation NURESTConfirmation : CPObject
@@ -64,7 +65,10 @@ NURESTConfirmationNotification = @"NURESTConfirmationNotification";
         [CPException raise:CPInvalidArgumentException reason:@"confirmChoice is not set"];
 
     if (_currentChoice == 0)
+    {
+        [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConfirmationCancelNotification object:self userInfo:nil];
         return;
+    }
 
     var request = [[CPURLRequest alloc] init],
         cleanedUpURL = [[[_connection request] URL] absoluteString].split("?")[0];

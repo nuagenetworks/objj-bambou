@@ -54,7 +54,7 @@ var DefaultNURESTLoginController;
     // Generate the auth string. If APIToken is set, it'll be used. Otherwise, the clear
     // text password will be sent. Users of NURESTLoginController are responsible to
     // clean the password property.
-    var authString = [CPString stringWithFormat:@"%s:%s", encodeURIComponent(_user), _APIKey || encodeURIComponent(_password)];
+    var authString = [CPString stringWithFormat:@"%s:%s", _user, _APIKey || _password];
     return @"XREST " + btoa(authString);
 }
 

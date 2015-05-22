@@ -23,15 +23,15 @@ NURESTFetcherPageSize = 50;
 
 @implementation NURESTFetcher : CPObject
 {
-    CPNumber            _latestLoadedPage       @accessors(property=latestLoadedPage);
-    CPNumber            _totalCount             @accessors(property=totalCount);
+    CPNumber            _currentPage            @accessors(property=currentPage);
+    CPNumber            _currentTotalCount      @accessors(property=currentTotalCount);
+    CPString            _currentOrderedBy       @accessors(property=currentOrderedBy);
     CPString            _queryString            @accessors(property=queryString);
     CPString            _transactionID          @accessors(property=transactionID);
     id                  _parentObject           @accessors(property=parentObject);
     NURESTConnection    _currentConnection      @accessors(property=currentConnection);
 
     CPArray             _contents;
-    CPString            _orderedBy;
 }
 
 
@@ -66,22 +66,9 @@ NURESTFetcherPageSize = 50;
 - (id)init
 {
     if (self = [super init])
-    {
         _contents = [];
-    }
 
     return self;
-}
-
-- (void)flush
-{
-    _currentConnection = nil;
-    [_contents removeAllObjects];
-}
-
-- (id)newManagedObject
-{
-    return [[[self class] managedObjectClass] new];
 }
 
 
@@ -101,6 +88,36 @@ NURESTFetcherPageSize = 50;
         [super forwardInvocation:anInvocation];
 }
 
+
+#pragma mark -
+#pragma mark Getters
+
+- (CPArray)array
+{
+    return _contents;
+}
+
+- (CPArray)currentSortDescriptors
+{
+    if (!_currentOrderedBy)
+        return;
+
+    var descriptors = [CPArray array],
+        elements = _currentOrderedBy.split(",");
+
+    for (var i = 0, c = [elements count]; i < c; i++)
+    {
+        var tokens = elements[i].split(" "),
+            descriptor = [CPSortDescriptor sortDescriptorWithKey:tokens[0]
+                                                       ascending:(tokens[1] == "ASC")
+                                                        selector:@selector(caseInsensitiveCompare:)];
+
+        [descriptors addObject:descriptor];
+    }
+
+    return descriptors;
+}
+
 - (CPString)transactionID
 {
     if (!_currentConnection)
@@ -109,17 +126,24 @@ NURESTFetcherPageSize = 50;
     return [_currentConnection transactionID];
 }
 
-#pragma mark -
-#pragma mark Utiltities
-
-- (CPArray)array
-{
-    return _contents;
-}
-
 - (CPString)managedObjectClass
 {
     return [[self class] managedObjectClass];
+}
+
+- (id)newManagedObject
+{
+    return [[[self class] managedObjectClass] new];
+}
+
+
+#pragma mark -
+#pragma mark Utiltities
+
+- (void)flush
+{
+    [self _resetLastConnectionInformation];
+    [_contents removeAllObjects];
 }
 
 - (id)_RESTFilterFromFilter:(id)aFilter masterFilter:(id)aMasterFilter
@@ -156,9 +180,14 @@ NURESTFetcherPageSize = 50;
     [CPException raise:CPInternalInconsistencyException reason:"NURESTFetcher cannot prepare filter"];
 }
 
-
-#pragma mark -
-#pragma mark Request Management
+- (void)_resetLastConnectionInformation
+{
+    [_currentConnection reset];
+    _currentConnection = nil;
+    _currentOrderedBy  = nil;
+    _currentPage       = nil;
+    _currentTotalCount = nil;
+}
 
 - (void)_prepareHeadersForRequest:(CPURLRequest)aRequest withFilter:(id)aFilter masterFilter:(id)aMasterFilter orderBy:(CPString)anOrder groupBy:(CPArray)aGrouping page:(CPNumber)aPage pageSize:(int)aPageSize
 {
@@ -201,158 +230,101 @@ NURESTFetcherPageSize = 50;
     return url;
 }
 
+
+#pragma mark -
+#pragma mark Fetching Management
+
 - (CPString)fetchAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    return [self fetchWithMatchingFilter:nil
-                            masterFilter:nil
-                               orderedBy:nil
-                               groupedBy:nil
-                                    page:nil
-                                pageSize:nil
-                                  commit:YES
-                         andCallSelector:aSelector
-                                ofObject:anObject
-                                   block:nil];
+    return [self fetchWithMatchingFilter:nil masterFilter:nil orderedBy:nil groupedBy:nil page:nil pageSize:nil commit:YES andCallSelector:aSelector ofObject:anObject block:nil];
 }
 
 - (CPString)fetchAndCallBlock:(Function)aFunction
 {
-    return [self fetchWithMatchingFilter:nil
-                            masterFilter:nil
-                               orderedBy:nil
-                               groupedBy:nil
-                                    page:nil
-                                pageSize:nil
-                                  commit:YES
-                         andCallSelector:nil
-                                ofObject:nil
-                                   block:aFunction];
+    return [self fetchWithMatchingFilter:nil masterFilter:nil orderedBy:nil groupedBy:nil page:nil pageSize:nil commit:YES andCallSelector:nil ofObject:nil block:aFunction];
 }
 
-- (CPString)fetchWithMatchingFilter:(id)aFilter
-                       masterFilter:(id)aMasterFilter
-                          orderedBy:(CPString)anOrder
-                          groupedBy:(CPArray)aGrouping
-                               page:(CPNumber)aPage
-                           pageSize:(CPNumber)aPageSize
-                             commit:(BOOL)shouldCommit
-                              andCallBlock:(Function)aFunction
+- (CPString)fetchWithMatchingFilter:(id)aFilter masterFilter:(id)aMasterFilter orderedBy:(CPString)anOrder groupedBy:(CPArray)aGrouping page:(CPNumber)aPage pageSize:(CPNumber)aPageSize commit:(BOOL)shouldCommit andCallBlock:(Function)aFunction
 {
-    return [self fetchWithMatchingFilter:aFilter
-                            masterFilter:aMasterFilter
-                               orderedBy:anOrder
-                               groupedBy:aGrouping
-                                    page:aPage
-                                pageSize:aPageSize
-                                  commit:shouldCommit
-                         andCallSelector:nil
-                                ofObject:nil
-                                   block:aFunction];
+    return [self fetchWithMatchingFilter:aFilter masterFilter:aMasterFilter orderedBy:anOrder groupedBy:aGrouping page:aPage pageSize:aPageSize commit:shouldCommit andCallSelector:nil ofObject:nil block:aFunction];
 }
 
-
-- (CPString)fetchWithMatchingFilter:(id)aFilter
-                       masterFilter:(id)aMasterFilter
-                          orderedBy:(CPString)anOrder
-                          groupedBy:(CPArray)aGrouping
-                               page:(CPNumber)aPage
-                           pageSize:(CPNumber)aPageSize
-                             commit:(BOOL)shouldCommit
-                    andCallSelector:(SEL)aSelector
-                           ofObject:(id)anObject
-                              block:(Function)aFunction
+- (CPString)fetchWithMatchingFilter:(id)aFilter masterFilter:(id)aMasterFilter orderedBy:(CPString)anOrder groupedBy:(CPArray)aGrouping page:(CPNumber)aPage pageSize:(CPNumber)aPageSize commit:(BOOL)shouldCommit andCallSelector:(SEL)aSelector ofObject:(id)anObject block:(Function)aFunction
 {
     var request = [CPURLRequest requestWithURL:[self _prepareURL]];
-    [request setHTTPMethod:NURESTConnectionMethodGet];
 
+    [request setHTTPMethod:NURESTConnectionMethodGet];
     [self _prepareHeadersForRequest:request withFilter:aFilter masterFilter:aMasterFilter orderBy:anOrder groupBy:aGrouping page:aPage pageSize:aPageSize];
 
     return [_parentObject sendRESTCall:request performSelector:@selector(_didFetchObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:{"commit": shouldCommit, "block": aFunction}];
 }
 
-/*! @ignore
-*/
 - (void)_didFetchObjects:(NURESTConnection)aConnection
 {
-    _currentConnection = aConnection;
+    var target       = [aConnection internalUserInfo]["remoteTarget"],
+        selector     = [aConnection internalUserInfo]["remoteSelector"],
+        block        = [aConnection userInfo]["block"],
+        commitInfo   = [aConnection userInfo]["commit"],
+        shouldCommit = commitInfo === nil || commitInfo === YES,
+        fetchedObjects;
 
-    var commitInfo = [aConnection userInfo]["commit"],
-        shouldCommit = commitInfo === nil || commitInfo === YES;
+    _currentConnection = aConnection;
 
     if ([_currentConnection responseCode] != 200) // @TODO: server sends 200, but if there is an empty list we should have the empty code...
     {
-        if (shouldCommit)
+        _currentTotalCount = 0;
+        _currentPage       = 0;
+        _currentOrderedBy  = @"";
+        fetchedObjects     = nil;
+    }
+    else
+    {
+        _currentTotalCount = parseInt([_currentConnection valueForResponseHeader:@"X-Nuage-Count"]);
+        _currentPage       = parseInt([_currentConnection valueForResponseHeader:@"X-Nuage-Page"]);
+        _currentOrderedBy  = [_currentConnection valueForResponseHeader:@"X-Nuage-OrderBy"];
+        fetchedObjects     = [];
+
+        var JSONObject = [[_currentConnection responseData] JSONObject];
+
+        for (var i = 0, c = [JSONObject count]; i < c; i++)
         {
-            _totalCount       = 0;
-            _latestLoadedPage = 0;
-            _orderedBy        = @"";
+            var newObject = [self newManagedObject];
+            [newObject objectFromJSON:JSONObject[i]];
+            [newObject setParentObject:_parentObject];
+            [fetchedObjects addObject:newObject];
+
+            if (shouldCommit && ![_contents containsObject:newObject])
+                [_contents addObject:newObject];
         }
-
-        [self _sendContent:nil usingConnection:_currentConnection];
-        return;
     }
 
-    var JSONObject     = [[_currentConnection responseData] JSONObject],
-        fetchedObjects = [];
+    [target performSelector:selector withObjects:self, _parentObject, fetchedObjects];
 
-    if (shouldCommit)
-    {
-        _totalCount       = parseInt([_currentConnection nativeRequest].getResponseHeader("X-Nuage-Count"));
-        _latestLoadedPage = parseInt([_currentConnection nativeRequest].getResponseHeader("X-Nuage-Page"));
-        _orderedBy        = [_currentConnection nativeRequest].getResponseHeader("X-Nuage-OrderBy");
-    }
+    if (block)
+        block(self, _parentObject, fetchedObjects);
 
-    for (var i = 0, c = [JSONObject count]; i < c; i++)
-    {
-        var newObject = [self newManagedObject];
-
-        [newObject objectFromJSON:JSONObject[i]];
-        [newObject setParentObject:_parentObject];
-
-        [fetchedObjects addObject:newObject];
-
-        if (shouldCommit && ![_contents containsObject:newObject])
-            [_contents addObject:newObject];
-    }
-
-    // @TODO: wy sending a copy? I should be better to directly pass the dest. It should be working by now.
-    // @EDIT: Actually, I'm not sure. This is used as datasource content, and removing stuff from datasource
-    // will remove it from the RESTObject array, and that could cause some weird error. I need to deeply check
-    // if it is safe or not to simply give the destination array... wait and see
-    // @EDIT: I think the second message is right. using pagination will completely screw up things.
-    [self _sendContent:fetchedObjects usingConnection:_currentConnection];
+    [self _resetLastConnectionInformation];
 }
+
+
+#pragma mark -
+#pragma mark Counting Management
 
 - (void)countAndCallSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    [self countWithMatchingFilter:nil
-                     masterFilter:nil
-                        groupedBy:nil
-                  andCallSelector:aSelector
-                         ofObject:anObject
-                            block:nil];
+    [self countWithMatchingFilter:nil masterFilter:nil groupedBy:nil andCallSelector:aSelector ofObject:anObject block:nil];
 }
 
 - (void)countObjectsAndCallBlock:(Function)aFunction
 {
-    [self countWithMatchingFilter:nil
-                     masterFilter:nil
-                        groupedBy:nil
-                  andCallSelector:nil
-                         ofObject:nil
-                            block:aFunction];
+    [self countWithMatchingFilter:nil masterFilter:nil groupedBy:nil andCallSelector:nil ofObject:nil block:aFunction];
 }
 
-- (CPString)countWithMatchingFilter:(CPPredicate)aFilter
-                       masterFilter:(CPPredicate)aMasterFilter
-                          groupedBy:(CPArray)aGrouping
-                    andCallSelector:(SEL)aSelector
-                           ofObject:(id)anObject
-                              block:(Function)aFunction
+- (CPString)countWithMatchingFilter:(CPPredicate)aFilter masterFilter:(CPPredicate)aMasterFilter groupedBy:(CPArray)aGrouping andCallSelector:(SEL)aSelector ofObject:(id)anObject block:(Function)aFunction
 {
     var request = [CPURLRequest requestWithURL:[self _prepareURL]];
-    [request setHTTPMethod:@"HEAD"];
 
+    [request setHTTPMethod:@"HEAD"];
     [self _prepareHeadersForRequest:request withFilter:aFilter masterFilter:aMasterFilter orderBy:nil groupBy:aGrouping page:nil pageSize:nil];
 
     return [_parentObject sendRESTCall:request performSelector:@selector(_didCountObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:{"block": aFunction}];
@@ -360,60 +332,21 @@ NURESTFetcherPageSize = 50;
 
 - (void)_didCountObjects:(NURESTConnection)aConnection
 {
-    if (!aConnection)
-        return;
-
-    var count = parseInt([aConnection nativeRequest].getResponseHeader("X-Nuage-Count")),
-        target = [aConnection internalUserInfo]["remoteTarget"],
+    var target   = [aConnection internalUserInfo]["remoteTarget"],
         selector = [aConnection internalUserInfo]["remoteSelector"],
-        block = [aConnection userInfo]["block"];
+        block    = [aConnection userInfo]["block"];
+
+    _currentConnection = aConnection;
+    _currentTotalCount = parseInt([_currentConnection valueForResponseHeader:@"X-Nuage-Count"]);
+    _currentPage       = parseInt([_currentConnection valueForResponseHeader:@"X-Nuage-Page"]);
+    _currentOrderedBy  = [_currentConnection valueForResponseHeader:@"X-Nuage-OrderBy"];
+
+    [target performSelector:selector withObjects:self, _parentObject, _currentTotalCount];
 
     if (block)
-        block(self, _parentObject, count);
+        block(self, _parentObject, _currentTotalCount);
 
-    [target performSelector:selector withObjects:self, _parentObject, count];
-
-    [_currentConnection reset];
-    _currentConnection = nil;
-}
-
-- (void)_sendContent:(CPArray)someContent usingConnection:(NURESTConnection)aConnection
-{
-    if (!aConnection)
-        return;
-
-    var target = [aConnection internalUserInfo]["remoteTarget"],
-        selector = [aConnection internalUserInfo]["remoteSelector"],
-        block = [aConnection userInfo]["block"];
-
-    [target performSelector:selector withObjects:self, _parentObject, someContent];
-
-    if (block)
-        block(self, _parentObject, someContent);
-
-    [_currentConnection reset];
-    _currentConnection = nil;
-}
-
-- (CPArray)latestSortDescriptors
-{
-    if (!_orderedBy)
-        return;
-
-    var descriptors = [CPArray array],
-        elements = _orderedBy.split(",");
-
-    for (var i = 0, c = [elements count]; i < c; i++)
-    {
-        var tokens = elements[i].split(" "),
-            descriptor = [CPSortDescriptor sortDescriptorWithKey:tokens[0]
-                                                       ascending:(tokens[1] == "ASC")
-                                                        selector:@selector(caseInsensitiveCompare:)];
-
-        [descriptors addObject:descriptor];
-    }
-
-    return descriptors;
+    [self _resetLastConnectionInformation];
 }
 
 @end

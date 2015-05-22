@@ -60,7 +60,6 @@ var NURESTConnectionLastActionTimer,
     CPString        _errorMessage           @accessors(property=errorMessage);
     CPString        _transactionID          @accessors(getter=transactionID);
     CPURLRequest    _request                @accessors(property=request);
-    HTTPRequest     _HTTPRequest            @accessors(getter=nativeRequest);
     id              _internalUserInfo       @accessors(property=internalUserInfo);
     id              _target                 @accessors(property=target);
     id              _userInfo               @accessors(property=userInfo);
@@ -68,6 +67,7 @@ var NURESTConnectionLastActionTimer,
     int             _XHRTimeout             @accessors(property=timeout);
     SEL             _selector               @accessors(property=selector);
 
+    HTTPRequest     _HTTPRequest;
     BOOL            _isCanceled;
 }
 
@@ -376,6 +376,11 @@ var NURESTConnectionLastActionTimer,
         [_target performSelector:_selector withObject:self];
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+}
+
+- (CPString)valueForResponseHeader:(CPString)aHeader
+{
+    return _HTTPRequest.getResponseHeader(aHeader);
 }
 
 

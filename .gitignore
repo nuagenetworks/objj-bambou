@@ -4,5 +4,7 @@ syntax: glob
 Build
 Documentation
 *Build
+.XcodeSupport
+*.xcodeproj
 debug.txt
 *.tm_properties

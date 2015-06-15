@@ -184,9 +184,9 @@ NURESTFetcherPageSize = 50;
 {
     [_currentConnection reset];
     _currentConnection = nil;
-    _currentOrderedBy  = nil;
-    _currentPage       = nil;
-    _currentTotalCount = nil;
+    // _currentOrderedBy  = nil;
+    // _currentPage       = nil;
+    // _currentTotalCount = nil;
 }
 
 - (void)_prepareHeadersForRequest:(CPURLRequest)aRequest withFilter:(id)aFilter masterFilter:(id)aMasterFilter orderBy:(CPString)anOrder groupBy:(CPArray)aGrouping page:(CPNumber)aPage pageSize:(int)aPageSize

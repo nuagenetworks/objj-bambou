@@ -31,6 +31,8 @@ NURESTObjectAttributeAllowedValuesKey   = @"allowedValues";
 NURESTObjectAttributeDisplayNameKey     = @"displayName";
 
 @class NURESTAbstractUser
+@class CPArrayController
+
 @global CPCriticalAlertStyle
 @global CPWarningAlertStyle
 @global NUDataTransferController
@@ -574,7 +576,10 @@ function _format_log_json(string)
             restPath = [_restAttributes objectForKey:attribute],
             restValue =  aJSONObject[restPath];
 
-        [self setValue:restValue forKeyPath:attribute];
+        if ([[self valueForKeyPath:attribute] isKindOfClass:CPArrayController])
+            [[self valueForKeyPath:attribute] setContent:restValue];
+        else
+            [self setValue:restValue forKeyPath:attribute];
     }
 }
 
@@ -597,6 +602,9 @@ function _format_log_json(string)
 
         // if (typeof(value) == "string" && value.length  == 0)
         //     value = nil;
+
+        if ([value isKindOfClass:CPArrayController])
+            value = [value arrangedObjects];
 
         json[restPath] = value;
     }
@@ -631,7 +639,12 @@ function _format_log_json(string)
         if ([remoteValue isKindOfClass:CPString] && ![remoteValue length])
             remoteValue = nil;
 
-        if (localValue != remoteValue)
+        if ([localValue isKindOfClass:CPArrayController])
+        {
+            if (![[localValue arrangedObjects] isEqualToArray:[remoteValue arrangedObjects]])
+                return NO;
+        }
+        else if (localValue != remoteValue)
             return NO;
     }
 

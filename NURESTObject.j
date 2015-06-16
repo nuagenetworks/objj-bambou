@@ -648,7 +648,7 @@ function _format_log_json(string)
 
         if ([localValue isKindOfClass:CPArrayController])
         {
-            if (![[localValue arrangedObjects] isEqualToArray:[remoteValue arrangedObjects]])
+            if (![[[localValue arrangedObjects] valueForKey:@"value"] isEqualToArray:[[remoteValue arrangedObjects] valueForKey:@"value"]])
                 return NO;
         }
         else if (localValue != remoteValue)

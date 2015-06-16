@@ -577,7 +577,14 @@ function _format_log_json(string)
             restValue =  aJSONObject[restPath];
 
         if ([[self valueForKeyPath:attribute] isKindOfClass:CPArrayController])
-            [[self valueForKeyPath:attribute] setContent:restValue];
+        {
+            var content = [];
+            for (var j = 0, c = [restValue count]; j < c; j++)
+                [content addObject:@{"value": restValue[j]}]
+
+            [[self valueForKeyPath:attribute] setContent:content];
+        }
+
         else
             [self setValue:restValue forKeyPath:attribute];
     }
@@ -604,7 +611,7 @@ function _format_log_json(string)
         //     value = nil;
 
         if ([value isKindOfClass:CPArrayController])
-            value = [value arrangedObjects];
+            value = [[value arrangedObjects] valueForKey:@"value"];
 
         json[restPath] = value;
     }

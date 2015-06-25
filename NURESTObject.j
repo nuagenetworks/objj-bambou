@@ -611,7 +611,14 @@ function _format_log_json(string)
         //     value = nil;
 
         if ([value isKindOfClass:CPArrayController])
-            value = [[value arrangedObjects] valueForKey:@"value"];
+        {
+            var temp = [[value arrangedObjects] valueForKey:@"value"],
+                value = [];
+
+            for (var i = [temp count] - 1; i >= 0; i--)
+                if (temp[i] && temp[i] != [CPNull null])
+                    value.push(temp[i])
+        }
 
         json[restPath] = value;
     }

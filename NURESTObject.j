@@ -607,18 +607,26 @@ function _format_log_json(string)
         if (attribute == "creationDate" || attribute == "lastUpdatedDate")
             continue;
 
-        // if (typeof(value) == "string" && value.length  == 0)
-        //     value = nil;
-
-        if ([value isKindOfClass:CPArrayController])
+        if (value && value.isa && [value isKindOfClass:CPArrayController])
         {
-            var temp = [[value arrangedObjects] valueForKey:@"value"],
+            var temp  = [[value arrangedObjects] valueForKey:@"value"],
                 value = [];
 
             for (var i = [temp count] - 1; i >= 0; i--)
                 if (temp[i] && temp[i] != [CPNull null])
                     value.push(temp[i])
         }
+
+        // @TODO: Uncomment this after 3.2 release, and watch the world burn.
+        //
+        // else if (typeof(value) == "string" && value.length == 0)
+        //     value = nil;
+        //
+        // else if (typeof(value) == "boolean")
+        //     value = !!value;
+        //
+        // else if (value && [value isKindOfClass:CPNumber])
+        //     value = parseFloat(value);
 
         json[restPath] = value;
     }

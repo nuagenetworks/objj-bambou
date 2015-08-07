@@ -301,7 +301,7 @@ NURESTFetcherPageSize = 50;
     [target performSelector:selector withObjects:self, _parentObject, fetchedObjects];
 
     if (block)
-        block(self, _parentObject, fetchedObjects);
+        (function(){block(self, _parentObject, fetchedObjects); [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];})();
 
     [self _resetLastConnectionInformation];
 }
@@ -344,7 +344,7 @@ NURESTFetcherPageSize = 50;
     [target performSelector:selector withObjects:self, _parentObject, _currentTotalCount];
 
     if (block)
-        block(self, _parentObject, _currentTotalCount);
+        (function(){block(self, _parentObject, _currentTotalCount); [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];})();
 
     [self _resetLastConnectionInformation];
 }

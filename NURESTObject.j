@@ -1090,7 +1090,7 @@ function _format_log_json(string)
     try {[self objectFromJSON:JSONData[0]];} catch(e) {}
 
     if (remoteBlock)
-        remoteBlock(self, aConnection);
+        (function(){remoteBlock(self, aConnection); [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];})();
     else if (target && selector)
         [target performSelector:selector withObjects:self, aConnection];
 }
@@ -1143,9 +1143,9 @@ function _format_log_json(string)
     if (remoteBlock)
     {
         if (userInfo)
-            remoteBlock(self, userInfo, aConnection);
+            (function(){remoteBlock(self, userInfo, aConnection); [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];})();
         else
-            remoteBlock(self, aConnection);
+            (function(){remoteBlock(self, aConnection); [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];})();
     }
     else if (target && selector)
     {

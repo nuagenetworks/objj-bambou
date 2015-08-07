@@ -256,14 +256,14 @@ NURESTFetcherPageSize = 50;
     [request setHTTPMethod:NURESTConnectionMethodGet];
     [self _prepareHeadersForRequest:request withFilter:aFilter masterFilter:aMasterFilter orderBy:anOrder groupBy:aGrouping page:aPage pageSize:aPageSize];
 
-    return [_parentObject sendRESTCall:request performSelector:@selector(_didFetchObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:{"commit": shouldCommit, "block": aFunction}];
+    return [_parentObject sendRESTCall:request performSelector:@selector(_didFetchObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject block:aFunction userInfo:{"commit": shouldCommit}];
 }
 
 - (void)_didFetchObjects:(NURESTConnection)aConnection
 {
     var target       = [aConnection internalUserInfo]["remoteTarget"],
         selector     = [aConnection internalUserInfo]["remoteSelector"],
-        block        = [aConnection userInfo]["block"],
+        block        = [aConnection internalUserInfo]["remoteBlock"],
         commitInfo   = [aConnection userInfo]["commit"],
         shouldCommit = commitInfo === nil || commitInfo === YES,
         fetchedObjects;
@@ -327,14 +327,14 @@ NURESTFetcherPageSize = 50;
     [request setHTTPMethod:@"HEAD"];
     [self _prepareHeadersForRequest:request withFilter:aFilter masterFilter:aMasterFilter orderBy:nil groupBy:aGrouping page:nil pageSize:nil];
 
-    return [_parentObject sendRESTCall:request performSelector:@selector(_didCountObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:{"block": aFunction}];
+    return [_parentObject sendRESTCall:request performSelector:@selector(_didCountObjects:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject block:aFunction userInfo:nil];
 }
 
 - (void)_didCountObjects:(NURESTConnection)aConnection
 {
     var target   = [aConnection internalUserInfo]["remoteTarget"],
         selector = [aConnection internalUserInfo]["remoteSelector"],
-        block    = [aConnection userInfo]["block"];
+        block    = [aConnection internalUserInfo]["remoteBlock"];
 
     _currentConnection = aConnection;
     _currentTotalCount = parseInt([_currentConnection valueForResponseHeader:@"X-Nuage-Count"]);

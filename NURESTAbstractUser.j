@@ -105,7 +105,7 @@ var NURESTAbstractUserCurrent = nil;
     [[NURESTLoginController defaultController] setPassword:[self password]];
     [[NURESTLoginController defaultController] setAPIKey:nil];
 
-    [self _manageChildObject:RESTUserCopy method:NURESTConnectionMethodPut andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didUpdateRESTUser:)];
+    [self _manageChildObject:RESTUserCopy method:NURESTConnectionMethodPut andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didUpdateRESTUser:) block:nil];
 
     [RESTUserCopy setNewPassword:nil];
     [RESTUserCopy setPasswordConfirm:nil];

@@ -870,6 +870,294 @@ function _format_log_json(string)
 
 
 #pragma mark -
+#pragma mark REST CRUD Operations
+
+/*! Fetchs object attributes. This requires that the Cappuccino object has a valid ID
+    @param aSelector the selector to use when fetching is ok
+    @param anObject the target to send the selector
+    @return a unique transaction ID
+*/
+- (CPString)fetchAndCallSelector:(SEL)aSelector ofObject:(id)anObject
+{
+    return [self _manageChildObject:self method:NURESTConnectionMethodGet andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didFetchObject:) block:nil];
+}
+
+/*! Fetchs object attributes. This requires that the Cappuccino object has a valid ID
+    @param aBlock callback
+*/
+- (CPString)fetchAndCallBlock:(Function)aBlock
+{
+    return [self _manageChildObject:self method:NURESTConnectionMethodGet andCallSelector:nil ofObject:nil customConnectionHandler:@selector(_didFetchObject:) block:aBlock];
+}
+
+/*! Create object and call given selector
+    @param aSelector the creation is complete
+    @param anObject the target to send the selector
+    @return a unique transaction ID
+*/
+- (CPString)createAndCallSelector:(SEL)aSelector ofObject:(id)anObject
+{
+    return [self _manageChildObject:self method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didCreateObject:) block:nil];
+}
+
+/*! Create the object
+    @param aBlock callback
+*/
+- (CPString)createAndCallBlock:(Function)aBlock
+{
+    return [self _manageChildObject:self method:NURESTConnectionMethodPost andCallSelector:nil ofObject:nil customConnectionHandler:@selector(_didCreateObject:) block:aBlock];
+}
+
+/*! Delete object and call given selector
+    @param aSelector the deletion is complete
+    @param anObject the target to send the selector
+    @return a unique transaction ID
+*/
+- (CPString)deleteAndCallSelector:(SEL)aSelector ofObject:(id)anObject
+{
+    return [self _manageChildObject:self method:NURESTConnectionMethodDelete andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didDeleteObject:) block:nil];
+}
+
+/*! Deletes the object. This requires that the Cappuccino object has a valid ID
+    @param aBlock callback
+*/
+- (CPString)deleteAndCallBlock:(Function)aBlock
+{
+    return [self _manageChildObject:self method:NURESTConnectionMethodDelete andCallSelector:nil ofObject:nil customConnectionHandler:@selector(_didDeleteObject:) block:aBlock];
+}
+
+/*! Update object and call given selector
+    @param aSelector the saving is complete
+    @param anObject the target to send the selector
+    @return a unique transaction ID
+*/
+- (CPString)saveAndCallSelector:(SEL)aSelector ofObject:(id)anObject
+{
+    return [self _manageChildObject:self method:NURESTConnectionMethodPut andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didSaveObject:) block:nil];
+}
+
+/*! Update the object.
+    @param aBlock callback
+*/
+- (CPString)saveAndCallBlock:(Function)aBlock
+{
+    return [self _manageChildObject:self method:NURESTConnectionMethodPut andCallSelector:nil ofObject:nil customConnectionHandler:@selector(_didSaveObject:) block:aBlock];
+}
+
+/*! Add given object into given ressource of current object
+    for example, to add a NUGroup into a NUEnterprise, you can call
+     [anObject createChildObject:aGroup resource:@"groups" andCallSelector:nil ofObject:nil]
+
+    @param anChildObject the NURESTObject object of add
+    @param aSelector the selector to call when complete
+    @param aChildObject the target object
+
+    @return a unique transaction ID
+*/
+- (CPString)createChildObject:(NURESTObject)aChildObject andCallSelector:(SEL)aSelector ofObject:(id)anObject
+{
+    return [self _manageChildObject:aChildObject method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didCreateChildObject:) block:nil];
+}
+
+/*! Add given object into given ressource of current object
+    for example, to add a NUGroup into a NUEnterprise, you can call
+     [anObject createChildObject:aGroup resource:@"groups" andCallSelector:nil ofObject:nil]
+
+    @param anChildObject the NURESTObject object of add
+    @param aBlock callback
+    @return a unique transaction ID
+*/
+- (CPString)createChildObject:(NURESTObject)aChildObject andCallBlock:(Function)aBlock
+{
+    return [self _manageChildObject:aChildObject method:NURESTConnectionMethodPost andCallSelector:nil ofObject:nil customConnectionHandler:@selector(_didCreateChildObject:) block:aBlock];
+}
+
+/*! Instantiate a given object from a given template
+    @param anChildObject the NURESTObject object of add
+    @param aTemplate the original template
+    @param aSelector the selector to call when complete
+    @param anObject the target object
+    @return a unique transaction ID
+*/
+- (CPString)instantiateChildObject:(NURESTObject)aChildObject fromTemplate:(NURESTObject)aTemplate andCallSelector:(SEL)aSelector ofObject:(id)anObject
+{
+    return [self _instantiateChildObject:aChildObject fromTemplate:aTemplate andCallSelector:aSelector ofObject:anObject block:nil];
+}
+
+/*! Instantiate a given object from a given template
+    @param anChildObject the NURESTObject object of add
+    @param aTemplate the original template
+    @param aBlock callback
+    @return a unique transaction ID
+*/
+- (CPString)instantiateChildObject:(NURESTObject)aChildObject fromTemplate:(NURESTObject)aTemplate andCallBlock:(Function)aBlock
+{
+    return [self _instantiateChildObject:aChildObject fromTemplate:aTemplate andCallSelector:nil ofObject:nil block:aBlock];
+}
+
+/*! Uses this to reference given objects into the given resource of the actual object.
+    @param someEntities CPArray containing any subclass of NURESTObject
+    @param aClass the class of the entities to assign
+    @param aSelector the selector to call when complete
+    @param anObject the target object
+
+    @return a unique transaction ID
+*/
+- (CPString)assignEntities:(CPArray)someEntities ofClass:(Class)aClass andCallSelector:(SEL)aSelector ofObject:(id)anObject
+{
+    return [self _assignEntities:someEntities ofClass:aClass andCallSelector:aSelector ofObject:anObject block:nil];
+}
+
+/*! Uses this to reference given objects into the given resource of the actual object.
+    @param someEntities CPArray containing any subclass of NURESTObject
+    @param aClass the class of the entities to assign
+    @param aBlock callback
+
+    @return a unique transaction ID
+*/
+- (CPString)assignEntities:(CPArray)someEntities ofClass:(Class)aClass andCallBlock:(Function)aBlock
+{
+    return [self _assignEntities:someEntities ofClass:aClass andCallSelector:nil ofObject:nil block:aBlock];
+}
+
+
+#pragma mark -
+#pragma mark Advanced REST Operations
+
+- (CPString)_assignEntities:(CPArray)someEntities ofClass:(Class)aClass andCallSelector:(SEL)aSelector ofObject:(id)anObject block:(Function)aBlock
+{
+    var IDsList = [];
+
+    for (var i = [someEntities count] - 1; i >= 0; i--)
+        [IDsList addObject:[someEntities[i] ID]];
+
+    var request = [CPURLRequest requestWithURL:[self RESTResourceURLForChildrenClass:aClass]],
+        body = JSON.stringify(IDsList, null, 4);
+
+    [request setHTTPMethod:NURESTConnectionMethodPut];
+    [request setHTTPBody:body];
+
+    return [self sendRESTCall:request performSelector:@selector(_didPerformStandardOperation:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject block:aBlock userInfo:someEntities];
+}
+
+- (CPString)_instantiateChildObject:(NURESTObject)aChildObject fromTemplate:(NURESTObject)aTemplate andCallSelector:(SEL)aSelector ofObject:(id)anObject block:(Function)aBlock
+{
+    [aChildObject setTemplateID:[aTemplate ID]];
+
+    return [self _manageChildObject:aChildObject method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didCreateChildObject:) block:nil];
+}
+
+- (CPString)_manageChildObject:(NURESTObject)aChildObject method:(CPString)aMethod andCallSelector:(SEL)aSelector ofObject:(id)anObject customConnectionHandler:(SEL)aCustomHandler block:(Function)aBlock
+{
+    var body = JSON.stringify([aChildObject objectToJSON]),
+        URL;
+
+    switch (aMethod)
+    {
+        case NURESTConnectionMethodPut:
+        case NURESTConnectionMethodDelete:
+        case NURESTConnectionMethodGet:
+            URL = [aChildObject RESTResourceURL];
+            break;
+
+        case NURESTConnectionMethodPost:
+            URL = [self RESTResourceURLForChildrenClass:[aChildObject class]];
+            break;
+    }
+
+    var request = [CPURLRequest requestWithURL:URL];
+    [request setHTTPMethod:aMethod];
+
+    if (aMethod == NURESTConnectionMethodPost || aMethod == NURESTConnectionMethodPut)
+        [request setHTTPBody:body];
+
+    var handlerSelector = aCustomHandler || @selector(_didPerformStandardOperation:);
+
+    return [self sendRESTCall:request performSelector:handlerSelector ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject block:aBlock userInfo:aChildObject];
+}
+
+
+#pragma mark -
+#pragma mark REST Operation handlers
+
+- (void)_didFetchObject:(NURESTConnection)aConnection
+{
+    var JSONData    = [[aConnection responseData] JSONObject],
+        target      = [aConnection internalUserInfo]["remoteTarget"],
+        selector    = [aConnection internalUserInfo]["remoteSelector"],
+        remoteBlock = [aConnection internalUserInfo]["remoteBlock"];
+
+    try {[self objectFromJSON:JSONData[0]];} catch(e) {}
+
+    if (remoteBlock)
+        remoteBlock(self, aConnection);
+    else if (target && selector)
+        [target performSelector:selector withObjects:self, aConnection];
+}
+
+/*! Called as a custom handler when creating a new object
+*/
+- (void)_didCreateObject:(NURESTConnection)aConnection
+{
+    var JSONData = [[aConnection responseData] JSONObject];
+
+    try {[self objectFromJSON:JSONData[0]];} catch(e) {}
+
+    [self _didPerformStandardOperation:aConnection];
+}
+
+/*! Called as a custom handler when deleting a new object
+*/
+- (void)_didDeleteObject:(NURESTConnection)aConnection
+{
+    [self _didPerformStandardOperation:aConnection];
+}
+
+/*! Called as a custom handler when creating a new object
+*/
+- (void)_didSaveObject:(NURESTConnection)aConnection
+{
+    [self _didPerformStandardOperation:aConnection];
+}
+
+/*! Called as a custom handler when creating a child object
+*/
+- (void)_didCreateChildObject:(NURESTConnection)aConnection
+{
+    var JSONData = [[aConnection responseData] JSONObject];
+
+    try {[[aConnection userInfo] objectFromJSON:JSONData[0]];} catch(e) {}
+
+    [self _didPerformStandardOperation:aConnection];
+}
+
+/*! Standard handler called when managing a child object
+*/
+- (void)_didPerformStandardOperation:(NURESTConnection)aConnection
+{
+    var target      = [aConnection internalUserInfo]["remoteTarget"],
+        selector    = [aConnection internalUserInfo]["remoteSelector"],
+        remoteBlock = [aConnection internalUserInfo]["remoteBlock"],
+        userInfo    = [aConnection userInfo];
+
+    if (remoteBlock)
+    {
+        if (userInfo)
+            remoteBlock(self, userInfo, aConnection);
+        else
+            remoteBlock(self, aConnection);
+    }
+    else if (target && selector)
+    {
+        if (userInfo)
+            [target performSelector:selector withObjects:self, userInfo, aConnection];
+        else
+            [target performSelector:selector withObjects:self, aConnection];
+    }
+}
+
+
+#pragma mark -
 #pragma mark REST Low Level communication
 
 /*! Send a REST request and perform given selector of given object
@@ -878,7 +1166,7 @@ function _format_log_json(string)
     @param anObject the target object
     @return a unique transaction ID
 */
-- (CPString)sendRESTCall:(CPURLRequest)aRequest performSelector:(SEL)aSelector ofObject:(id)aLocalObject andPerformRemoteSelector:(SEL)aRemoteSelector ofObject:(id)anObject userInfo:(id)someUserInfo
+- (CPString)sendRESTCall:(CPURLRequest)aRequest performSelector:(SEL)aSelector ofObject:(id)aLocalObject andPerformRemoteSelector:(SEL)aRemoteSelector ofObject:(id)anObject block:(Function)aBlock userInfo:(id)someUserInfo
 {
     // be sure to set the content-type as application/json
     [aRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
@@ -890,7 +1178,8 @@ function _format_log_json(string)
     [connection setInternalUserInfo:{   "localTarget": aLocalObject,
                                         "localSelector": aSelector,
                                         "remoteTarget": anObject,
-                                        "remoteSelector": aRemoteSelector}];
+                                        "remoteSelector": aRemoteSelector,
+                                        "remoteBlock": aBlock}];
 
     CPLog.trace("RESTCAPPUCCINO: >>>> Sending\n\n%@ %@:\n\n%@", [aRequest HTTPMethod], [aRequest URL], _format_log_json([aRequest HTTPBody]));
 
@@ -918,7 +1207,8 @@ function _format_log_json(string)
         localSelector  = [aConnection internalUserInfo]["localSelector"],
         remoteTarget   = [aConnection internalUserInfo]["remoteTarget"],
         remoteSelector = [aConnection internalUserInfo]["remoteSelector"],
-        hasHandlers    = !!(remoteTarget && remoteSelector);
+        remoteBlock    = [aConnection internalUserInfo]["remoteBlock"],
+        hasHandlers    = (!!(remoteTarget && remoteSelector)) || remoteBlock;
 
     CPLog.trace("RESTCAPPUCCINO: <<<< Response for\n\n%@ %@ (%@):\n\n%@", HTTPMethod, url, responseCode, _format_log_json(rawString));
 
@@ -926,195 +1216,6 @@ function _format_log_json(string)
 
     if (shouldProceed)
         [localTarget performSelector:localSelector withObject:aConnection];
-}
-
-
-#pragma mark -
-#pragma mark REST CRUD Operations
-
-/*! Fetchs object attributes. This requires that the Cappuccino object has a valid ID
-    @param aSelector the selector to use when fetching is ok
-    @param anObject the target to send the selector
-    @return a unique transaction ID
-*/
-- (CPString)fetchAndCallSelector:(SEL)aSelector ofObject:(id)anObject
-{
-    return [self _manageChildObject:self method:NURESTConnectionMethodGet andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didFetchObject:)];
-}
-
-/*! Create object and call given selector
-    @param aSelector the creation is complete
-    @param anObject the target to send the selector
-    @return a unique transaction ID
-*/
-- (CPString)createAndCallSelector:(SEL)aSelector ofObject:(id)anObject
-{
-    return [self _manageChildObject:self method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didCreateObject:)];
-}
-
-/*! Delete object and call given selector
-    @param aSelector the deletion is complete
-    @param anObject the target to send the selector
-    @return a unique transaction ID
-*/
-- (CPString)deleteAndCallSelector:(SEL)aSelector ofObject:(id)anObject
-{
-    return [self _manageChildObject:self method:NURESTConnectionMethodDelete andCallSelector:aSelector ofObject:anObject customConnectionHandler:nil];
-}
-
-/*! Update object and call given selector
-    @param aSelector the saving is complete
-    @param anObject the target to send the selector
-    @return a unique transaction ID
-*/
-- (CPString)saveAndCallSelector:(SEL)aSelector ofObject:(id)anObject
-{
-    return [self _manageChildObject:self method:NURESTConnectionMethodPut andCallSelector:aSelector ofObject:anObject customConnectionHandler:nil];
-}
-
-
-#pragma mark -
-#pragma mark Advanced REST Operations
-
-/*! Add given object into given ressource of current object
-    for example, to add a NUGroup into a NUEnterprise, you can call
-     [anObject createChildObject:aGroup resource:@"groups" andCallSelector:nil ofObject:nil]
-
-    @param anChildObject the NURESTObject object of add
-    @param aSelector the selector to call when complete
-    @param aChildObject the target object
-    @return a unique transaction ID
-*/
-- (CPString)createChildObject:(NURESTObject)aChildObject andCallSelector:(SEL)aSelector ofObject:(id)anObject
-{
-    return [self _manageChildObject:aChildObject method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didCreateChildObject:)];
-}
-
-/*! Instantiate a given object from a given template
-    @param anChildObject the NURESTObject object of add
-    @param aTemplate the original template
-    @param aSelector the selector to call when complete
-    @param aChildObject the target object
-    @return a unique transaction ID
-*/
-- (CPString)instantiateChildObject:(NURESTObject)aChildObject fromTemplate:(NURESTObject)aTemplate andCallSelector:(SEL)aSelector ofObject:(id)anObject
-{
-    [aChildObject setTemplateID:[aTemplate ID]];
-
-    return [self _manageChildObject:aChildObject method:NURESTConnectionMethodPost andCallSelector:aSelector ofObject:anObject customConnectionHandler:@selector(_didCreateChildObject:)];
-}
-
-/*! Low level child manegement. Send given HTTP method with given object to given ressource of current object
-    for example, to remove a NUGroup into a NUEnterprise, you can call
-     [anEnterpriese removeChildEntity:aGroup method:NURESTObjectMethodDelete andCallSelector:nil ofObject:nil]
-
-    @param aChildObject the NURESTObject object of add
-    @param aMethod HTTP method
-    @param aSelector the selector to call when complete
-    @param anObject the target object
-    @param aCustomHandler custom handler to call when complete
-    @return a unique transaction ID
-*/
-- (CPString)_manageChildObject:(NURESTObject)aChildObject method:(CPString)aMethod andCallSelector:(SEL)aSelector ofObject:(id)anObject customConnectionHandler:(SEL)aCustomHandler
-{
-    var body = JSON.stringify([aChildObject objectToJSON]),
-        URL;
-
-    switch (aMethod)
-    {
-        case NURESTConnectionMethodPut:
-        case NURESTConnectionMethodDelete:
-        case NURESTConnectionMethodGet:
-            URL = [aChildObject RESTResourceURL];
-            break;
-
-        case NURESTConnectionMethodPost:
-            URL = [self RESTResourceURLForChildrenClass:[aChildObject class]];
-            break;
-    }
-
-    var request = [CPURLRequest requestWithURL:URL];
-    [request setHTTPMethod:aMethod];
-
-    if (aMethod == NURESTConnectionMethodPost || aMethod == NURESTConnectionMethodPut)
-        [request setHTTPBody:body];
-
-    var handlerSelector = aCustomHandler || @selector(_didPerformStandardOperation:);
-
-    return [self sendRESTCall:request performSelector:handlerSelector ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:aChildObject];
-}
-
-/*! Uses this to reference given objects into the given resource of the actual object.
-    @param someEntities CPArray containing any subclass of NURESTObject
-    @param aSelector the selector to call when complete
-    @param anObject the target object
-*/
-- (CPString)assignEntities:(CPArray)someEntities ofClass:(Class)aClass andCallSelector:(SEL)aSelector ofObject:(id)anObject
-{
-    var IDsList = [];
-
-    for (var i = [someEntities count] - 1; i >= 0; i--)
-        [IDsList addObject:[someEntities[i] ID]];
-
-    var request = [CPURLRequest requestWithURL:[self RESTResourceURLForChildrenClass:aClass]],
-        body = JSON.stringify(IDsList, null, 4);
-
-    [request setHTTPMethod:NURESTConnectionMethodPut];
-    [request setHTTPBody:body];
-
-    return [self sendRESTCall:request performSelector:@selector(_didPerformStandardOperation:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject userInfo:someEntities];
-}
-
-
-#pragma mark -
-#pragma mark REST Operation handlers
-
-- (void)_didFetchObject:(NURESTConnection)aConnection
-{
-    var JSONData = [[aConnection responseData] JSONObject],
-        target   = [aConnection internalUserInfo]["remoteTarget"],
-        selector = [aConnection internalUserInfo]["remoteSelector"];
-
-    try {[self objectFromJSON:JSONData[0]];} catch(e) {}
-
-    if (target && selector)
-        [target performSelector:selector withObjects:self, aConnection];
-}
-
-/*! Called as a custom handler when creating a new object
-*/
-- (void)_didCreateObject:(NURESTConnection)aConnection
-{
-    var JSONData = [[aConnection responseData] JSONObject];
-
-    try {[self objectFromJSON:JSONData[0]];} catch(e) {}
-
-    [self _didPerformStandardOperation:aConnection];
-}
-
-/*! Called as a custom handler when creating a child object
-*/
-- (void)_didCreateChildObject:(NURESTConnection)aConnection
-{
-    var JSONData = [[aConnection responseData] JSONObject];
-
-    try {[[aConnection userInfo] objectFromJSON:JSONData[0]];} catch(e) {}
-
-    [self _didPerformStandardOperation:aConnection];
-}
-
-/*! Standard handler called when managing a child object
-*/
-- (void)_didPerformStandardOperation:(NURESTConnection)aConnection
-{
-    var target   = [aConnection internalUserInfo]["remoteTarget"],
-        selector = [aConnection internalUserInfo]["remoteSelector"],
-        userInfo = [aConnection userInfo];
-
-    if (target && selector && userInfo)
-        [target performSelector:selector withObjects:self, userInfo, aConnection];
-    else if (target && selector)
-        [target performSelector:selector withObjects:self, aConnection];
 }
 
 

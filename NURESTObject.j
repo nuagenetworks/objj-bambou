@@ -132,7 +132,7 @@ function _format_log_json(string)
             break;
 
         case @"y":
-            if (queryName.slice(-2) == @"ry" || queryName.slice(-2) == @"cy")
+            if (queryName.slice(-2) == @"ry" || queryName.slice(-2) == @"cy" || queryName.slice(-2) == @"ty")
             {
                 queryName = queryName.substr(0, queryName.length - 1);
                 queryName += @"ies";

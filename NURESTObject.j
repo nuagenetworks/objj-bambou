@@ -612,9 +612,9 @@ function _format_log_json(string)
             var temp  = [[value arrangedObjects] valueForKey:@"value"],
                 value = [];
 
-            for (var i = [temp count] - 1; i >= 0; i--)
-                if (temp[i] && temp[i] != [CPNull null])
-                    value.push(temp[i])
+            for (var j = [temp count] - 1; j >= 0; j--)
+                if (temp[j] && temp[j] != [CPNull null])
+                    value.push(temp[j])
         }
 
         // @TODO: Uncomment this after 3.2 release, and watch the world burn.

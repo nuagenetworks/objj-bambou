@@ -1242,9 +1242,9 @@ function _format_log_json(string)
                 continue;
 
             var localKeyPath = splitedInfo[0],
-                encodedYype = splitedInfo[1];
+                encodedType = splitedInfo[1];
 
-            switch (encodedYype)
+            switch (encodedType)
             {
                 case "boolean":
                     [self setValue:[aCoder decodeBoolForKey:key] forKeyPath:localKeyPath];

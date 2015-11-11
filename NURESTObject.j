@@ -542,7 +542,7 @@ function _format_log_json(string)
     if (!methodInfo)
         [CPException raise:CPInvalidArgumentException reason:@"Cannot find method named " + aKeyPath];
 
-    return methodInfo.types[0];
+    return method_getTypes(methodInfo);
 }
 
 

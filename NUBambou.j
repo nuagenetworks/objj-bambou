@@ -25,70 +25,14 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-@import <Foundation/Foundation.j>
-
-var NURESTModelControllerDefault;
-
-
-@implementation NURESTModelController : CPObject
-{
-    CPDictionary    _modelRegistry;
-}
-
-#pragma mark -
-#pragma mark Class Methods
-
-+ (id)defaultController
-{
-    if (!NURESTModelControllerDefault)
-        NURESTModelControllerDefault = [[NURESTModelController alloc] init];
-
-    return NURESTModelControllerDefault;
-}
-
-#pragma mark -
-#pragma mark Initialization
-
-- (id)init
-{
-    if (self = [super init])
-    {
-        _modelRegistry = @{};
-    }
-
-    return self
-}
-
-
-#pragma mark -
-#pragma mark Models Registration
-
-- (void)registerModelClass:(Class)aClass
-{
-    if (![_modelRegistry containsKey:[aClass RESTName]])
-        [_modelRegistry setObject:[] forKey:[aClass RESTName]];
-
-    if (![[_modelRegistry objectForKey:[aClass RESTName]] containsObject:aClass])
-        [[_modelRegistry objectForKey:[aClass RESTName]] addObject:aClass];
-}
-
-
-#pragma mark -
-#pragma mark Accessing Registred Classes
-
-- (Class)modelClassForRESTName:(CPString)aRESTName
-{
-    return [[_modelRegistry objectForKey:aRESTName] firstObject]
-}
-
-- (CPArray)modelClassesForRESTName:(CPString)aRESTName
-{
-    return [_modelRegistry objectForKey:aRESTName];
-}
-
-- (NURESTObject)newObjectWithRESTName:(CPString)aRESTName
-{
-    return [[self modelClassForRESTName:aRESTName] new];
-}
-
-@end
+@import "NURESTJob.j"
+@import "NURESTJobsController.j"
+@import "NURESTAbstractUser.j"
+@import "NURESTConfirmation.j"
+@import "NURESTConnection.j"
+@import "NURESTError.j"
+@import "NURESTFetcher.j"
+@import "NURESTLoginController.j"
+@import "NURESTModelController.j"
+@import "NURESTObject.j"
+@import "NURESTPushCenter.j"

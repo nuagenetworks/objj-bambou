@@ -1,18 +1,28 @@
 /*
-*   Filename:         NURESTConnection.j
-*   Created:          Tue Oct  9 11:49:32 PDT 2012
-*   Author:           Antoine Mercadal <antoine.mercadal@alcatel-lucent.com>
-*   Description:      VSA
-*   Project:          Cloud Network Automation - Nuage - Data Center Service Delivery - IPD
+* Copyright (c) 2016, Alcatel-Lucent Inc
+* All rights reserved.
 *
-* Copyright (c) 2011-2012 Alcatel, Alcatel-Lucent, Inc. All Rights Reserved.
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*     * Redistributions of source code must retain the above copyright
+*       notice, this list of conditions and the following disclaimer.
+*     * Redistributions in binary form must reproduce the above copyright
+*       notice, this list of conditions and the following disclaimer in the
+*       documentation and/or other materials provided with the distribution.
+*     * Neither the name of the copyright holder nor the names of its contributors
+*       may be used to endorse or promote products derived from this software without
+*       specific prior written permission.
 *
-* This source code contains confidential information which is proprietary to Alcatel.
-* No part of its contents may be used, copied, disclosed or conveyed to any party
-* in any manner whatsoever without prior written permission from Alcatel.
-*
-* Alcatel-Lucent is a trademark of Alcatel-Lucent, Inc.
-*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+* ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY
+* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 @import <Foundation/Foundation.j>
@@ -150,7 +160,7 @@ var NURESTConnectionLastActionTimer,
     catch(e)
     {
         errorName = @"Malformed Server Error for code " + responseCode;
-        errorDescription = @"An error occured in VSD Server, but it was unable to correctly report what exactly happened.";
+        errorDescription = @"An error occured in the server, but it was unable to correctly report what exactly happened.";
     }
 
     switch (responseCode)
@@ -228,7 +238,7 @@ var NURESTConnectionLastActionTimer,
 
         case NURESTConnectionResponseCodeZero:
 
-            CPLog.error("RESTCAPPUCCINO: Connection error with code 0. Sending NURESTConnectionFailureNotification notification and exiting.");
+            CPLog.error("BAMBOU: Connection error with code 0. Sending NURESTConnectionFailureNotification notification and exiting.");
             [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConnectionFailureNotification object:self userInfo:nil];
 
             return NO;
@@ -236,7 +246,7 @@ var NURESTConnectionLastActionTimer,
 
         default:
 
-            CPLog.error(@"RESTCAPPUCCINO: Report this error, because this should not happen:\n\n%@", [[aConnection responseData] rawString]);
+            CPLog.error(@"BAMBOU: Report this error, because this should not happen:\n\n%@", [[aConnection responseData] rawString]);
 
             return NO;
     }

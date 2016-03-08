@@ -1,18 +1,28 @@
 /*
-*   Filename:         NURESTObject.j
-*   Created:          Tue Oct  9 11:49:46 PDT 2012
-*   Author:           Antoine Mercadal <antoine.mercadal@alcatel-lucent.com>
-*   Description:      VSA
-*   Project:          Cloud Network Automation - Nuage - Data Center Service Delivery - IPD
+* Copyright (c) 2016, Alcatel-Lucent Inc
+* All rights reserved.
 *
-* Copyright (c) 2011-2012 Alcatel, Alcatel-Lucent, Inc. All Rights Reserved.
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*     * Redistributions of source code must retain the above copyright
+*       notice, this list of conditions and the following disclaimer.
+*     * Redistributions in binary form must reproduce the above copyright
+*       notice, this list of conditions and the following disclaimer in the
+*       documentation and/or other materials provided with the distribution.
+*     * Neither the name of the copyright holder nor the names of its contributors
+*       may be used to endorse or promote products derived from this software without
+*       specific prior written permission.
 *
-* This source code contains confidential information which is proprietary to Alcatel.
-* No part of its contents may be used, copied, disclosed or conveyed to any party
-* in any manner whatsoever without prior written permission from Alcatel.
-*
-* Alcatel-Lucent is a trademark of Alcatel-Lucent, Inc.
-*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+* ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY
+* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 @import <Foundation/Foundation.j>
@@ -257,7 +267,7 @@ function _format_log_json(string)
 
     [self willDiscard];
 
-    CPLog.debug("RESTCAPPUCCINO: discarding object " + _ID + " of type " + [self RESTName]);
+    CPLog.debug("BAMBOU: discarding object " + _ID + " of type " + [self RESTName]);
 
     [self discardAllFetchers];
 
@@ -274,7 +284,7 @@ function _format_log_json(string)
 
 - (void)discardFetcherForRESTName:(CPString)aRESTName
 {
-    CPLog.debug("RESTCAPPUCCINO: " + [self RESTName] + " with ID " + _ID + " is discarding children list " + aRESTName);
+    CPLog.debug("BAMBOU: " + [self RESTName] + " with ID " + _ID + " is discarding children list " + aRESTName);
 
     [[self fetcherForRESTName:aRESTName] flush];
 }
@@ -1181,7 +1191,7 @@ function _format_log_json(string)
                                         "remoteSelector": aRemoteSelector,
                                         "remoteBlock": aBlock}];
 
-    CPLog.trace("RESTCAPPUCCINO: >>>> Sending\n\n%@ %@:\n\n%@", [aRequest HTTPMethod], [aRequest URL], _format_log_json([aRequest HTTPBody]));
+    CPLog.trace("BAMBOU: >>>> Sending\n\n%@ %@:\n\n%@", [aRequest HTTPMethod], [aRequest URL], _format_log_json([aRequest HTTPBody]));
 
     [connection start];
 
@@ -1194,7 +1204,7 @@ function _format_log_json(string)
 {
     if ([aConnection hasTimeouted])
     {
-        CPLog.error("RESTCAPPUCCINO: Connection timeouted. Sending NURESTConnectionFailureNotification notification and exiting.");
+        CPLog.error("BAMBOU: Connection timeouted. Sending NURESTConnectionFailureNotification notification and exiting.");
         [[CPNotificationCenter defaultCenter] postNotificationName:NURESTConnectionFailureNotification object:self userInfo:aConnection];
          return;
     }
@@ -1210,7 +1220,7 @@ function _format_log_json(string)
         remoteBlock    = [aConnection internalUserInfo]["remoteBlock"],
         hasHandlers    = (!!(remoteTarget && remoteSelector)) || remoteBlock;
 
-    CPLog.trace("RESTCAPPUCCINO: <<<< Response for\n\n%@ %@ (%@):\n\n%@", HTTPMethod, url, responseCode, _format_log_json(rawString));
+    CPLog.trace("BAMBOU: <<<< Response for\n\n%@ %@ (%@):\n\n%@", HTTPMethod, url, responseCode, _format_log_json(rawString));
 
     var shouldProceed = [NURESTConnection handleResponseForConnection:aConnection postErrorMessage:!hasHandlers];
 

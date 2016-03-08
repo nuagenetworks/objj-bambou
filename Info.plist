@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
     <key>CPBundleIdentifier</key>
-    <string>org.archipelproject.RESTCappuccino</string>
+    <string>net.nuagenetworks.bambou</string>
     <key>CPBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CPBundleName</key>
-    <string>RESTCappuccino</string>
+    <string>Bambou</string>
     <key>CPBundlePackageType</key>
     <string>FMWK</string>
 </dict>

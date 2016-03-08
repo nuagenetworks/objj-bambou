@@ -95,9 +95,7 @@ function _format_log_json(string)
     CPDate          _lastUpdatedDate                @accessors(property=lastUpdatedDate);
     CPDictionary    _restAttributes                 @accessors(property=RESTAttributes);
     CPDictionary    _searchAttributes               @accessors(getter=searchAttributes);
-    CPString        _externalID                     @accessors(property=externalID);
     CPString        _ID                             @accessors(property=ID);
-    CPString        _lastUpdatedBy                  @accessors(property=lastUpdatedBy);
     CPString        _localID                        @accessors(property=localID);
     CPString        _owner                          @accessors(property=owner);
     CPString        _parentID                       @accessors(property=parentID);

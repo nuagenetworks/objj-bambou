@@ -195,9 +195,7 @@ function _format_log_json(string)
         _searchAttributes         = @{};
 
         [self exposeLocalKeyPathToREST:@"creationDate" displayName:@"creation date"];
-        [self exposeLocalKeyPathToREST:@"externalID" searchable:NO];
         [self exposeLocalKeyPathToREST:@"ID" searchable:NO];
-        [self exposeLocalKeyPathToREST:@"lastUpdatedBy" searchable:NO];
         [self exposeLocalKeyPathToREST:@"lastUpdatedDate" displayName:@"last update date"];
         [self exposeLocalKeyPathToREST:@"owner" searchable:NO];
         [self exposeLocalKeyPathToREST:@"parentID" searchable:NO];

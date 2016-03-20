@@ -335,6 +335,13 @@ function _format_log_json(string)
     return [[self class] icon];
 }
 
+/*! Overrides the default icon
+*/
+- (void)overrideIcon:(CPImage)anIcon
+{
+    [NURESTOBJECT_ICONS_CACHE setObject:anIcon forKey:[self RESTName]];
+}
+
 /*! Returns the RESTName name of the object (just wrapping + (CPString)RESTName)
 */
 - (CPString)RESTName
@@ -814,6 +821,27 @@ function _format_log_json(string)
 - (CPString)alternativeDescription
 {
     return [self description];
+}
+
+- (CPString)displayName
+{
+    if ([self respondsToSelector:@selector(name)])
+        return [self name];
+
+    return "No display name";
+}
+
+- (CPString)displayDescription
+{
+    if ([self respondsToSelector:@selector(description)])
+        return [self description];
+
+    return "No display description";
+}
+
+- (CPImage)displayIcon
+{
+    return [self icon];
 }
 
 

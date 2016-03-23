@@ -84,6 +84,28 @@ function _format_log_json(string)
     };
 }
 
+function NURESTObjectPluralize(name)
+{
+    switch (name.slice(-1))
+    {
+        case @"s":
+            break;
+
+        case @"y":
+            if (name.slice(-2) == @"ry" || name.slice(-2) == @"cy" || name.slice(-2) == @"ty")
+            {
+                name = name.substr(0, name.length - 1);
+                name += @"ies";
+                break;
+            }
+
+        default:
+            name += @"s";
+    }
+
+    return name;
+}
+
 /*!
     Basic object with REST saving/fetching utilities
 */
@@ -134,24 +156,7 @@ function _format_log_json(string)
     if ([self RESTResourceNameFixed])
         return queryName;
 
-    switch (queryName.slice(-1))
-    {
-        case @"s":
-            break;
-
-        case @"y":
-            if (queryName.slice(-2) == @"ry" || queryName.slice(-2) == @"cy" || queryName.slice(-2) == @"ty")
-            {
-                queryName = queryName.substr(0, queryName.length - 1);
-                queryName += @"ies";
-                break;
-            }
-
-        default:
-            queryName += @"s";
-    }
-
-    return queryName;
+    return NURESTObjectPluralize(queryName);
 }
 
 /*! If overriden to return YES, RESTResourceName will not be called

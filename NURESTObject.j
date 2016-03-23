@@ -84,7 +84,7 @@ function _format_log_json(string)
     };
 }
 
-function NURESTObjectPluralize(name)
+NURESTObjectPluralize = function(name)
 {
     switch (name.slice(-1))
     {
@@ -105,6 +105,13 @@ function NURESTObjectPluralize(name)
 
     return name;
 }
+
+var _NURESTObjectEpochFactor = 1;
+NURESTObjectSetEpochFactor = function(factor)
+{
+    _NURESTObjectEpochFactor = factor;
+}
+
 
 /*!
     Basic object with REST saving/fetching utilities
@@ -578,10 +585,10 @@ function NURESTObjectPluralize(name)
     [self setID:aJSONObject.ID];
 
     if (aJSONObject.creationDate)
-        [self setCreationDate:[CPDate dateWithTimeIntervalSince1970:(parseInt(aJSONObject.creationDate) / 1000)]];
+        [self setCreationDate:[CPDate dateWithTimeIntervalSince1970:(parseInt(aJSONObject.creationDate) / _NURESTObjectEpochFactor)]];
 
     if (aJSONObject.lastUpdatedDate)
-        [self setLastUpdatedDate:[CPDate dateWithTimeIntervalSince1970:(parseInt(aJSONObject.lastUpdatedDate) / 1000)]];
+        [self setLastUpdatedDate:[CPDate dateWithTimeIntervalSince1970:(parseInt(aJSONObject.lastUpdatedDate) / _NURESTObjectEpochFactor)]];
 
     // cleanup these keys
     [keys removeObject:@"ID"];

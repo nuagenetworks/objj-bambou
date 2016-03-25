@@ -49,7 +49,7 @@ var NURESTAbstractUserCurrent = nil;
 #pragma mark -
 #pragma mark Initialization
 
-+ (id)defaultUser
++ (id)current
 {
     if (!NURESTAbstractUserCurrent)
         NURESTAbstractUserCurrent = [[[self class] alloc] init];

@@ -702,7 +702,7 @@ function _format_log_json(string)
 
 - (BOOL)isOwnedByCurrentUser
 {
-    return _owner == [[NURESTAbstractUser defaultUser] ID];
+    return _owner == [[NURESTAbstractUser current] ID];
 }
 
 

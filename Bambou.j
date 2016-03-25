@@ -27,7 +27,7 @@
 
 @import "NURESTJob.j"
 @import "NURESTJobsController.j"
-@import "NURESTAbstractUser.j"
+@import "NURESTAbstractRoot.j"
 @import "NURESTConfirmation.j"
 @import "NURESTConnection.j"
 @import "NURESTError.j"

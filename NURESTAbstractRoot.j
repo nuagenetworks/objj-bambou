@@ -31,10 +31,10 @@
 
 @global Sha1
 
-var NURESTAbstractUserCurrent = nil;
+var NURESTAbstractRootCurrent = nil;
 
 
-@implementation NURESTAbstractUser : NURESTObject
+@implementation NURESTAbstractRoot : NURESTObject
 {
     CPString    _APIKey                 @accessors(property=APIKey);
     CPString    _password               @accessors(property=password);
@@ -51,15 +51,15 @@ var NURESTAbstractUserCurrent = nil;
 
 + (id)current
 {
-    if (!NURESTAbstractUserCurrent)
-        NURESTAbstractUserCurrent = [[[self class] alloc] init];
+    if (!NURESTAbstractRootCurrent)
+        NURESTAbstractRootCurrent = [[[self class] alloc] init];
 
-    return NURESTAbstractUserCurrent;
+    return NURESTAbstractRootCurrent;
 }
 
 + (CPString)RESTName
 {
-    [CPException raise:CPUnsupportedMethodException reason:"The NURESTAbstractUser subclass must implement : '+ (CPString)RESTName'"];
+    [CPException raise:CPUnsupportedMethodException reason:"The NURESTAbstractRoot subclass must implement : '+ (CPString)RESTName'"];
 }
 
 + (BOOL)RESTResourceNameFixed

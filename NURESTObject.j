@@ -40,7 +40,7 @@ NURESTObjectStatusTypeFailed    = @"FAILED";
 NURESTObjectAttributeAllowedValuesKey   = @"allowedValues";
 NURESTObjectAttributeDisplayNameKey     = @"displayName";
 
-@class NURESTAbstractUser
+@class NURESTAbstractRoot
 @class CPArrayController
 
 @global CPCriticalAlertStyle
@@ -714,7 +714,7 @@ NURESTObjectSetEpochFactor = function(factor)
 
 - (BOOL)isOwnedByCurrentUser
 {
-    return _owner == [[NURESTAbstractUser current] ID];
+    return _owner == [[NURESTAbstractRoot current] ID];
 }
 
 

@@ -84,6 +84,35 @@ function _format_log_json(string)
     };
 }
 
+NURESTObjectPluralize = function(name)
+{
+    switch (name.slice(-1))
+    {
+        case @"s":
+            break;
+
+        case @"y":
+            if (name.slice(-2) == @"ry" || name.slice(-2) == @"cy" || name.slice(-2) == @"ty")
+            {
+                name = name.substr(0, name.length - 1);
+                name += @"ies";
+                break;
+            }
+
+        default:
+            name += @"s";
+    }
+
+    return name;
+}
+
+var _NURESTObjectEpochFactor = 1;
+NURESTObjectSetEpochFactor = function(factor)
+{
+    _NURESTObjectEpochFactor = factor;
+}
+
+
 /*!
     Basic object with REST saving/fetching utilities
 */
@@ -134,24 +163,7 @@ function _format_log_json(string)
     if ([self RESTResourceNameFixed])
         return queryName;
 
-    switch (queryName.slice(-1))
-    {
-        case @"s":
-            break;
-
-        case @"y":
-            if (queryName.slice(-2) == @"ry" || queryName.slice(-2) == @"cy" || queryName.slice(-2) == @"ty")
-            {
-                queryName = queryName.substr(0, queryName.length - 1);
-                queryName += @"ies";
-                break;
-            }
-
-        default:
-            queryName += @"s";
-    }
-
-    return queryName;
+    return NURESTObjectPluralize(queryName);
 }
 
 /*! If overriden to return YES, RESTResourceName will not be called
@@ -573,10 +585,10 @@ function _format_log_json(string)
     [self setID:aJSONObject.ID];
 
     if (aJSONObject.creationDate)
-        [self setCreationDate:[CPDate dateWithTimeIntervalSince1970:(parseInt(aJSONObject.creationDate) / 1000)]];
+        [self setCreationDate:[CPDate dateWithTimeIntervalSince1970:(parseInt(aJSONObject.creationDate) / _NURESTObjectEpochFactor)]];
 
     if (aJSONObject.lastUpdatedDate)
-        [self setLastUpdatedDate:[CPDate dateWithTimeIntervalSince1970:(parseInt(aJSONObject.lastUpdatedDate) / 1000)]];
+        [self setLastUpdatedDate:[CPDate dateWithTimeIntervalSince1970:(parseInt(aJSONObject.lastUpdatedDate) / _NURESTObjectEpochFactor)]];
 
     // cleanup these keys
     [keys removeObject:@"ID"];

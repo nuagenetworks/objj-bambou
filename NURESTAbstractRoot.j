@@ -107,9 +107,14 @@ var NURESTAbstractRootCurrent = nil;
 
 - (void)saveAndCallSelector:(SEL)aSelector ofObject:(id)anObject password:(CPString)aPassword
 {
+    [self saveAndCallSelector:aSelector ofObject:anObject password:aPassword encrypted:YES];
+}
+
+- (void)saveAndCallSelector:(SEL)aSelector ofObject:(id)anObject password:(CPString)aPassword encrypted:(BOOL)shouldEncrypt
+{
     var RESTUserCopy = [self duplicate];
 
-    [RESTUserCopy setPassword:_newPassword ? Sha1.hash(_newPassword) : nil];
+    [RESTUserCopy setPassword:_newPassword && shouldEncrypt ? Sha1.hash(_newPassword) : nil];
 
     // reset the login controller for this call as it needs to use password, and not API Key
     [[NURESTLoginController defaultController] setPassword:[self password]];

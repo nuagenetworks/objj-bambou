@@ -630,7 +630,7 @@ NURESTObjectSetEpochFactor = function(factor)
             value = [self valueForKeyPath:attribute];
 
         if (attribute == "creationDate" || attribute == "lastUpdatedDate")
-            continue;
+            value = [value timeIntervalSince1970] * _NURESTObjectEpochFactor;
 
         if (value && value.isa && [value isKindOfClass:CPArrayController])
         {

@@ -114,7 +114,10 @@ var NURESTAbstractRootCurrent = nil;
 {
     var RESTUserCopy = [self duplicate];
 
-    [RESTUserCopy setPassword:_newPassword && shouldEncrypt ? Sha1.hash(_newPassword) : nil];
+    if (_newPassword)
+        [RESTUserCopy setPassword:shouldEncrypt ? Sha1.hash(_newPassword) : _newPassword];
+    else
+        [RESTUserCopy setPassword:nil];
 
     // reset the login controller for this call as it needs to use password, and not API Key
     [[NURESTLoginController defaultController] setPassword:[self password]];

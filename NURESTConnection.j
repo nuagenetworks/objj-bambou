@@ -149,9 +149,7 @@ var NURESTConnectionLastActionTimer,
     var responseObject   = [[aConnection responseData] JSONObject],
         responseCode     = [aConnection responseCode],
         containsInfo     = (responseObject && responseObject.errors),
-        errorMessages         = @[];
-
-    var errorName, errorDescription;
+        errorMessages    = @[];
 
     try
     {
@@ -230,7 +228,10 @@ var NURESTConnectionLastActionTimer,
             if (!shouldPost)
                 return YES;
 
-            [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
+            for (var i = 0; i < [errorMessages count]; i++)
+                [NURESTError postRESTErrorWithName:errorMessages[i].title
+                                       description:errorMessages[i].description
+                                        connection:aConnection];
 
             return NO;
 

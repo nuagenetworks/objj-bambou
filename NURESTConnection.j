@@ -149,18 +149,22 @@ var NURESTConnectionLastActionTimer,
     var responseObject   = [[aConnection responseData] JSONObject],
         responseCode     = [aConnection responseCode],
         containsInfo     = (responseObject && responseObject.errors),
-        errorName,
-        errorDescription;
+        errorMessages    = @[];
 
     try
     {
-        errorName        = containsInfo ? responseObject.errors[0].descriptions[0].title : nil;
-        errorDescription = containsInfo ? responseObject.errors[0].descriptions[0].description : nil;
+        for (var i = 0; i < responseObject.errors.length; i++)
+        {
+            for (var j = 0; j < responseObject.errors[i].descriptions.length; j++)
+                [errorMessages addObject:responseObject.errors[i].descriptions[j]]
+        }
     }
     catch(e)
     {
-        errorName = @"Malformed Server Error for code " + responseCode;
-        errorDescription = @"An error occured in the server, but it was unable to correctly report what exactly happened.";
+        errorMessages = [{
+            name: @"Malformed Server Error for code " + responseCode,
+            description: @"An error occured in the server, but it was unable to correctly report what exactly happened."
+        }];
     }
 
     switch (responseCode)
@@ -172,9 +176,21 @@ var NURESTConnectionLastActionTimer,
 
         case NURESTConnectionResponseCodeMultipleChoices:
             if ([aConnection _isAutoConfirm])
-                [[NURESTConfirmation RESTConfirmationWithName:errorName description:errorDescription choices:responseObject.choices connection:aConnection] confirm];
+            {
+                for (var i = 0; i < [errorMessages count]; i++)
+                    [[NURESTConfirmation RESTConfirmationWithName:errorMessages[i].title
+                                                      description:errorMessages[i].description
+                                                          choices:responseObject.choices
+                                                       connection:aConnection] confirm];
+            }
             else
-                [NURESTConfirmation postRESTConfirmationWithName:errorName description:errorDescription choices:responseObject.choices connection:aConnection];
+            {
+                for (var i = 0; i < [errorMessages count]; i++)
+                    [NURESTConfirmation postRESTConfirmationWithName:errorMessages[i].title
+                                                      description:errorMessages[i].description
+                                                          choices:responseObject.choices
+                                                       connection:aConnection];
+            }
 
             return NO;
 
@@ -183,10 +199,12 @@ var NURESTConnectionLastActionTimer,
             if (!shouldPost)
                 return YES;
 
-            [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
+            for (var i = 0; i < [errorMessages count]; i++)
+                [NURESTError postRESTErrorWithName:errorMessages[i].title
+                                       description:errorMessages[i].description
+                                        connection:aConnection];
 
             return NO;
-
 
         case NURESTConnectionResponseCodePermissionDenied:
         case NURESTConnectionResponseCodeUnauthorized:
@@ -210,7 +228,10 @@ var NURESTConnectionLastActionTimer,
             if (!shouldPost)
                 return YES;
 
-            [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
+            for (var i = 0; i < [errorMessages count]; i++)
+                [NURESTError postRESTErrorWithName:errorMessages[i].title
+                                       description:errorMessages[i].description
+                                        connection:aConnection];
 
             return NO;
 
@@ -229,10 +250,21 @@ var NURESTConnectionLastActionTimer,
 
         case NURESTConnectionResponseCodeInternalServerError:
 
-            var errorName        = errorName || @"[CRITICAL] Internal Server Error",
-                errorDescription = errorDescription || @"Please check the log and report this error to the server team";
 
-            [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
+            if ([errorMessages count] > 0)
+            {
+                for (var i = 0; i < [errorMessages count]; i++)
+                    [NURESTError postRESTErrorWithName:errorMessages[i].title
+                                           description:errorMessages[i].description
+                                            connection:aConnection];
+            }
+            else
+            {
+                var errorName        = @"[CRITICAL] Internal Server Error",
+                    errorDescription = @"Please check the log and report this error to the server team";
+
+                [NURESTError postRESTErrorWithName:errorName description:errorDescription connection:aConnection];
+            }
 
             return NO;
 

@@ -47,6 +47,7 @@ NURESTConnectionTimeout                         = 42;
 
 NURESTConnectionMethodDelete                    = @"DELETE";
 NURESTConnectionMethodGet                       = @"GET";
+NURESTConnectionMethodPatch                     = @"PATCH";
 NURESTConnectionMethodPost                      = @"POST";
 NURESTConnectionMethodPut                       = @"PUT";
 

@@ -33,6 +33,11 @@
 @import "NURESTLoginController.j"
 @import "NURESTModelController.j"
 
+NURESTObjectPatchMethodAdd    = @"ADD";
+NURESTObjectPatchMethodDelete = @"DELETE";
+NURESTObjectPatchMethodNone   = @"NONE";
+
+
 NURESTObjectStatusTypeSuccess   = @"SUCCESS";
 NURESTObjectStatusTypeWarning   = @"WARNING";
 NURESTObjectStatusTypeFailed    = @"FAILED";
@@ -50,6 +55,7 @@ NURESTObjectAttributeDisplayNameKey     = @"displayName";
 
 @global NURESTConnectionMethodDelete
 @global NURESTConnectionMethodGet
+@global NURESTConnectionMethodPatch
 @global NURESTConnectionMethodPost
 @global NURESTConnectionMethodPut
 
@@ -129,6 +135,7 @@ NURESTObjectSetEpochFactor = function(factor)
     CPString        _owner                          @accessors(property=owner);
     CPString        _parentID                       @accessors(property=parentID);
     CPString        _parentType                     @accessors(property=parentType);
+    CPString        _patchMethod                    @accessors(property=patchMethod);
     NURESTObject    _parentObject                   @accessors(property=parentObject);
 
     CPDictionary    _fetchersRegistry;
@@ -203,6 +210,7 @@ NURESTObjectSetEpochFactor = function(factor)
         _bindableAttributes       = [];
         _fetchersRegistry         = @{};
         _localID                  = [CPString UUID];
+        _patchMethod              = NURESTObjectPatchMethodNone;
         _restAttributes           = @{};
         _searchAttributes         = @{};
 
@@ -1077,13 +1085,36 @@ NURESTObjectSetEpochFactor = function(factor)
     for (var i = [someEntities count] - 1; i >= 0; i--)
         [IDsList addObject:[someEntities[i] ID]];
 
-    var request = [CPURLRequest requestWithURL:[self RESTResourceURLForChildrenClass:aClass]],
-        body = JSON.stringify(IDsList, null, 4);
+    var conditionUsePatch = [self _patchEnabled],
+        bodyObj           = conditionUsePatch ? {method:_patchMethod, list:IDsList} : IDsList,
+        request           = [CPURLRequest requestWithURL:[self RESTResourceURLForChildrenClass:aClass]],
+        body              = JSON.stringify(bodyObj, null, 4),
+        HTTPMethod        = conditionUsePatch ? NURESTConnectionMethodPatch : NURESTConnectionMethodPut;
 
-    [request setHTTPMethod:NURESTConnectionMethodPut];
+    [request setHTTPMethod:HTTPMethod];
     [request setHTTPBody:body];
 
     return [self sendRESTCall:request performSelector:@selector(_didPerformStandardOperation:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject block:aBlock userInfo:someEntities];
+}
+
+- (BOOL)_patchEnabled
+{
+    return _patchMethod != NURESTObjectPatchMethodNone;
+}
+
+- (void)_disablePatch
+{
+    _patchMethod = NURESTObjectPatchMethodNone;
+}
+
+- (void)_enablePatchAdd
+{
+    _patchMethod = NURESTObjectPatchMethodAdd;
+}
+
+- (void)_enablePatchDelete
+{
+    _patchMethod = NURESTObjectPatchMethodDelete;
 }
 
 - (CPString)_instantiateChildObject:(NURESTObject)aChildObject fromTemplate:(NURESTObject)aTemplate andCallSelector:(SEL)aSelector ofObject:(id)anObject block:(Function)aBlock

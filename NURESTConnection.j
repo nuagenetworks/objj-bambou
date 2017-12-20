@@ -249,7 +249,9 @@ var NURESTConnectionLastActionTimer,
 
 
         case NURESTConnectionResponseCodeInternalServerError:
-
+        
+            if (!shouldPost)
+                return YES;
 
             if ([errorMessages count] > 0)
             {

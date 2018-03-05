@@ -76,11 +76,8 @@ NURESTFetcherPageSize = 50;
 
 - (id)init
 {
-    if (self = [super init]) 
-    {
+    if (self = [super init])
         _contents = [];
-        _currentResponseCount = 0;
-    }
 
     return self;
 }
@@ -158,7 +155,6 @@ NURESTFetcherPageSize = 50;
 {
     [self _resetLastConnectionInformation];
     [_contents removeAllObjects];
-    _currentResponseCount = 0;
 }
 
 - (id)_RESTFilterFromFilter:(id)aFilter masterFilter:(id)aMasterFilter

@@ -34,7 +34,6 @@ NURESTFetcherPageSize = 50;
 @implementation NURESTFetcher : CPObject
 {
     CPNumber            _currentPage            @accessors(property=currentPage);
-    CPNumber            _currentResponseCount   @accessors(property=currentResponseCount);
     CPNumber            _currentTotalCount      @accessors(property=currentTotalCount);
     CPString            _currentOrderedBy       @accessors(property=currentOrderedBy);
     CPString            _queryString            @accessors(property=queryString);
@@ -285,7 +284,6 @@ NURESTFetcherPageSize = 50;
     {
         _currentTotalCount = 0;
         _currentPage       = 0;
-        _currentResponseCount = 0;
         _currentOrderedBy  = @"";
         fetchedObjects     = nil;
     }
@@ -298,8 +296,6 @@ NURESTFetcherPageSize = 50;
 
         var JSONObject = [[_currentConnection responseData] JSONObject];
 
-        _currentResponseCount += [JSONObject count];
-        
         for (var i = 0, c = [JSONObject count]; i < c; i++)
         {
             var newObject = [self newManagedObject];

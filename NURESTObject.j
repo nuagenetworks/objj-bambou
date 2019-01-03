@@ -33,6 +33,9 @@
 @import "NURESTLoginController.j"
 @import "NURESTModelController.j"
 
+NURESTObjectPatchTypeAdd    = @"add";
+NURESTObjectPatchTypeRemove = @"remove";
+ 
 NURESTObjectStatusTypeSuccess   = @"SUCCESS";
 NURESTObjectStatusTypeWarning   = @"WARNING";
 NURESTObjectStatusTypeFailed    = @"FAILED";
@@ -129,6 +132,7 @@ NURESTObjectSetEpochFactor = function(factor)
     CPString        _owner                          @accessors(property=owner);
     CPString        _parentID                       @accessors(property=parentID);
     CPString        _parentType                     @accessors(property=parentType);
+    CPString        _patchType                      @accessors(property=patchType);
     NURESTObject    _parentObject                   @accessors(property=parentObject);
 
     CPDictionary    _fetchersRegistry;
@@ -1077,13 +1081,33 @@ NURESTObjectSetEpochFactor = function(factor)
     for (var i = [someEntities count] - 1; i >= 0; i--)
         [IDsList addObject:[someEntities[i] ID]];
 
-    var request = [CPURLRequest requestWithURL:[self RESTResourceURLForChildrenClass:aClass]],
-        body = JSON.stringify(IDsList, null, 4);
+    var request           = [CPURLRequest requestWithURL:[self RESTResourceURLForChildrenClass:aClass]],
+        body              = JSON.stringify(IDsList, null, 4),
+        conditionUsePatch = !!_patchType,
+        HTTPMethod        = conditionUsePatch ? NURESTConnectionMethodPatch : NURESTConnectionMethodPut;
 
-    [request setHTTPMethod:NURESTConnectionMethodPut];
+    [request setHTTPMethod:HTTPMethod];
     [request setHTTPBody:body];
+    
+    if (conditionUsePatch)
+        [request setValue:_patchType forHTTPHeaderField:@"X-Nuage-PatchType"];
 
     return [self sendRESTCall:request performSelector:@selector(_didPerformStandardOperation:) ofObject:self andPerformRemoteSelector:aSelector ofObject:anObject block:aBlock userInfo:someEntities];
+}
+
+- (void)disablePatch
+{    
+    _patchType = nil;
+}
+
+- (void)enablePatchAdd
+{
+    _patchType = NURESTObjectPatchTypeAdd;
+}
+
+- (void)enablePatchRemove
+{
+    _patchType = NURESTObjectPatchTypeRemove;
 }
 
 - (CPString)_instantiateChildObject:(NURESTObject)aChildObject fromTemplate:(NURESTObject)aTemplate andCallSelector:(SEL)aSelector ofObject:(id)anObject block:(Function)aBlock
